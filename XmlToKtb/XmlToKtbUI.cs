@@ -53,7 +53,7 @@ namespace XmlToKtb
                 var sonrakiLine = lines[i + 1];
                 var kesisimNoktasi = kesisimNoktasiHesapla(oncekiLine, sonrakiLine);
                 var radius = Convert.ToInt32(curves[i].radius);
-                sb.AppendLine(2 * (i+1) + "  " + yuvarla(kesisimNoktasi[1]) + "  " + yuvarla(kesisimNoktasi[1]) + " " + radius + "  1");
+                sb.AppendLine(2 * (i+1) + "  " + yuvarla(kesisimNoktasi[0]) + "  " + yuvarla(kesisimNoktasi[1]) + " " + radius + "  1");
             }
             sb.AppendLine("PS  " + yuvarla(end[1]) + "  " + yuvarla(end[0]) + "  0  1");
             sb.AppendLine("$SON");
@@ -97,6 +97,17 @@ namespace XmlToKtb
                         sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
                         break;
                     }
+                    case LandXMLAlignmentsAlignmentProfileProfAlignCircCurve _:
+                    {
+                        var circCurve = (LandXMLAlignmentsAlignmentProfileProfAlignCircCurve)item;
+                        var ikiDeger = circCurve.Value.Split();
+
+                        var ilkDeger = yuvarla(ikiDeger[0]);
+                        var ikinciDeger = yuvarla(ikiDeger[1]);
+                        var length = yuvarla(circCurve.length);
+                        sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
+                        break;
+                        }
                 }
             }
             sb.AppendLine("$SON");

@@ -3,7 +3,7 @@
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
     [System.Xml.Serialization.XmlRootAttribute(Namespace = "http://www.landxml.org/schema/LandXML-1.2", IsNullable = false)]
-    public class LandXML
+    public partial class LandXML
     {
         /// <remarks/>
         public LandXMLUnits Units { get; set; }
@@ -40,7 +40,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLUnits
+    public partial class LandXMLUnits
     {
         /// <remarks/>
         public LandXMLUnitsMetric Metric { get; set; }
@@ -48,7 +48,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLUnitsMetric
+    public partial class LandXMLUnitsMetric
     {
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -85,7 +85,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLProject
+    public partial class LandXMLProject
     {
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -94,7 +94,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLApplication
+    public partial class LandXMLApplication
     {
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -123,7 +123,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLAlignments
+    public partial class LandXMLAlignments
     {
         /// <remarks/>
         public LandXMLAlignmentsAlignment Alignment { get; set; }
@@ -135,7 +135,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLAlignmentsAlignment
+    public partial class LandXMLAlignmentsAlignment
     {
         /// <remarks/>
         public LandXMLAlignmentsAlignmentCoordGeom CoordGeom { get; set; }
@@ -165,7 +165,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLAlignmentsAlignmentCoordGeom
+    public partial class LandXMLAlignmentsAlignmentCoordGeom
     {
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("Curve", typeof(LandXMLAlignmentsAlignmentCoordGeomCurve))]
@@ -176,7 +176,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLAlignmentsAlignmentCoordGeomCurve
+    public partial class LandXMLAlignmentsAlignmentCoordGeomCurve
     {
         /// <remarks/>
         public string Start { get; set; }
@@ -237,7 +237,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLAlignmentsAlignmentCoordGeomLine
+    public partial class LandXMLAlignmentsAlignmentCoordGeomLine
     {
         /// <remarks/>
         public string Start { get; set; }
@@ -256,7 +256,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLAlignmentsAlignmentCoordGeomSpiral
+    public partial class LandXMLAlignmentsAlignmentCoordGeomSpiral
     {
         /// <remarks/>
         public string Start { get; set; }
@@ -310,7 +310,7 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLAlignmentsAlignmentProfile
+    public partial class LandXMLAlignmentsAlignmentProfile
     {
         /// <remarks/>
         public LandXMLAlignmentsAlignmentProfileProfAlign ProfAlign { get; set; }
@@ -322,9 +322,10 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLAlignmentsAlignmentProfileProfAlign
+    public partial class LandXMLAlignmentsAlignmentProfileProfAlign
     {
         /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("CircCurve", typeof(LandXMLAlignmentsAlignmentProfileProfAlignCircCurve))]
         [System.Xml.Serialization.XmlElementAttribute("PVI", typeof(string))]
         [System.Xml.Serialization.XmlElementAttribute("ParaCurve", typeof(LandXMLAlignmentsAlignmentProfileProfAlignParaCurve))]
         public object[] Items { get; set; }
@@ -336,7 +337,24 @@
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-    public class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
+    public partial class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
+    {
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public decimal length { get; set; }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public decimal radius { get; set; }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlTextAttribute()]
+        public string Value { get; set; }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+    public partial class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
     {
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
