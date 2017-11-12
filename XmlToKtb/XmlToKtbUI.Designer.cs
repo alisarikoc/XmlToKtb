@@ -29,47 +29,73 @@
         private void InitializeComponent()
         {
             this.xmlOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.openXmlButton = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
+            this.donusturButton = new System.Windows.Forms.Button();
+            this.isimHaklariLabel = new System.Windows.Forms.Label();
+            this.kaydetButton = new System.Windows.Forms.Button();
+            this.bilgiLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // xmlOpenFileDialog
             // 
-            this.xmlOpenFileDialog.FileName = "xmlOpenFileDialog";
+            this.xmlOpenFileDialog.DefaultExt = "xml";
+            this.xmlOpenFileDialog.Filter = "XML Files (*.xml)|*.xml";
+            this.xmlOpenFileDialog.FilterIndex = 0;
             // 
-            // openXmlButton
+            // donusturButton
             // 
-            this.openXmlButton.Location = new System.Drawing.Point(119, 41);
-            this.openXmlButton.Name = "openXmlButton";
-            this.openXmlButton.Size = new System.Drawing.Size(100, 23);
-            this.openXmlButton.TabIndex = 0;
-            this.openXmlButton.Text = "Seç Ve Kaydet";
-            this.openXmlButton.UseVisualStyleBackColor = true;
-            this.openXmlButton.Click += new System.EventHandler(this.openLandXmlButton_Click);
+            this.donusturButton.Location = new System.Drawing.Point(347, 175);
+            this.donusturButton.Name = "donusturButton";
+            this.donusturButton.Size = new System.Drawing.Size(75, 23);
+            this.donusturButton.TabIndex = 0;
+            this.donusturButton.Text = "Dönüştür";
+            this.donusturButton.UseVisualStyleBackColor = true;
+            this.donusturButton.Click += new System.EventHandler(this.xmlDonustur_Tikla);
             // 
-            // label1
+            // isimHaklariLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.label1.Font = new System.Drawing.Font("Arial", 10F);
-            this.label1.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label1.Location = new System.Drawing.Point(112, 67);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(107, 16);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "© Burak Kalafat";
+            this.isimHaklariLabel.AutoSize = true;
+            this.isimHaklariLabel.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.isimHaklariLabel.Font = new System.Drawing.Font("Arial", 10F);
+            this.isimHaklariLabel.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.isimHaklariLabel.Location = new System.Drawing.Point(12, 214);
+            this.isimHaklariLabel.Name = "isimHaklariLabel";
+            this.isimHaklariLabel.Size = new System.Drawing.Size(107, 16);
+            this.isimHaklariLabel.TabIndex = 1;
+            this.isimHaklariLabel.Text = "© Burak Kalafat";
+            // 
+            // kaydetButton
+            // 
+            this.kaydetButton.Enabled = false;
+            this.kaydetButton.Location = new System.Drawing.Point(347, 204);
+            this.kaydetButton.Name = "kaydetButton";
+            this.kaydetButton.Size = new System.Drawing.Size(75, 23);
+            this.kaydetButton.TabIndex = 2;
+            this.kaydetButton.Text = "Kaydet";
+            this.kaydetButton.UseVisualStyleBackColor = true;
+            this.kaydetButton.Click += new System.EventHandler(this.kaydet_Tikla);
+            // 
+            // bilgiLabel
+            // 
+            this.bilgiLabel.AutoSize = true;
+            this.bilgiLabel.Location = new System.Drawing.Point(12, 9);
+            this.bilgiLabel.Name = "bilgiLabel";
+            this.bilgiLabel.Size = new System.Drawing.Size(137, 13);
+            this.bilgiLabel.TabIndex = 3;
+            this.bilgiLabel.Text = "Lütfen Xml Dosyası Seçiniz.";
             // 
             // XmlToKtbUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(231, 92);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.openXmlButton);
+            this.ClientSize = new System.Drawing.Size(434, 239);
+            this.Controls.Add(this.bilgiLabel);
+            this.Controls.Add(this.kaydetButton);
+            this.Controls.Add(this.isimHaklariLabel);
+            this.Controls.Add(this.donusturButton);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(247, 131);
+            this.MaximumSize = new System.Drawing.Size(450, 278);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(247, 131);
+            this.MinimumSize = new System.Drawing.Size(450, 278);
             this.Name = "XmlToKtbUI";
             this.ShowIcon = false;
             this.Text = "XML to KTB";
@@ -81,8 +107,10 @@
         #endregion
 
         private System.Windows.Forms.OpenFileDialog xmlOpenFileDialog;
-        private System.Windows.Forms.Button openXmlButton;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button donusturButton;
+        private System.Windows.Forms.Label isimHaklariLabel;
+        private System.Windows.Forms.Button kaydetButton;
+        private System.Windows.Forms.Label bilgiLabel;
     }
 }
 

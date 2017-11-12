@@ -1,118 +1,177 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using XmlToKtb.Properties;
 
 namespace XmlToKtb
 {
     public partial class XmlToKtbUI : Form
     {
+        private string _ktbIcerigi;
+        private Durumlar.Durum _durum;
+        private readonly Random _rastgele = new Random();
+
         public XmlToKtbUI()
         {
             InitializeComponent();
+            _durum = Durumlar.Durum.Basladi;
+            gorunumuAyarla();
         }
 
-        private void openLandXmlButton_Click(object sender, EventArgs e)
+        private void xmlDonustur_Tikla(object sender, EventArgs e)
         {
             var dialogResult = xmlOpenFileDialog.ShowDialog();
 
             if (dialogResult == DialogResult.OK)
             {
-                var serializer = new FileDeserializer();
+                var serializer = new DosyaDeserializer();
                 var landXml = serializer.XmlDeserializer<LandXML>(xmlOpenFileDialog.FileName);
-                var ktbContent = ktbFileStringBuilder(landXml);
-                saveToKtb(ktbContent);
+                _ktbIcerigi = ktbIcerigiDuzenleyici(landXml);
+                _durum = Durumlar.Durum.Donusturuldu;
+                gorunumuAyarla();
             }
         }
 
-        private static string ktbFileStringBuilder(LandXML landXml)
+        private void gorunumuAyarla()
+        {
+            switch (_durum)
+            {
+                case Durumlar.Durum.Hicbiri:
+                    break;
+                case Durumlar.Durum.Basladi:
+                    kaydetButton.Enabled = false;
+                    break;
+                case Durumlar.Durum.Donusturuldu:
+                    kaydetButton.Enabled = true;
+                    donusturButton.Enabled = false;
+
+                    if (xmlOpenFileDialog.SafeFileName != null)
+                    {
+                        bilgiLabel.Text = xmlOpenFileDialog.SafeFileName.Length > 8
+                            ? xmlOpenFileDialog.SafeFileName.Substring(8)
+                            : xmlOpenFileDialog.SafeFileName;
+                        bilgiLabel.Text += @" dosyası dönüştürüldü.";
+                    }
+                    break;
+                case Durumlar.Durum.Kaydedildi:
+                    kaydetButton.Enabled = false;
+                    donusturButton.Enabled = true;
+                    bilgiLabel.Text = @"Dosya kaydedildi. Yeni dosya dönüştürebilirsiniz.";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            var rastgeleRenk = Color.FromArgb(_rastgele.Next(256), _rastgele.Next(256), _rastgele.Next(256));
+            bilgiLabel.ForeColor = rastgeleRenk;
+        }
+
+        private static string ktbIcerigiDuzenleyici(LandXML landXml)
         {
             var alignment = landXml.Alignments.Alignment;
-            var start = ((LandXMLAlignmentsAlignmentCoordGeomLine)alignment.CoordGeom.Items.First()).Start
-                .Split();
-
-            var end = ((LandXMLAlignmentsAlignmentCoordGeomLine)alignment.CoordGeom.Items.Last()).End
-                .Split();
+            var start = ((LandXMLAlignmentsAlignmentCoordGeomLine)alignment.CoordGeom.Items.First()).Start.Split();
+            var end = ((LandXMLAlignmentsAlignmentCoordGeomLine)alignment.CoordGeom.Items.Last()).End.Split();
 
             var lines = alignment.CoordGeom.Items.Where(p => p.GetType() == typeof(LandXMLAlignmentsAlignmentCoordGeomLine)).Select(p => (LandXMLAlignmentsAlignmentCoordGeomLine)p).ToArray();
             var curves = alignment.CoordGeom.Items.Where(p => p.GetType() == typeof(LandXMLAlignmentsAlignmentCoordGeomCurve)).Select(p => (LandXMLAlignmentsAlignmentCoordGeomCurve)p).ToArray();
             var spirals = alignment.CoordGeom.Items.Where(p => p.GetType() == typeof(LandXMLAlignmentsAlignmentCoordGeomSpiral)).Select(p => (LandXMLAlignmentsAlignmentCoordGeomSpiral)p).ToArray();
 
+            var ktb = new StringBuilder("$KM0").AppendLine();
+            ktb.AppendLine(alignment.staStart.ToString(CultureInfo.InvariantCulture));
+            ktb.AppendLine("$SON");
+            ktb.AppendLine("$YATAY");
+            ktb.AppendLine("PB  " + yuvarla(start[1]) + "  " + yuvarla(start[0]) + "  0  1");
 
-            var sb = new StringBuilder("$KM0").AppendLine();
-            sb.AppendLine(alignment.staStart.ToString(CultureInfo.InvariantCulture));
-            sb.AppendLine("$SON");
-            sb.AppendLine("$YATAY");
-            sb.AppendLine("PB  " + yuvarla(start[1]) + "  " + yuvarla(start[0]) + "  0  1");
+            yatayLinelariDoldur(lines, curves, ktb);
 
-            for (var i = 0; i < lines.Length - 1; i++)
-            {
-                var oncekiLine = lines[i];
-                var sonrakiLine = lines[i + 1];
-                var kesisimNoktasi = kesisimNoktasiHesapla(oncekiLine, sonrakiLine);
-                var radius = Convert.ToInt32(curves[i].radius);
-                sb.AppendLine(2 * (i+1) + "  " + yuvarla(kesisimNoktasi[0]) + "  " + yuvarla(kesisimNoktasi[1]) + " " + radius + "  1");
-            }
-            sb.AppendLine("PS  " + yuvarla(end[1]) + "  " + yuvarla(end[0]) + "  0  1");
-            sb.AppendLine("$SON");
-            sb.AppendLine("$GECIS");
-            sb.AppendLine("PB  1  0  0");
+            ktb.AppendLine("PS  " + yuvarla(end[1]) + "  " + yuvarla(end[0]) + "  0  1");
+            ktb.AppendLine("$SON");
+            ktb.AppendLine("$GECIS");
+            ktb.AppendLine("PB  1  0  0");
 
-            for (var i = 0; i < lines.Length - 1; i++)
-            {
-                var index = 2 * i;
-                var satirNo = 2 * (i + 1);
-                var oncekiSpiral = spirals[index];
-                var sonrakiSpiral = spirals[index + 1];
-                sb.AppendLine(satirNo + "  1" + "  " + Convert.ToInt32(oncekiSpiral.length) + "  " + Convert.ToInt32(sonrakiSpiral.length));
-            }
-            sb.AppendLine("PS  1  0  0");
-            sb.AppendLine("$SON");
-            sb.AppendLine("$DUSEY");
+            gecisBilgileriniDoldur(lines, spirals, ktb);
 
+            ktb.AppendLine("PS  1  0  0");
+            ktb.AppendLine("$SON");
+            ktb.AppendLine("$DUSEY");
+
+            duseyBilgileriDoldur(alignment, ktb);
+
+            ktb.AppendLine("$SON");
+
+            return ktb.ToString();
+        }
+
+        private static void duseyBilgileriDoldur(LandXMLAlignmentsAlignment alignment, StringBuilder sb)
+        {
             var profAlign = alignment.Profile.ProfAlign;
             foreach (var item in profAlign.Items)
             {
                 switch (item)
                 {
                     case string _:
-                    {
-                        var ikiDeger = item.ToString().Split();
-                        var ilkDeger = yuvarla(ikiDeger[0]);
-                        var ikinciDeger = yuvarla(ikiDeger[1]);
-                        sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  0  0");
+                        {
+                            var ikiDeger = item.ToString().Split();
+                            var ilkDeger = yuvarla(ikiDeger[0]);
+                            var ikinciDeger = yuvarla(ikiDeger[1]);
+                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  0  0");
 
-                        break;
-                    }
+                            break;
+                        }
                     case LandXMLAlignmentsAlignmentProfileProfAlignParaCurve _:
-                    {
-                        var paraCurve = (LandXMLAlignmentsAlignmentProfileProfAlignParaCurve)item;
-                        var ikiDeger = paraCurve.Value.Split();
+                        {
+                            var paraCurve = (LandXMLAlignmentsAlignmentProfileProfAlignParaCurve)item;
+                            var ikiDeger = paraCurve.Value.Split();
 
-                        var ilkDeger = yuvarla(ikiDeger[0]);
-                        var ikinciDeger = yuvarla(ikiDeger[1]);
-                        var length = yuvarla(paraCurve.length);
-                        sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
-                        break;
-                    }
+                            var ilkDeger = yuvarla(ikiDeger[0]);
+                            var ikinciDeger = yuvarla(ikiDeger[1]);
+                            var length = yuvarla(paraCurve.length);
+                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
+                            break;
+                        }
                     case LandXMLAlignmentsAlignmentProfileProfAlignCircCurve _:
-                    {
-                        var circCurve = (LandXMLAlignmentsAlignmentProfileProfAlignCircCurve)item;
-                        var ikiDeger = circCurve.Value.Split();
+                        {
+                            var circCurve = (LandXMLAlignmentsAlignmentProfileProfAlignCircCurve)item;
+                            var ikiDeger = circCurve.Value.Split();
 
-                        var ilkDeger = yuvarla(ikiDeger[0]);
-                        var ikinciDeger = yuvarla(ikiDeger[1]);
-                        var length = yuvarla(circCurve.length);
-                        sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
-                        break;
+                            var ilkDeger = yuvarla(ikiDeger[0]);
+                            var ikinciDeger = yuvarla(ikiDeger[1]);
+                            var length = yuvarla(circCurve.length);
+                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
+                            break;
                         }
                 }
             }
-            sb.AppendLine("$SON");
+        }
 
-            return sb.ToString();
+        private static void gecisBilgileriniDoldur(IReadOnlyCollection<LandXMLAlignmentsAlignmentCoordGeomLine> lines, IReadOnlyList<LandXMLAlignmentsAlignmentCoordGeomSpiral> spirals, StringBuilder sb)
+        {
+            for (var i = 0; i < lines.Count - 1; i++)
+            {
+                var index = 2 * i;
+                var satirNo = 2 * (i + 1);
+                var oncekiSpiral = spirals[index];
+                var sonrakiSpiral = spirals[index + 1];
+                sb.AppendLine(satirNo + "  1" + "  " + Convert.ToInt32(oncekiSpiral.length) + "  " +
+                              Convert.ToInt32(sonrakiSpiral.length));
+            }
+        }
+
+        private static void yatayLinelariDoldur(IReadOnlyList<LandXMLAlignmentsAlignmentCoordGeomLine> lines, IReadOnlyList<LandXMLAlignmentsAlignmentCoordGeomCurve> curves, StringBuilder sb)
+        {
+            for (var i = 0; i < lines.Count - 1; i++)
+            {
+                var oncekiLine = lines[i];
+                var sonrakiLine = lines[i + 1];
+                var kesisimNoktasi = kesisimNoktasiHesapla(oncekiLine, sonrakiLine);
+                var radius = Convert.ToInt32(curves[i].radius);
+                sb.AppendLine(2 * (i + 1) + "  " + yuvarla(kesisimNoktasi[0]) + "  " + yuvarla(kesisimNoktasi[1]) + " " +
+                              radius + "  1");
+            }
         }
 
         private static decimal yuvarla(object deger)
@@ -150,15 +209,26 @@ namespace XmlToKtb
             return kesisimKoordinatlari;
         }
 
-        private static void saveToKtb(string content)
+        private static void ktbDosyasiniKaydet(string content)
         {
-            var saveKtbfile = new SaveFileDialog { FileName = "YN2.KTB" };
+            var saveKtbfile = new SaveFileDialog
+            {
+                FileName = "output",
+                Filter = Resources.ktbExtensionFilter
+            };
 
             if (saveKtbfile.ShowDialog() == DialogResult.OK)
             {
                 using (var sw = new StreamWriter(saveKtbfile.FileName))
                     sw.WriteLine(content);
             }
+        }
+
+        private void kaydet_Tikla(object sender, EventArgs e)
+        {
+            ktbDosyasiniKaydet(_ktbIcerigi);
+            _durum = Durumlar.Durum.Kaydedildi;
+            gorunumuAyarla();
         }
     }
 }
