@@ -20,7 +20,7 @@ namespace XmlToKtb
 
             if (dialogResult == DialogResult.OK)
             {
-                var serializer = new Deserializer();
+                var serializer = new FileDeserializer();
                 var landXml = serializer.XmlDeserializer<LandXML>(xmlOpenFileDialog.FileName);
                 var ktbContent = ktbFileStringBuilder(landXml);
                 saveToKtb(ktbContent);

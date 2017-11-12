@@ -3,14 +3,14 @@ using System.Xml.Serialization;
 
 namespace XmlToKtb
 {
-    public class Deserializer
+    public class FileDeserializer
     {
         public T XmlDeserializer<T>(string xmlFilePath)
         {
             var serializer = new XmlSerializer(typeof(T));
             using (var fileStream = new FileStream(xmlFilePath, FileMode.Open))
             {
-                return (T)serializer.Deserialize(fileStream);
+                return (T) serializer.Deserialize(fileStream);
             }
         }
     }

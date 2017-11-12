@@ -45,7 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Deserializer.cs" />
+    <Compile Include="FileDeserializer.cs" />
     <Compile Include="XmlToKtbUI.cs">
       <SubType>Form</SubType>
     </Compile>
