@@ -80,6 +80,7 @@ namespace XmlToKtb
             var curves = alignment.CoordGeom.Items.Where(p => p.GetType() == typeof(LandXMLAlignmentsAlignmentCoordGeomCurve)).Select(p => (LandXMLAlignmentsAlignmentCoordGeomCurve)p).ToArray();
             var spirals = alignment.CoordGeom.Items.Where(p => p.GetType() == typeof(LandXMLAlignmentsAlignmentCoordGeomSpiral)).Select(p => (LandXMLAlignmentsAlignmentCoordGeomSpiral)p).ToArray();
 
+
             var ktb = new StringBuilder("$KM0").AppendLine();
             ktb.AppendLine(alignment.staStart.ToString(CultureInfo.InvariantCulture));
             ktb.AppendLine("$SON");
@@ -148,29 +149,81 @@ namespace XmlToKtb
             }
         }
 
-        private static void gecisBilgileriniDoldur(IReadOnlyCollection<LandXMLAlignmentsAlignmentCoordGeomLine> lines, IReadOnlyList<LandXMLAlignmentsAlignmentCoordGeomSpiral> spirals, StringBuilder sb)
+        private static void gecisBilgileriniDoldur(IReadOnlyList<LandXMLAlignmentsAlignmentCoordGeomLine> lines, IReadOnlyList<LandXMLAlignmentsAlignmentCoordGeomSpiral> spirals, StringBuilder sb)
         {
+            var j = 0;
             for (var i = 0; i < lines.Count - 1; i++)
             {
-                var index = 2 * i;
                 var satirNo = 2 * (i + 1);
-                var oncekiSpiral = spirals[index];
-                var sonrakiSpiral = spirals[index + 1];
-                sb.AppendLine(satirNo + "  1" + "  " + Convert.ToInt32(oncekiSpiral.length) + "  " +
-                              Convert.ToInt32(sonrakiSpiral.length));
+                var oncekiLine = lines[i];
+                var sonrakiLine = lines[i + 1];
+                var oncekiLineEndKoordinatlari = oncekiLine.End.Split();
+                var By = Convert.ToDouble(oncekiLineEndKoordinatlari[0]);
+                var Bx = Convert.ToDouble(oncekiLineEndKoordinatlari[1]);
+                var sonrakiLineStartKoordinatlari = sonrakiLine.Start.Split();
+                var Cy = Convert.ToDouble(sonrakiLineStartKoordinatlari[0]);
+                var Cx = Convert.ToDouble(sonrakiLineStartKoordinatlari[1]);
+
+
+                if (spirals.Count <= j)
+                { j = j - 2; }
+                var oncesp = spirals[j];
+                var oncekispiralStartKoordinatlari = oncesp.Start.Split();
+                var OSy = Convert.ToDouble(oncekispiralStartKoordinatlari[0]);
+                var OSx = Convert.ToDouble(oncekispiralStartKoordinatlari[1]);
+                var sonrasp = spirals[j + 1];
+                var sonraspiralStartKoordinatlari = sonrasp.End.Split();
+                var SSy = Convert.ToDouble(sonraspiralStartKoordinatlari[0]);
+                var SSx = Convert.ToDouble(sonraspiralStartKoordinatlari[1]);
+                var oncekiSpiral = spirals[j];
+                var sonrakiSpiral = spirals[j + 1];
+                if (By == OSy && Bx == OSx && Cy == SSy && Cx == SSx)
+                {
+                    sb.AppendLine(satirNo + "  1" + "  " + Convert.ToInt32(oncekiSpiral.length) + "  " + Convert.ToInt32(sonrakiSpiral.length));
+                    j = j + 2;
+                }
+                else if (By == OSy && Bx == OSx)
+                {
+                    sb.AppendLine(satirNo + "  1" + "  " + Convert.ToInt32(oncekiSpiral.length) + "  " + "0");
+                    j = j + 1;
+                }
+                else if (Cy == SSy && Cx == SSx)
+                {
+                    sb.AppendLine(satirNo + "  1" + "  " + "0" + "  " + Convert.ToInt32(sonrakiSpiral.length));
+                    j = j + 1;
+                }
+
+                else
+                {
+                    sb.AppendLine(satirNo + "  1" + "  " + "0" + "  " + "0");
+                }
+
             }
         }
 
         private static void yatayLinelariDoldur(IReadOnlyList<LandXMLAlignmentsAlignmentCoordGeomLine> lines, IReadOnlyList<LandXMLAlignmentsAlignmentCoordGeomCurve> curves, StringBuilder sb)
         {
+            var j = 0;
             for (var i = 0; i < lines.Count - 1; i++)
             {
                 var oncekiLine = lines[i];
                 var sonrakiLine = lines[i + 1];
                 var kesisimNoktasi = kesisimNoktasiHesapla(oncekiLine, sonrakiLine);
-                var radius = Convert.ToInt32(curves[i].radius);
-                sb.AppendLine(2 * (i + 1) + "  " + yuvarla(kesisimNoktasi[0]) + "  " + yuvarla(kesisimNoktasi[1]) + " " +
-                              radius + "  1");
+                var oncekiLineEndKoordinatlari = oncekiLine.End.Split();
+                var By = Convert.ToDouble(oncekiLineEndKoordinatlari[0]);
+                var Bx = Convert.ToDouble(oncekiLineEndKoordinatlari[1]);
+                var sonrakiLineStartKoordinatlari = sonrakiLine.Start.Split();
+                var Cy = Convert.ToDouble(sonrakiLineStartKoordinatlari[0]);
+                var Cx = Convert.ToDouble(sonrakiLineStartKoordinatlari[1]);
+                if (By == Cy && Bx == Cx)
+                    sb.AppendLine(2 * (i + 1) + "  " + yuvarla(kesisimNoktasi[0]) + "  " + yuvarla(kesisimNoktasi[1]) + " " +   "0" + "  1");
+                else
+                {
+                    var radius1 = yuvarla(Convert.ToDouble(curves[j].radius));
+                    sb.AppendLine(2 * (i + 1) + "  " + yuvarla(kesisimNoktasi[0]) + "  " + yuvarla(kesisimNoktasi[1]) + " " +    radius1 + "  1");
+                    j = j + 1;
+                }
+
             }
         }
 
@@ -178,6 +231,7 @@ namespace XmlToKtb
         {
             return Math.Round(Convert.ToDecimal(deger.ToString()), 4, MidpointRounding.AwayFromZero);
         }
+
 
         private static double[] kesisimNoktasiHesapla(LandXMLAlignmentsAlignmentCoordGeomLine oncekiLine, LandXMLAlignmentsAlignmentCoordGeomLine sonrakiLine)
         {
@@ -208,6 +262,8 @@ namespace XmlToKtb
 
             return kesisimKoordinatlari;
         }
+
+
 
         private static void ktbDosyasiniKaydet(string content)
         {
