@@ -1,8 +1,8 @@
 ﻿
 // NOTE: Generated code may require at least .NET Framework 4.5 or .NET Core/Standard 2.0.
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
-[System.Xml.Serialization.XmlRootAttribute(Namespace = "http://www.landxml.org/schema/LandXML-1.0", IsNullable = false)]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[System.Xml.Serialization.XmlRootAttribute(Namespace = "http://www.landxml.org/schema/LandXML-1.2", IsNullable = false)]
 public partial class LandXML
 {
 
@@ -148,7 +148,7 @@ public partial class LandXML
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLApplication
 {
 
@@ -233,7 +233,7 @@ public partial class LandXMLApplication
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLApplicationAuthor
 {
 
@@ -255,7 +255,7 @@ public partial class LandXMLApplicationAuthor
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLProject
 {
 
@@ -277,7 +277,7 @@ public partial class LandXMLProject
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLUnits
 {
 
@@ -298,7 +298,7 @@ public partial class LandXMLUnits
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLUnitsMetric
 {
 
@@ -384,7 +384,7 @@ public partial class LandXMLUnitsMetric
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignments
 {
 
@@ -436,7 +436,7 @@ public partial class LandXMLAlignments
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsAlignment
 {
 
@@ -520,7 +520,7 @@ public partial class LandXMLAlignmentsAlignment
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsAlignmentCoordGeom
 {
 
@@ -544,7 +544,7 @@ public partial class LandXMLAlignmentsAlignmentCoordGeom
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsAlignmentCoordGeomCurve
 {
 
@@ -561,6 +561,135 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomCurve
     private string crvTypeField;
 
     private decimal radiusField;
+
+    private decimal chordField;
+
+    private decimal deltaField;
+
+    private decimal dirEndField;
+
+    private decimal dirStartField;
+
+    private decimal externalField;
+
+    private decimal lengthField;
+
+    private decimal midOrdField;
+
+    private decimal tangentField;
+
+    private string PIField;
+
+    /// <remarks/>
+    public string PI
+    {
+        get
+        {
+            return this.PIField;
+        }
+        set
+        {
+            this.PIField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal tangent
+    {
+        get
+        {
+            return this.tangentField;
+        }
+        set
+        {
+            this.tangentField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal midOrd
+    {
+        get
+        {
+            return this.midOrdField;
+        }
+        set
+        {
+            this.midOrdField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal length
+    {
+        get
+        {
+            return this.lengthField;
+        }
+        set
+        {
+            this.lengthField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal external
+    {
+        get
+        {
+            return this.externalField;
+        }
+        set
+        {
+            this.externalField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal dirStart
+    {
+        get
+        {
+            return this.dirStartField;
+        }
+        set
+        {
+            this.dirStartField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal dirEnd
+    {
+        get
+        {
+            return this.dirEndField;
+        }
+        set
+        {
+            this.dirEndField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal delta
+    {
+        get
+        {
+            return this.deltaField;
+        }
+        set
+        {
+            this.deltaField = value;
+        }
+    }
+
+
+    /// <remarks/>
+    public decimal chord
+    {
+        get
+        {
+            return this.chordField;
+        }
+        set
+        {
+            this.chordField = value;
+        }
+    }
 
     /// <remarks/>
     public string Start
@@ -659,7 +788,7 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomCurve
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsAlignmentCoordGeomLine
 {
 
@@ -669,6 +798,34 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomLine
 
     private decimal staStartField;
 
+    private decimal dirField;
+
+    private decimal LengthField;
+
+    /// <remarks/>
+    public decimal dir
+    {
+        get
+        {
+            return this.dirField;
+        }
+        set
+        {
+            this.dirField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal Length
+    {
+        get
+        {
+            return this.LengthField;
+        }
+        set
+        {
+            this.LengthField = value;
+        }
+    }
     /// <remarks/>
     public string Start
     {
@@ -711,7 +868,7 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomLine
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsAlignmentCoordGeomSpiral
 {
 
@@ -739,6 +896,76 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomSpiral
 
     private bool constantFieldSpecified;
 
+    private decimal thetaField;
+
+    private decimal totalYField;
+
+    private decimal totalXField;
+
+    private decimal tanLongField;
+
+    private decimal tanShortField;
+
+    /// <remarks/>
+    public decimal tanLong
+    {
+        get
+        {
+            return this.tanLongField;
+        }
+        set
+        {
+            this.tanLongField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal tanShort
+    {
+        get
+        {
+            return this.tanShortField;
+        }
+        set
+        {
+            this.tanShortField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal totalY
+    {
+        get
+        {
+            return this.totalYField;
+        }
+        set
+        {
+            this.totalYField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal totalX
+    {
+        get
+        {
+            return this.totalXField;
+        }
+        set
+        {
+            this.totalXField = value;
+        }
+    }
+    /// <remarks/>
+    public decimal theta
+    {
+        get
+        {
+            return this.thetaField;
+        }
+        set
+        {
+            this.thetaField = value;
+        }
+    }
     /// <remarks/>
     public string Start
     {
@@ -906,7 +1133,7 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomSpiral
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsAlignmentProfile
 {
 
@@ -927,7 +1154,7 @@ public partial class LandXMLAlignmentsAlignmentProfile
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsAlignmentProfileProfAlign
 {
 
@@ -967,7 +1194,7 @@ public partial class LandXMLAlignmentsAlignmentProfileProfAlign
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
 {
 
@@ -1021,7 +1248,7 @@ public partial class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
 {
 
@@ -1075,7 +1302,7 @@ public partial class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsFeature
 {
 
@@ -1112,7 +1339,7 @@ public partial class LandXMLAlignmentsFeature
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsFeatureFeature
 {
 
@@ -1166,7 +1393,7 @@ public partial class LandXMLAlignmentsFeatureFeature
 }
 
 /// <remarks/>
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.0")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public partial class LandXMLAlignmentsFeatureFeatureProperty
 {
 
