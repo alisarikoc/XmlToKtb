@@ -70,6 +70,7 @@ namespace XmlToKtb
             bilgiLabel.ForeColor = rastgeleRenk;
         }
 
+        //TODO bunu kopyala
         private static string ktbIcerigiDuzenleyici(LandXML landXml)
         {
             var alignment = landXml.Alignments.Alignment;
@@ -265,6 +266,29 @@ namespace XmlToKtb
             ktbDosyasiniKaydet(_ktbIcerigi);
             _durum = Durumlar.Durum.Kaydedildi;
             gorunumuAyarla();
+        }
+
+        private void alnPrfKaydet_Click(object sender, EventArgs e)
+        {
+            ktbDosyasiniKaydet(_ktbIcerigi);
+            _durum = Durumlar.Durum.Kaydedildi;
+            gorunumuAyarla();
+        }
+
+        private void alnPrfDonusturButton_Click(object sender, EventArgs e)
+        {
+            var dialogResult = xmlOpenFileDialog.ShowDialog();
+
+            if (dialogResult == DialogResult.OK)
+            {
+                var serializer = new DosyaDeserializer();
+                var landXml = serializer.XmlDeserializer<LandXML>(xmlOpenFileDialog.FileName);
+
+                //TODO burası değişecek
+                _ktbIcerigi = ktbIcerigiDuzenleyici(landXml);
+                _durum = Durumlar.Durum.Donusturuldu;
+                gorunumuAyarla();
+            }
         }
     }
 }
