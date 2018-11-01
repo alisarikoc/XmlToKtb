@@ -350,6 +350,12 @@ namespace XmlToKtb
         {
             return Math.Round(Convert.ToDecimal(deger.ToString()), 4, MidpointRounding.AwayFromZero);
         }
+
+        private static string SifirDolgusu(decimal deger)
+        {
+            return Convert.ToInt32(deger*1000).ToString().PadLeft(16, '0');
+        }
+
         private static double Faktoryel(double faktor)
         {
             
