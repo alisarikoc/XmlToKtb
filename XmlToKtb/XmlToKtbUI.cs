@@ -105,7 +105,7 @@ namespace XmlToKtb
             }
 
             ktb.AppendLine("$SON");
-            
+
             ktb.AppendLine("$DUSEY");
 
             duseyBilgileriDoldur(alignment, ktb);
@@ -179,9 +179,63 @@ namespace XmlToKtb
         {
             bool saatYonuIse = spiral.rot == "ccw";
             var yon = saatYonuIse ? "-1" : "1";
-            var aKare = Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length;
+            var aKare = Convert.ToDouble(Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length);
+            var starty = (Convert.ToDouble(spiral.Start.Split()[1]));
+            var startx = (Convert.ToDouble(spiral.Start.Split()[0]));
+            var endy = (Convert.ToDouble(spiral.End.Split()[1]));
+            var endx = (Convert.ToDouble(spiral.End.Split()[0]));
+            var semt = Math.Atan2((endy - starty), (endx - startx));
+            if (semt < 0)
+            {
+                semt = semt + (2 * Math.PI);
+            }
+            var L1 = aKare / Convert.ToDouble(spiral.radiusStart);// Büyük yarıçap KÜÇÜK DEĞER
+            var L2 = aKare / Convert.ToDouble(spiral.radiusEnd);//Küçük yarıçap    BÜYÜK DEĞER
+            var sipkatsayi = Math.Sqrt(aKare);
+            double X1 = 0, X2 = 0, Y1 = 0, Y2 = 0;
 
-            ktb.AppendLine("SP " + guncelKm + " " + spiral.length + " " + aKare + " " + yon + " 1 " + spiral.Start.Split()[1] + " " + spiral.Start.Split()[0] + " " + spiral.PI.Split()[1] + " " + spiral.PI.Split()[0] + " 0 0");
+            for (int n = 1; n <= 4; n++)
+            {
+                int faktorx = 2 * n - 1;
+                int faktory = 2 * n - 2;
+                X1 = X1 + Math.Pow(-1, n - 1) * Math.Pow(L1, 4 * n - 1) / ((4 * n - 1) * (Faktoryel(faktorx)) * Math.Pow(sipkatsayi, (4 * n - 2)) * Math.Pow(2, (2 * n - 1)));
+                X2 = X2 + Math.Pow(-1, n - 1) * Math.Pow(L2, 4 * n - 1) / ((4 * n - 1) * (Faktoryel(faktorx)) * Math.Pow(sipkatsayi, (4 * n - 2)) * Math.Pow(2, (2 * n - 1)));
+            }
+            for (int n = 1; n <= 5; n++)
+            {
+                int faktorx = 2 * n - 1;
+                int faktory = 2 * n - 2;
+                Y1 = Y1 + Math.Pow(-1, n - 1) * Math.Pow(L1, 4 * n - 3) / ((4 * n - 3) * (Faktoryel(faktory)) * Math.Pow(sipkatsayi, (4 * n - 4)) * Math.Pow(2, (2 * n - 2)));
+                Y2 = Y2 + Math.Pow(-1, n - 1) * Math.Pow(L2, 4 * n - 3) / ((4 * n - 3) * (Faktoryel(faktory)) * Math.Pow(sipkatsayi, (4 * n - 4)) * Math.Pow(2, (2 * n - 2)));
+            }
+
+
+            double semt1, spiralEndY, spiralEndX, semt2, spiralStartY, spiralStartX;
+            
+            if (L2 > L1 && Y1 > Y2)
+            {
+                var kiris = Math.Sqrt(Math.Pow((endy - starty), 2) + Math.Pow((endx - startx), 2));
+                var ort_yaricap = (Convert.ToDouble(spiral.radiusStart) + Convert.ToDouble(spiral.radiusEnd)) / 2;
+                var semt3 = semt + (Math.PI - 2 * Math.Asin(kiris / 2 / ort_yaricap)) / 2 * Convert.ToInt32(yon);
+                var Ym = starty + Math.Sin(semt3) * ort_yaricap;
+                var Xm = startx + Math.Cos(semt3) * ort_yaricap;
+                ktb.AppendLine("AR " + guncelKm + " " + ort_yaricap + " " + yon + " 0 0 " + Ym + " " + Xm + " " + starty + " " + startx + " " + endy + " " + endx);
+                return guncelKm + spiral.length;
+            }
+            else
+            {
+                semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * (Convert.ToInt32(yon)) - (Convert.ToInt32(yon) * (Math.PI) / 2);
+                spiralEndY = Math.Sin(semt1) * X2 + endy;
+                spiralEndX = Math.Cos(semt1) * X2 + endx;
+                semt2 = semt1 - (Convert.ToInt32(yon) * (Math.PI) / 2);
+                spiralStartY = Math.Sin(semt2) * Y2 + spiralEndY;
+                spiralStartX = Math.Cos(semt2) * Y2 + spiralEndX;
+            }
+
+
+
+            //ktb.AppendLine(L1+" " + L2 + " " + sipkatsayi + " " + Y1 + " " + Y2 + "  " + X1 + " " + X2 + " " + semt*200/Math.PI + " " + semt1*200/Math.PI + " " + L2 + " 0");
+            ktb.AppendLine("SP " + guncelKm + " " + L2 + " " + aKare + " " + yon + " 1 " + spiralStartY + " " + spiralStartX + " " + spiralEndY + " " + spiralEndX + " " + L1 + " 0");
             return guncelKm + spiral.length;
         }
 
@@ -189,9 +243,61 @@ namespace XmlToKtb
         {
             bool saatYonuIse = spiral.rot == "ccw";
             var yon = saatYonuIse ? "1" : "-1";
-            var aKare = Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length;
+            var aKare = Convert.ToDouble(Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length);
+            var starty = (Convert.ToDouble(spiral.Start.Split()[1]));
+            var startx = (Convert.ToDouble(spiral.Start.Split()[0]));
+            var endy = (Convert.ToDouble(spiral.End.Split()[1]));
+            var endx = (Convert.ToDouble(spiral.End.Split()[0]));
+            var semt = Math.Atan2((endy - starty), (endx - startx));
+            if (semt < 0)
+            {
+                semt = semt + (2 * Math.PI);
+            }
 
-            ktb.AppendLine("SP " + guncelKm + " " + spiral.length + " " + aKare + " " + yon + " -1 " + spiral.End.Split()[1] + " " + spiral.End.Split()[0] + " " + spiral.PI.Split()[1] + " " + spiral.PI.Split()[0] + " 0 0");
+            var L1 = aKare / Convert.ToDouble(spiral.radiusStart);// Küçük yarıçap BÜYÜK DEĞER
+            var L2 = aKare / Convert.ToDouble(spiral.radiusEnd);//Büyük yarıçap    KÜÇÜK DEĞER
+            var sipkatsayi = Math.Sqrt(aKare);
+            double X1 = 0, X2 = 0, Y1 = 0, Y2 = 0;
+            for (int n = 1; n <= 4; n++)
+            {
+                int faktorx = 2 * n - 1;
+                int faktory = 2 * n - 2;
+                X1 = X1 + Math.Pow(-1, n - 1) * Math.Pow(L1, 4 * n - 1) / ((4 * n - 1) * (Faktoryel(faktorx)) * Math.Pow(sipkatsayi, (4 * n - 2)) * Math.Pow(2, (2 * n - 1)));
+                X2 = X2 + Math.Pow(-1, n - 1) * Math.Pow(L2, 4 * n - 1) / ((4 * n - 1) * (Faktoryel(faktorx)) * Math.Pow(sipkatsayi, (4 * n - 2)) * Math.Pow(2, (2 * n - 1)));
+            }
+            for (int n = 1; n <= 5; n++)
+            {
+                int faktorx = 2 * n - 1;
+                int faktory = 2 * n - 2;
+                Y1 = Y1 + Math.Pow(-1, n - 1) * Math.Pow(L1, 4 * n - 3) / ((4 * n - 3) * (Faktoryel(faktory)) * Math.Pow(sipkatsayi, (4 * n - 4)) * Math.Pow(2, (2 * n - 2)));
+                Y2 = Y2 + Math.Pow(-1, n - 1) * Math.Pow(L2, 4 * n - 3) / ((4 * n - 3) * (Faktoryel(faktory)) * Math.Pow(sipkatsayi, (4 * n - 4)) * Math.Pow(2, (2 * n - 2)));
+            }
+            double semt1;
+            //var semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * Convert.ToInt32(yon) + Math.PI / 2 * Convert.ToInt32(yon);
+            if (L1 > L2 && Y2 > Y1)
+            {
+                var kiris = Math.Sqrt(Math.Pow((endy - starty), 2) + Math.Pow((endx - startx), 2));
+                var ort_yaricap = (Convert.ToDouble(spiral.radiusStart) + Convert.ToDouble(spiral.radiusEnd)) / 2;
+                var semt2 = semt - (Math.PI- 2*Math.Asin(kiris/2/ort_yaricap))/2 * Convert.ToInt32(yon);
+                var Ym = starty +Math.Sin(semt2) * ort_yaricap;
+                var Xm = startx + Math.Cos(semt2) * ort_yaricap;
+
+                ktb.AppendLine("AR " + guncelKm + " " + ort_yaricap + " " + Convert.ToInt32(yon)*-1 + " 0 0 " + Ym + " " + Xm + " " + starty + " " + startx + " " + endy + " " + endx);
+                return guncelKm + spiral.length;
+            }
+            else
+            {
+                semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * Convert.ToInt32(yon) + Math.PI / 2 * Convert.ToInt32(yon);
+                var spiralStartY = Math.Sin(semt1) * X1 + starty;
+                var spiralStartX = Math.Cos(semt1) * X1 + startx;
+                var spiralEndY = Math.Sin(semt1) * X2 + endy + Math.Sin(semt1 + (Convert.ToInt32(yon) * (-1) * (Math.PI) / 2)) * Y2;
+                var spiralEndX = Math.Cos(semt1) * X2 + endx + Math.Cos(semt1 + (Convert.ToInt32(yon) * (-1) * (Math.PI) / 2)) * Y2;
+
+                ktb.AppendLine("SP " + guncelKm + " " + L1 + " " + aKare + " " + yon + " -1 " + spiralEndY + " " + spiralEndX + " " + spiralStartY + " " + spiralStartX + " " + L2 + " 0");
+                //ktb.AppendLine(L1+" " + L2 + " " + sipkatsayi + " " + Y1 + " " + Y2 + "  " + X1 + " " + X2 + " " + semt*200/Math.PI + " " + semt1*200/Math.PI + " " + L2 + " 0");
+            }
+
+
             return guncelKm + spiral.length;
         }
 
@@ -244,7 +350,17 @@ namespace XmlToKtb
         {
             return Math.Round(Convert.ToDecimal(deger.ToString()), 4, MidpointRounding.AwayFromZero);
         }
-
+        private static double Faktoryel(double faktor)
+        {
+            
+            double  sonuc= 1;
+            for (int i = 1; i <= faktor; i++)
+            {
+                sonuc = sonuc * i;
+            }
+            if (faktor == 0) sonuc = 1;
+            return sonuc;
+        }
 
         private static void ktbDosyasiniKaydet(string content)
         {
@@ -267,7 +383,7 @@ namespace XmlToKtb
             _durum = Durumlar.Durum.Kaydedildi;
             gorunumuAyarla();
         }
-
+        
         private void alnPrfKaydet_Click(object sender, EventArgs e)
         {
             ktbDosyasiniKaydet(_ktbIcerigi);
