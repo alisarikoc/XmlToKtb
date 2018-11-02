@@ -159,149 +159,35 @@ namespace XmlToKtb
             bool saatYonuIse = spiral.rot == "ccw";
             var yon = saatYonuIse ? "-1" : "1";
             var aKare = Convert.ToDecimal(spiral.radiusEnd) * spiral.length;
-
             ktb.AppendLine("SP " + guncelKm + " " + spiral.length + " " + aKare + " " + yon + " 1 " + spiral.Start.Split()[1] + " " + spiral.Start.Split()[0] + " " + spiral.PI.Split()[1] + " " + spiral.PI.Split()[0] + " 0 0");
-
             return guncelKm + spiral.length;
         }
-
         private static decimal SpiralOut(StringBuilder ktb, LandXMLAlignmentsAlignmentCoordGeomSpiral spiral, decimal guncelKm)
         {
             bool saatYonuIse = spiral.rot == "ccw";
             var yon = saatYonuIse ? "1" : "-1";
             var aKare = Convert.ToDecimal(spiral.radiusStart) * spiral.length;
-
             ktb.AppendLine("SP " + guncelKm + " " + spiral.length + " " + aKare + " " + yon + " -1 " + spiral.End.Split()[1] + " " + spiral.End.Split()[0] + " " + spiral.PI.Split()[1] + " " + spiral.PI.Split()[0] + " 0 0");
             return guncelKm + spiral.length;
         }
-
         private static decimal CurveIn(StringBuilder ktb, LandXMLAlignmentsAlignmentCoordGeomSpiral spiral, decimal guncelKm)
         {
             bool saatYonuIse = spiral.rot == "ccw";
             var yon = saatYonuIse ? "-1" : "1";
-            var aKare = Convert.ToDouble(Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length);
-            var starty = (Convert.ToDouble(spiral.Start.Split()[1]));
-            var startx = (Convert.ToDouble(spiral.Start.Split()[0]));
-            var endy = (Convert.ToDouble(spiral.End.Split()[1]));
-            var endx = (Convert.ToDouble(spiral.End.Split()[0]));
-            var semt = Math.Atan2((endy - starty), (endx - startx));
-            if (semt < 0)
-            {
-                semt = semt + (2 * Math.PI);
-            }
-            var L1 = aKare / Convert.ToDouble(spiral.radiusStart);// Büyük yarıçap KÜÇÜK DEĞER
-            var L2 = aKare / Convert.ToDouble(spiral.radiusEnd);//Küçük yarıçap    BÜYÜK DEĞER
-            var sipkatsayi = Math.Sqrt(aKare);
-            double X1 = 0, X2 = 0, Y1 = 0, Y2 = 0;
+            var aKare = Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length;
 
-            for (int n = 1; n <= 4; n++)
-            {
-                int faktorx = 2 * n - 1;
-                int faktory = 2 * n - 2;
-                X1 = X1 + Math.Pow(-1, n - 1) * Math.Pow(L1, 4 * n - 1) / ((4 * n - 1) * (Faktoryel(faktorx)) * Math.Pow(sipkatsayi, (4 * n - 2)) * Math.Pow(2, (2 * n - 1)));
-                X2 = X2 + Math.Pow(-1, n - 1) * Math.Pow(L2, 4 * n - 1) / ((4 * n - 1) * (Faktoryel(faktorx)) * Math.Pow(sipkatsayi, (4 * n - 2)) * Math.Pow(2, (2 * n - 1)));
-            }
-            for (int n = 1; n <= 5; n++)
-            {
-                int faktorx = 2 * n - 1;
-                int faktory = 2 * n - 2;
-                Y1 = Y1 + Math.Pow(-1, n - 1) * Math.Pow(L1, 4 * n - 3) / ((4 * n - 3) * (Faktoryel(faktory)) * Math.Pow(sipkatsayi, (4 * n - 4)) * Math.Pow(2, (2 * n - 2)));
-                Y2 = Y2 + Math.Pow(-1, n - 1) * Math.Pow(L2, 4 * n - 3) / ((4 * n - 3) * (Faktoryel(faktory)) * Math.Pow(sipkatsayi, (4 * n - 4)) * Math.Pow(2, (2 * n - 2)));
-            }
-
-
-            double semt1, spiralEndY, spiralEndX, semt2, spiralStartY, spiralStartX;
-            
-            if (L2 > L1 && Y1 > Y2)
-            {
-                var kiris = Math.Sqrt(Math.Pow((endy - starty), 2) + Math.Pow((endx - startx), 2));
-                var ort_yaricap = (Convert.ToDouble(spiral.radiusStart) + Convert.ToDouble(spiral.radiusEnd)) / 2;
-                var semt3 = semt + (Math.PI - 2 * Math.Asin(kiris / 2 / ort_yaricap)) / 2 * Convert.ToInt32(yon);
-                var Ym = starty + Math.Sin(semt3) * ort_yaricap;
-                var Xm = startx + Math.Cos(semt3) * ort_yaricap;
-                ktb.AppendLine("AR " + guncelKm + " " + ort_yaricap + " " + yon + " 0 0 " + Ym + " " + Xm + " " + starty + " " + startx + " " + endy + " " + endx);
-                return guncelKm + spiral.length;
-            }
-            else
-            {
-                semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * (Convert.ToInt32(yon)) - (Convert.ToInt32(yon) * (Math.PI) / 2);
-                spiralEndY = Math.Sin(semt1) * X2 + endy;
-                spiralEndX = Math.Cos(semt1) * X2 + endx;
-                semt2 = semt1 - (Convert.ToInt32(yon) * (Math.PI) / 2);
-                spiralStartY = Math.Sin(semt2) * Y2 + spiralEndY;
-                spiralStartX = Math.Cos(semt2) * Y2 + spiralEndX;
-            }
-
-
-
-            //ktb.AppendLine(L1+" " + L2 + " " + sipkatsayi + " " + Y1 + " " + Y2 + "  " + X1 + " " + X2 + " " + semt*200/Math.PI + " " + semt1*200/Math.PI + " " + L2 + " 0");
-            ktb.AppendLine("SP " + guncelKm + " " + L2 + " " + aKare + " " + yon + " 1 " + spiralStartY + " " + spiralStartX + " " + spiralEndY + " " + spiralEndX + " " + L1 + " 0");
+            ktb.AppendLine("SP " + guncelKm + " " + spiral.length + " " + aKare + " " + yon + " 1 " + spiral.Start.Split()[1] + " " + spiral.Start.Split()[0] + " " + spiral.PI.Split()[1] + " " + spiral.PI.Split()[0] + " 0 0");
             return guncelKm + spiral.length;
         }
-
         private static decimal CurveOut(StringBuilder ktb, LandXMLAlignmentsAlignmentCoordGeomSpiral spiral, decimal guncelKm)
         {
             bool saatYonuIse = spiral.rot == "ccw";
             var yon = saatYonuIse ? "1" : "-1";
-            var aKare = Convert.ToDouble(Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length);
-            var starty = (Convert.ToDouble(spiral.Start.Split()[1]));
-            var startx = (Convert.ToDouble(spiral.Start.Split()[0]));
-            var endy = (Convert.ToDouble(spiral.End.Split()[1]));
-            var endx = (Convert.ToDouble(spiral.End.Split()[0]));
-            var semt = Math.Atan2((endy - starty), (endx - startx));
-            if (semt < 0)
-            {
-                semt = semt + (2 * Math.PI);
-            }
+            var aKare = Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length;
 
-            var L1 = aKare / Convert.ToDouble(spiral.radiusStart);// Küçük yarıçap BÜYÜK DEĞER
-            var L2 = aKare / Convert.ToDouble(spiral.radiusEnd);//Büyük yarıçap    KÜÇÜK DEĞER
-            var sipkatsayi = Math.Sqrt(aKare);
-            double X1 = 0, X2 = 0, Y1 = 0, Y2 = 0;
-            for (int n = 1; n <= 4; n++)
-            {
-                int faktorx = 2 * n - 1;
-                int faktory = 2 * n - 2;
-                X1 = X1 + Math.Pow(-1, n - 1) * Math.Pow(L1, 4 * n - 1) / ((4 * n - 1) * (Faktoryel(faktorx)) * Math.Pow(sipkatsayi, (4 * n - 2)) * Math.Pow(2, (2 * n - 1)));
-                X2 = X2 + Math.Pow(-1, n - 1) * Math.Pow(L2, 4 * n - 1) / ((4 * n - 1) * (Faktoryel(faktorx)) * Math.Pow(sipkatsayi, (4 * n - 2)) * Math.Pow(2, (2 * n - 1)));
-            }
-            for (int n = 1; n <= 5; n++)
-            {
-                int faktorx = 2 * n - 1;
-                int faktory = 2 * n - 2;
-                Y1 = Y1 + Math.Pow(-1, n - 1) * Math.Pow(L1, 4 * n - 3) / ((4 * n - 3) * (Faktoryel(faktory)) * Math.Pow(sipkatsayi, (4 * n - 4)) * Math.Pow(2, (2 * n - 2)));
-                Y2 = Y2 + Math.Pow(-1, n - 1) * Math.Pow(L2, 4 * n - 3) / ((4 * n - 3) * (Faktoryel(faktory)) * Math.Pow(sipkatsayi, (4 * n - 4)) * Math.Pow(2, (2 * n - 2)));
-            }
-            double semt1;
-            //var semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * Convert.ToInt32(yon) + Math.PI / 2 * Convert.ToInt32(yon);
-            if (L1 > L2 && Y2 > Y1)
-            {
-                var kiris = Math.Sqrt(Math.Pow((endy - starty), 2) + Math.Pow((endx - startx), 2));
-                var ort_yaricap = (Convert.ToDouble(spiral.radiusStart) + Convert.ToDouble(spiral.radiusEnd)) / 2;
-                var semt2 = semt - (Math.PI- 2*Math.Asin(kiris/2/ort_yaricap))/2 * Convert.ToInt32(yon);
-                var Ym = starty +Math.Sin(semt2) * ort_yaricap;
-                var Xm = startx + Math.Cos(semt2) * ort_yaricap;
-
-                ktb.AppendLine("AR " + guncelKm + " " + ort_yaricap + " " + Convert.ToInt32(yon)*-1 + " 0 0 " + Ym + " " + Xm + " " + starty + " " + startx + " " + endy + " " + endx);
-                return guncelKm + spiral.length;
-            }
-            else
-            {
-                semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * Convert.ToInt32(yon) + Math.PI / 2 * Convert.ToInt32(yon);
-                var spiralStartY = Math.Sin(semt1) * X1 + starty;
-                var spiralStartX = Math.Cos(semt1) * X1 + startx;
-                var spiralEndY = Math.Sin(semt1) * X2 + endy + Math.Sin(semt1 + (Convert.ToInt32(yon) * (-1) * (Math.PI) / 2)) * Y2;
-                var spiralEndX = Math.Cos(semt1) * X2 + endx + Math.Cos(semt1 + (Convert.ToInt32(yon) * (-1) * (Math.PI) / 2)) * Y2;
-
-                ktb.AppendLine("SP " + guncelKm + " " + L1 + " " + aKare + " " + yon + " -1 " + spiralEndY + " " + spiralEndX + " " + spiralStartY + " " + spiralStartX + " " + L2 + " 0");
-                //ktb.AppendLine(L1+" " + L2 + " " + sipkatsayi + " " + Y1 + " " + Y2 + "  " + X1 + " " + X2 + " " + semt*200/Math.PI + " " + semt1*200/Math.PI + " " + L2 + " 0");
-            }
-
-
+            ktb.AppendLine("SP " + guncelKm + " " + spiral.length + " " + aKare + " " + yon + " -1 " + spiral.End.Split()[1] + " " + spiral.End.Split()[0] + " " + spiral.PI.Split()[1] + " " + spiral.PI.Split()[0] + " 0 0");
             return guncelKm + spiral.length;
         }
-
-
         private static void duseyBilgileriDoldur(LandXMLAlignmentsAlignment alignment, StringBuilder sb)
         {
             if (alignment.Profile == null) { return; }
@@ -350,24 +236,10 @@ namespace XmlToKtb
         {
             return Math.Round(Convert.ToDecimal(deger.ToString()), 4, MidpointRounding.AwayFromZero);
         }
-
         private static string SifirDolgusu(decimal deger)
         {
             return Convert.ToInt32(deger*1000).ToString().PadLeft(16, '0');
         }
-
-        private static double Faktoryel(double faktor)
-        {
-            
-            double  sonuc= 1;
-            for (int i = 1; i <= faktor; i++)
-            {
-                sonuc = sonuc * i;
-            }
-            if (faktor == 0) sonuc = 1;
-            return sonuc;
-        }
-
         private static void ktbDosyasiniKaydet(string content)
         {
             var saveKtbfile = new SaveFileDialog
@@ -388,15 +260,13 @@ namespace XmlToKtb
             ktbDosyasiniKaydet(_ktbIcerigi);
             _durum = Durumlar.Durum.Kaydedildi;
             gorunumuAyarla();
-        }
-        
+        }        
         private void alnPrfKaydet_Click(object sender, EventArgs e)
         {
             ktbDosyasiniKaydet(_ktbIcerigi);
             _durum = Durumlar.Durum.Kaydedildi;
             gorunumuAyarla();
         }
-
         private void alnPrfDonusturButton_Click(object sender, EventArgs e)
         {
             var dialogResult = xmlOpenFileDialog.ShowDialog();
@@ -412,5 +282,268 @@ namespace XmlToKtb
                 gorunumuAyarla();
             }
         }
+        //TODO bunu kopyala
+        private static string alnIcerigiDuzenleyici(LandXML landXml)
+        {
+            var alignment = landXml.Alignments.Alignment;
+
+            var aln = new StringBuilder("*41....+"+"00000000001_CRT1"+" 42....+00000000HZALIGNM 43....+00000000STACOORD").AppendLine();//00000000001_CRT1 yazısı kayıtta yazılan dosya isimi olacak ve başına sıfır koyarak 16 hane olacak
+            var baslangicKM = alignment.staStart;
+            var guncelKM = baslangicKM;
+            aln.AppendLine(baslangicKM.ToString(CultureInfo.InvariantCulture));
+            aln.AppendLine("$SON"); //son noktanın koordinatı EOP olarak yazılacak
+
+            foreach (var item in alignment.CoordGeom.Items)
+            {
+                switch (item)
+                {
+                    case LandXMLAlignmentsAlignmentCoordGeomLine _:
+                        {
+                            guncelKM = LineYazdirALN(aln, (LandXMLAlignmentsAlignmentCoordGeomLine)item, guncelKM);
+                            break;
+                        }
+                    case LandXMLAlignmentsAlignmentCoordGeomCurve _:
+                        {
+                            guncelKM = CurveYazdirALN(aln, (LandXMLAlignmentsAlignmentCoordGeomCurve)item, guncelKM);
+                            break;
+                        }
+                    case LandXMLAlignmentsAlignmentCoordGeomSpiral _:
+                        {
+                            guncelKM = SpiralYazdirALN(aln, (LandXMLAlignmentsAlignmentCoordGeomSpiral)item, guncelKM);
+                            break;
+                        }
+                }
+            }
+            return aln.ToString();
+        }
+        private static decimal LineYazdirALN(StringBuilder aln, LandXMLAlignmentsAlignmentCoordGeomLine line, decimal guncelKm)
+        {
+            aln.AppendLine("*11....+" + SifirDolgusu(guncelKm) + " 71....+00000000STRAIGHT 72....+0000000000000NON 73....+0000000000000000" + " 81..10+"+SifirDolgusu(Convert.ToDecimal(line.Start.Split()[1])) + " 82..10+" + SifirDolgusu(Convert.ToDecimal(line.Start.Split()[0])));
+
+            return guncelKm + line.length;
+        }
+        private static decimal CurveYazdirALN(StringBuilder aln, LandXMLAlignmentsAlignmentCoordGeomCurve curve, decimal guncelKm)
+        {
+            var yon = curve.rot == "ccw" ? "-1" : "1";
+            aln.AppendLine("*11....+" + SifirDolgusu(guncelKm) + " 71....+00000000000CURVE" + " 72...."+yon+SifirDolgusu(Convert.ToDecimal(curve.radius))+ " 73....+0000000000000000"+ " 81..10+" + SifirDolgusu(Convert.ToDecimal(curve.Start.Split()[1])) + " 82..10+" + SifirDolgusu(Convert.ToDecimal(curve.Start.Split()[0])));
+            return guncelKm + curve.length;
+        }
+        private static decimal SpiralYazdirALN(StringBuilder aln, LandXMLAlignmentsAlignmentCoordGeomSpiral spiral, decimal guncelKm)
+        {
+            if (spiral.radiusStart.ToUpper() == "INF")
+            {
+                var yon = spiral.rot == "ccw" ? "-1" : "1";
+                var aKare = Convert.ToDecimal(spiral.radiusEnd) * spiral.length;
+                aln.AppendLine("*11....+" + SifirDolgusu(guncelKm) + " 71....+0000000000SPIRIN" + " 72...." + yon + SifirDolgusu(Convert.ToDecimal(spiral.radiusEnd))+ " 73....+ 0000000000000000"+ " 81..10 + " + SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10 + " + SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
+             }
+            else if (spiral.radiusEnd.ToUpper() == "INF")
+            {
+                var yon = spiral.rot == "ccw" ? "-1" : "1";
+                var aKare = Convert.ToDecimal(spiral.radiusStart) * spiral.length;
+                aln.AppendLine("*11....+" + SifirDolgusu(guncelKm) + " 71....+000000000SPIROUT" + " 72...." + yon + SifirDolgusu(Convert.ToDecimal(spiral.radiusStart)) + " 73....+ 0000000000000000" + " 81..10 + " + SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10 + " + SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
+            }
+            else
+            {
+                if (Convert.ToDecimal(spiral.radiusStart) >= Convert.ToDecimal(spiral.radiusEnd))
+                {
+                    var yon = spiral.rot == "ccw" ? "-1" : "1";
+                    var aKare = Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length;
+                    aln.AppendLine("*11....+" + SifirDolgusu(guncelKm) + " 71....+000000000CURVEIN" + " 72...." + yon + SifirDolgusu(Convert.ToDecimal(spiral.radiusStart)) + " 73....+ 0000000000000000" + " 74....+" + SifirDolgusu(Convert.ToDecimal(spiral.radiusEnd)) + " 81..10 + " + SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10 + " + SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
+                }
+                else
+                {
+                    var yon = spiral.rot == "ccw" ? "-1" : "1";
+                    var aKare = Math.Abs(Convert.ToDecimal(spiral.radiusStart) * Convert.ToDecimal(spiral.radiusEnd) / (Convert.ToDecimal(spiral.radiusStart) - Convert.ToDecimal(spiral.radiusEnd))) * spiral.length;
+                    aln.AppendLine("*11....+" + SifirDolgusu(guncelKm) + " 71....+00000000CURVEOUT" + " 72...." + yon + SifirDolgusu(Convert.ToDecimal(spiral.radiusStart)) + " 73....+ 0000000000000000" + " 74....+" + SifirDolgusu(Convert.ToDecimal(spiral.radiusEnd)) + " 81..10 + " + SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10 + " + SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
+
+                }
+            }
+            // aln.AppendLine("*11....+" + SifirDolgusu(guncelKm) + " 71....+0000000000000EOP 72....+0000000000000NON 73....+0000000000000000" + " 81..10+"+SifirDolgusu(Convert.ToDecimal(line.Start.Split()[1])) + " 82..10+" + SifirDolgusu(Convert.ToDecimal(line.Start.Split()[0])));
+            // SifirDolgusu(guncelKm)                                   yerine ; guncelKm+ sonobjenin length'i 
+            // SifirDolgusu(Convert.ToDecimal(line.Start.Split()[1]))   yerine ; son objenin End.Split()[1] 'i
+            // SifirDolgusu(Convert.ToDecimal(line.Start.Split()[0]))   yerine ; son objenin End.Split()[0] 'ı son satır olarak yazılmarı
+
+
+
+            return guncelKm + spiral.length;
+        }
+
+        private static void PRFicerigiDoldur(LandXMLAlignmentsAlignment alignment, StringBuilder prf)
+        {
+            if (alignment.Profile == null) { return; }
+            var prf = new StringBuilder("*41....+0000000000" + "1_CRT1" + " 42....+000000000VALIGNM 43....+00000000STACOORD").AppendLine();//1-CTR1 dosya ismi olacak
+            var profAlign = alignment.Profile.ProfAlign;
+            var profAlignItems = alignment.Profile.ProfAlign.Items.ToList();
+            foreach (var item in profAlign.Items)
+            {
+                object oncekiItem;
+                object sonrakiItem;
+                if (profAlignItems.IndexOf(item) == 0)//ilk item
+                {
+                    oncekiItem = null;
+                    sonrakiItem = profAlignItems[profAlignItems.IndexOf(item) + 1];
+                }
+                else if (profAlignItems.IndexOf(item) == profAlignItems.Count - 1)//son item
+                {
+                    oncekiItem = profAlignItems[profAlignItems.IndexOf(item) - 1];
+                    sonrakiItem = null;
+                }
+                else//aradaki itemlar
+
+                {
+
+                    oncekiItem = profAlignItems[profAlignItems.IndexOf(item) - 1];
+
+                    sonrakiItem = profAlignItems[profAlignItems.IndexOf(item) + 1];
+
+                }
+
+                bool ilkItemIse = oncekiItem == null;
+                bool sonItemIse = sonrakiItem == null;
+
+                var detaylar = GetirProfilAlignDetaylar(item);
+                var oncekiDetaylar = ilkItemIse ? new decimal[] { 0, 0, 0 } : GetirProfilAlignDetaylar(oncekiItem);
+                var sonrakiDetaylar = sonItemIse ? new decimal[] { 0, 0, 0 } : GetirProfilAlignDetaylar(sonrakiItem);
+                decimal oncekiKM = oncekiDetaylar[0];
+                decimal oncekiKOT = oncekiDetaylar[1];
+                decimal oncekiLength = oncekiDetaylar[2];
+
+                decimal sonrakiKM = sonrakiDetaylar[0];
+                decimal sonrakiKOT = sonrakiDetaylar[1];
+                decimal sonrakilength = sonrakiDetaylar[2];
+
+                decimal KM = detaylar[0];
+                decimal KOT = detaylar[1];
+                decimal Length = detaylar[2];
+                //TODO Ali Sarıkoç hesaplamalarını burada yap onceki üç ve sonraki üç değer yukarıda oluşturdm onları kullanarak hesaplama yap.
+                if (ilkItemIse)
+
+                {
+                    prf.AppendLine("*11....+"+ SifirDolgusu(KM) + " 71....+" + "00000000STRAIGHT 72....+" + "0000000000000NON 83..10+" + SifirDolgusu(KOT));
+                }
+                else if (sonItemIse)
+
+                {
+                    prf.AppendLine("*11....+" + SifirDolgusu(KM) + " 71....+0000000000000EOP 72....+" + "0000000000000NON 83..10+" + SifirDolgusu(KOT));
+                }
+                else
+
+                {
+                    var g1 = (KOT - oncekiKOT) / (KM - oncekiKM);
+                    var g2 = (sonrakiKOT - KOT) / (sonrakiKM - KM);
+                    if (Math.Abs(g1-g2) > 0.001m )
+                    {
+                        KM = KM - Length / 2;
+                        KOT=KOT-(g1*Length/2);
+                        if (Length==0)
+                        {
+                            prf.AppendLine("*11....+" + SifirDolgusu(KM) + " 71....+" + "00000000STRAIGHT 72....+" + "0000000000000NON 83..10+" + SifirDolgusu(KOT));
+                        }
+                        else if(detaylar[3]==1)
+                        {
+                            var K100 = 100*Length / Math.Abs(g1 - g2);
+                            prf.AppendLine("*11....+" + SifirDolgusu(KM) + " 71....+" + "00000000PARABOLA 72....+" + SifirDolgusu(K100)+" 83..10+" + SifirDolgusu(KOT));
+                        }
+                        else if(detaylar[3]==2)
+                        {
+                            prf.AppendLine("*11....+" + SifirDolgusu(KM) + " 71....+" + "00000000000CURVE 72....+" + SifirDolgusu(detaylar[4]) + " 83..10+" + SifirDolgusu(KOT));
+                        }
+                    }
+
+
+                }
+               // prf.AppendLine(Ilk + "  " + Ikinci + "  " + length + "  0");//TODO Ali Sarıkoç Burayı hesapladıktan sonra hesaplananlarla güncelle
+            }
+            return prf.ToString();
+        }
+
+        private static decimal[] GetirProfilAlignDetaylar(object item)
+
+        {
+
+            var detaylar = new decimal[3];
+
+
+
+            switch (item)
+
+            {
+
+                case string _:
+
+                    {
+
+                        var ikiDeger = item.ToString().Split();
+
+                        detaylar[0] = yuvarla(ikiDeger[0]);
+
+                        detaylar[1] = yuvarla(ikiDeger[1]);
+
+                        detaylar[2] = 0m;
+
+                        //sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  0  0");
+
+
+
+                        break;
+
+                    }
+
+                case LandXMLAlignmentsAlignmentProfileProfAlignParaCurve _:
+
+                    {
+
+                        var paraCurve = (LandXMLAlignmentsAlignmentProfileProfAlignParaCurve)item;
+
+                        var ikiDeger = paraCurve.Value.Split();
+
+                        detaylar[0] = yuvarla(ikiDeger[0]);
+
+                        detaylar[1] = yuvarla(ikiDeger[1]);
+
+                        detaylar[2] = yuvarla(paraCurve.length);
+                        detaylar[3] = 1m;
+
+                        //sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
+
+                        break;
+
+                    }
+
+                case LandXMLAlignmentsAlignmentProfileProfAlignCircCurve _:
+
+                    {
+
+                        var circCurve = (LandXMLAlignmentsAlignmentProfileProfAlignCircCurve)item;
+
+                        var ikiDeger = circCurve.Value.Split();
+
+
+
+                        detaylar[0] = yuvarla(ikiDeger[0]);
+
+                        detaylar[1] = yuvarla(ikiDeger[1]);
+
+                        detaylar[2] = yuvarla(circCurve.length);
+                        detaylar[3] = 2m;
+                        detaylar[4] = yuvarla(circCurve.radius);
+
+                        //sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
+
+                        break;
+
+                    }
+
+            }
+
+
+
+            return detaylar;
+
+        }
+
+
+
     }
+    
 }
