@@ -85,33 +85,32 @@ namespace XmlToKtb
         }
         private static decimal CurveYazdirALN(StringBuilder aln, LandXMLAlignmentsAlignmentCoordGeomCurve curve, decimal guncelKm)
         {
-            var yon = curve.rot == "ccw" ? "-1" : "1";
+            var yon = curve.rot == "ccw" ? "-" : "+";
             aln.AppendLine("*11....+" + Yardimci.SifirDolgusu(guncelKm) + " 71....+00000000000CURVE" + " 72...." + yon + Yardimci.SifirDolgusu(Convert.ToDecimal(curve.radius)) + " 73....+0000000000000000" + " 81..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(curve.Start.Split()[1])) + " 82..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(curve.Start.Split()[0])));
             return guncelKm + curve.length;
         }
         private static decimal SpiralYazdirALN(StringBuilder aln, LandXMLAlignmentsAlignmentCoordGeomSpiral spiral, decimal guncelKm)
         {
+            var yon = spiral.rot == "ccw" ? "-" : "+";
             if (spiral.radiusStart.ToUpper() == "INF")
             {
-                var yon = spiral.rot == "ccw" ? "-1" : "1";
-                aln.AppendLine("*11....+" + Yardimci.SifirDolgusu(guncelKm) + " 71....+0000000000SPIRIN" + " 72...." + yon + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusEnd)) + " 73....+ 0000000000000000" + " 81..10 + " + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10 + " + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
+                var a = Math.Sqrt(Convert.ToDouble(Convert.ToDecimal(spiral.radiusEnd) * spiral.length));
+                aln.AppendLine("*11....+" + Yardimci.SifirDolgusu(guncelKm) + " 71....+0000000000SPIRIN" + " 72...." + yon + Yardimci.SifirDolgusu(a) + " 73....+0000000000000000" + " 81..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
             }
             else if (spiral.radiusEnd.ToUpper() == "INF")
             {
-                var yon = spiral.rot == "ccw" ? "-1" : "1";
-                aln.AppendLine("*11....+" + Yardimci.SifirDolgusu(guncelKm) + " 71....+000000000SPIROUT" + " 72...." + yon + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusStart)) + " 73....+ 0000000000000000" + " 81..10 + " + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10 + " + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
+                var a = Math.Sqrt(Convert.ToDouble(Convert.ToDecimal(spiral.radiusStart) * spiral.length));
+                aln.AppendLine("*11....+" + Yardimci.SifirDolgusu(guncelKm) + " 71....+000000000SPIROUT" + " 72...." + yon + Yardimci.SifirDolgusu(a) + " 73....+0000000000000000" + " 81..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
             }
             else
             {
                 if (Convert.ToDecimal(spiral.radiusStart) >= Convert.ToDecimal(spiral.radiusEnd))
                 {
-                    var yon = spiral.rot == "ccw" ? "-1" : "1";
-                    aln.AppendLine("*11....+" + Yardimci.SifirDolgusu(guncelKm) + " 71....+000000000CURVEIN" + " 72...." + yon + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusStart)) + " 73....+ 0000000000000000" + " 74....+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusEnd)) + " 81..10 + " + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10 + " + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
+                    aln.AppendLine("*11....+" + Yardimci.SifirDolgusu(guncelKm) + " 71....+000000000CURVEIN" + " 72...." + yon + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusStart)) + " 73....+0000000000000000" + " 74...." + yon + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusEnd)) + " 81..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
                 }
                 else
                 {
-                    var yon = spiral.rot == "ccw" ? "-1" : "1";
-                    aln.AppendLine("*11....+" + Yardimci.SifirDolgusu(guncelKm) + " 71....+00000000CURVEOUT" + " 72...." + yon + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusStart)) + " 73....+ 0000000000000000" + " 74....+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusEnd)) + " 81..10 + " + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10 + " + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
+                    aln.AppendLine("*11....+" + Yardimci.SifirDolgusu(guncelKm) + " 71....+00000000CURVEOUT" + " 72...." + yon + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusStart)) + " 73....+0000000000000000" + " 74...." + yon + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.radiusEnd)) + " 81..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[1])) + " 82..10+" + Yardimci.SifirDolgusu(Convert.ToDecimal(spiral.Start.Split()[0])));
                 }
             }
 

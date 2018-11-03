@@ -10,7 +10,7 @@ namespace Common.Packages
 
         public decimal Length { get; set; }
 
-        public decimal Decimal { get; set; }
+        public decimal Radius { get; set; }
 
         public ProfileAlignTip ProfilAlignTip { get; set; }
     }

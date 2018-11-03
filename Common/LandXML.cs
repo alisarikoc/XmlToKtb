@@ -1,11 +1,16 @@
 ﻿
 // NOTE: Generated code may require at least .NET Framework 4.5 or .NET Core/Standard 2.0.
+
+using System;
+using System.ComponentModel;
+using System.Xml.Serialization;
+
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-[System.Xml.Serialization.XmlRootAttribute(Namespace = "http://www.landxml.org/schema/LandXML-1.2", IsNullable = false)]
-public partial class LandXML
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlRoot(Namespace = "http://www.landxml.org/schema/LandXML-1.2", IsNullable = false)]
+public class LandXML
 {
 
     private LandXMLUnits unitsField;
@@ -16,9 +21,9 @@ public partial class LandXML
 
     private LandXMLAlignments alignmentsField;
 
-    private System.DateTime dateField;
+    private DateTime dateField;
 
-    private System.DateTime timeField;
+    private DateTime timeField;
 
     private decimal versionField;
 
@@ -31,11 +36,11 @@ public partial class LandXML
     {
         get
         {
-            return this.unitsField;
+            return unitsField;
         }
         set
         {
-            this.unitsField = value;
+            unitsField = value;
         }
     }
 
@@ -44,11 +49,11 @@ public partial class LandXML
     {
         get
         {
-            return this.projectField;
+            return projectField;
         }
         set
         {
-            this.projectField = value;
+            projectField = value;
         }
     }
 
@@ -57,11 +62,11 @@ public partial class LandXML
     {
         get
         {
-            return this.applicationField;
+            return applicationField;
         }
         set
         {
-            this.applicationField = value;
+            applicationField = value;
         }
     }
 
@@ -70,90 +75,90 @@ public partial class LandXML
     {
         get
         {
-            return this.alignmentsField;
+            return alignmentsField;
         }
         set
         {
-            this.alignmentsField = value;
+            alignmentsField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute(DataType = "date")]
-    public System.DateTime date
+    [XmlAttribute(DataType = "date")]
+    public DateTime date
     {
         get
         {
-            return this.dateField;
+            return dateField;
         }
         set
         {
-            this.dateField = value;
+            dateField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute(DataType = "time")]
-    public System.DateTime time
+    [XmlAttribute(DataType = "time")]
+    public DateTime time
     {
         get
         {
-            return this.timeField;
+            return timeField;
         }
         set
         {
-            this.timeField = value;
+            timeField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal version
     {
         get
         {
-            return this.versionField;
+            return versionField;
         }
         set
         {
-            this.versionField = value;
+            versionField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string language
     {
         get
         {
-            return this.languageField;
+            return languageField;
         }
         set
         {
-            this.languageField = value;
+            languageField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public bool readOnly
     {
         get
         {
-            return this.readOnlyField;
+            return readOnlyField;
         }
         set
         {
-            this.readOnlyField = value;
+            readOnlyField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLUnits
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLUnits
 {
 
     private LandXMLUnitsMetric metricField;
@@ -163,20 +168,20 @@ public partial class LandXMLUnits
     {
         get
         {
-            return this.metricField;
+            return metricField;
         }
         set
         {
-            this.metricField = value;
+            metricField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLUnitsMetric
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLUnitsMetric
 {
 
     private string areaUnitField;
@@ -196,147 +201,147 @@ public partial class LandXMLUnitsMetric
     private string directionUnitField;
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string areaUnit
     {
         get
         {
-            return this.areaUnitField;
+            return areaUnitField;
         }
         set
         {
-            this.areaUnitField = value;
+            areaUnitField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string linearUnit
     {
         get
         {
-            return this.linearUnitField;
+            return linearUnitField;
         }
         set
         {
-            this.linearUnitField = value;
+            linearUnitField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string volumeUnit
     {
         get
         {
-            return this.volumeUnitField;
+            return volumeUnitField;
         }
         set
         {
-            this.volumeUnitField = value;
+            volumeUnitField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string temperatureUnit
     {
         get
         {
-            return this.temperatureUnitField;
+            return temperatureUnitField;
         }
         set
         {
-            this.temperatureUnitField = value;
+            temperatureUnitField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string pressureUnit
     {
         get
         {
-            return this.pressureUnitField;
+            return pressureUnitField;
         }
         set
         {
-            this.pressureUnitField = value;
+            pressureUnitField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string diameterUnit
     {
         get
         {
-            return this.diameterUnitField;
+            return diameterUnitField;
         }
         set
         {
-            this.diameterUnitField = value;
+            diameterUnitField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string angularUnit
     {
         get
         {
-            return this.angularUnitField;
+            return angularUnitField;
         }
         set
         {
-            this.angularUnitField = value;
+            angularUnitField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string directionUnit
     {
         get
         {
-            return this.directionUnitField;
+            return directionUnitField;
         }
         set
         {
-            this.directionUnitField = value;
+            directionUnitField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLProject
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLProject
 {
 
     private string nameField;
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string name
     {
         get
         {
-            return this.nameField;
+            return nameField;
         }
         set
         {
-            this.nameField = value;
+            nameField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLApplication
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLApplication
 {
 
     private string nameField;
@@ -349,98 +354,98 @@ public partial class LandXMLApplication
 
     private string manufacturerURLField;
 
-    private System.DateTime timeStampField;
+    private DateTime timeStampField;
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string name
     {
         get
         {
-            return this.nameField;
+            return nameField;
         }
         set
         {
-            this.nameField = value;
+            nameField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string desc
     {
         get
         {
-            return this.descField;
+            return descField;
         }
         set
         {
-            this.descField = value;
+            descField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string manufacturer
     {
         get
         {
-            return this.manufacturerField;
+            return manufacturerField;
         }
         set
         {
-            this.manufacturerField = value;
+            manufacturerField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public ushort version
     {
         get
         {
-            return this.versionField;
+            return versionField;
         }
         set
         {
-            this.versionField = value;
+            versionField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string manufacturerURL
     {
         get
         {
-            return this.manufacturerURLField;
+            return manufacturerURLField;
         }
         set
         {
-            this.manufacturerURLField = value;
+            manufacturerURLField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
-    public System.DateTime timeStamp
+    [XmlAttribute]
+    public DateTime timeStamp
     {
         get
         {
-            return this.timeStampField;
+            return timeStampField;
         }
         set
         {
-            this.timeStampField = value;
+            timeStampField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignments
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignments
 {
 
     private LandXMLAlignmentsAlignment alignmentField;
@@ -452,34 +457,34 @@ public partial class LandXMLAlignments
     {
         get
         {
-            return this.alignmentField;
+            return alignmentField;
         }
         set
         {
-            this.alignmentField = value;
+            alignmentField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string name
     {
         get
         {
-            return this.nameField;
+            return nameField;
         }
         set
         {
-            this.nameField = value;
+            nameField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignmentsAlignment
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignment
 {
 
     private LandXMLAlignmentsAlignmentCoordGeom coordGeomField;
@@ -499,11 +504,11 @@ public partial class LandXMLAlignmentsAlignment
     {
         get
         {
-            return this.coordGeomField;
+            return coordGeomField;
         }
         set
         {
-            this.coordGeomField = value;
+            coordGeomField = value;
         }
     }
 
@@ -512,102 +517,102 @@ public partial class LandXMLAlignmentsAlignment
     {
         get
         {
-            return this.profileField;
+            return profileField;
         }
         set
         {
-            this.profileField = value;
+            profileField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string name
     {
         get
         {
-            return this.nameField;
+            return nameField;
         }
         set
         {
-            this.nameField = value;
+            nameField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal length
     {
         get
         {
-            return this.lengthField;
+            return lengthField;
         }
         set
         {
-            this.lengthField = value;
+            lengthField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal staStart
     {
         get
         {
-            return this.staStartField;
+            return staStartField;
         }
         set
         {
-            this.staStartField = value;
+            staStartField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string desc
     {
         get
         {
-            return this.descField;
+            return descField;
         }
         set
         {
-            this.descField = value;
+            descField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignmentsAlignmentCoordGeom
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignmentCoordGeom
 {
 
     private object[] itemsField;
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlElementAttribute("Curve", typeof(LandXMLAlignmentsAlignmentCoordGeomCurve))]
-    [System.Xml.Serialization.XmlElementAttribute("Line", typeof(LandXMLAlignmentsAlignmentCoordGeomLine))]
-    [System.Xml.Serialization.XmlElementAttribute("Spiral", typeof(LandXMLAlignmentsAlignmentCoordGeomSpiral))]
+    [XmlElement("Curve", typeof(LandXMLAlignmentsAlignmentCoordGeomCurve))]
+    [XmlElement("Line", typeof(LandXMLAlignmentsAlignmentCoordGeomLine))]
+    [XmlElement("Spiral", typeof(LandXMLAlignmentsAlignmentCoordGeomSpiral))]
     public object[] Items
     {
         get
         {
-            return this.itemsField;
+            return itemsField;
         }
         set
         {
-            this.itemsField = value;
+            itemsField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignmentsAlignmentCoordGeomCurve
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignmentCoordGeomCurve
 {
 
     private string startField;
@@ -645,11 +650,11 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomCurve
     {
         get
         {
-            return this.startField;
+            return startField;
         }
         set
         {
-            this.startField = value;
+            startField = value;
         }
     }
 
@@ -658,11 +663,11 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomCurve
     {
         get
         {
-            return this.centerField;
+            return centerField;
         }
         set
         {
-            this.centerField = value;
+            centerField = value;
         }
     }
 
@@ -671,11 +676,11 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomCurve
     {
         get
         {
-            return this.endField;
+            return endField;
         }
         set
         {
-            this.endField = value;
+            endField = value;
         }
     }
 
@@ -684,174 +689,174 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomCurve
     {
         get
         {
-            return this.piField;
+            return piField;
         }
         set
         {
-            this.piField = value;
+            piField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string rot
     {
         get
         {
-            return this.rotField;
+            return rotField;
         }
         set
         {
-            this.rotField = value;
+            rotField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal chord
     {
         get
         {
-            return this.chordField;
+            return chordField;
         }
         set
         {
-            this.chordField = value;
+            chordField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string crvType
     {
         get
         {
-            return this.crvTypeField;
+            return crvTypeField;
         }
         set
         {
-            this.crvTypeField = value;
+            crvTypeField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal delta
     {
         get
         {
-            return this.deltaField;
+            return deltaField;
         }
         set
         {
-            this.deltaField = value;
+            deltaField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal dirEnd
     {
         get
         {
-            return this.dirEndField;
+            return dirEndField;
         }
         set
         {
-            this.dirEndField = value;
+            dirEndField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal dirStart
     {
         get
         {
-            return this.dirStartField;
+            return dirStartField;
         }
         set
         {
-            this.dirStartField = value;
+            dirStartField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal external
     {
         get
         {
-            return this.externalField;
+            return externalField;
         }
         set
         {
-            this.externalField = value;
+            externalField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal length
     {
         get
         {
-            return this.lengthField;
+            return lengthField;
         }
         set
         {
-            this.lengthField = value;
+            lengthField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal midOrd
     {
         get
         {
-            return this.midOrdField;
+            return midOrdField;
         }
         set
         {
-            this.midOrdField = value;
+            midOrdField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal radius
     {
         get
         {
-            return this.radiusField;
+            return radiusField;
         }
         set
         {
-            this.radiusField = value;
+            radiusField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal tangent
     {
         get
         {
-            return this.tangentField;
+            return tangentField;
         }
         set
         {
-            this.tangentField = value;
+            tangentField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignmentsAlignmentCoordGeomLine
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignmentCoordGeomLine
 {
 
     private string startField;
@@ -867,11 +872,11 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomLine
     {
         get
         {
-            return this.startField;
+            return startField;
         }
         set
         {
-            this.startField = value;
+            startField = value;
         }
     }
 
@@ -880,48 +885,48 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomLine
     {
         get
         {
-            return this.endField;
+            return endField;
         }
         set
         {
-            this.endField = value;
+            endField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal dir
     {
         get
         {
-            return this.dirField;
+            return dirField;
         }
         set
         {
-            this.dirField = value;
+            dirField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal length
     {
         get
         {
-            return this.lengthField;
+            return lengthField;
         }
         set
         {
-            this.lengthField = value;
+            lengthField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignmentsAlignmentCoordGeomSpiral
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 {
 
     private string startField;
@@ -955,11 +960,11 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomSpiral
     {
         get
         {
-            return this.startField;
+            return startField;
         }
         set
         {
-            this.startField = value;
+            startField = value;
         }
     }
 
@@ -968,11 +973,11 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomSpiral
     {
         get
         {
-            return this.piField;
+            return piField;
         }
         set
         {
-            this.piField = value;
+            piField = value;
         }
     }
 
@@ -981,160 +986,160 @@ public partial class LandXMLAlignmentsAlignmentCoordGeomSpiral
     {
         get
         {
-            return this.endField;
+            return endField;
         }
         set
         {
-            this.endField = value;
+            endField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal length
     {
         get
         {
-            return this.lengthField;
+            return lengthField;
         }
         set
         {
-            this.lengthField = value;
+            lengthField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string radiusEnd
     {
         get
         {
-            return this.radiusEndField;
+            return radiusEndField;
         }
         set
         {
-            this.radiusEndField = value;
+            radiusEndField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string radiusStart
     {
         get
         {
-            return this.radiusStartField;
+            return radiusStartField;
         }
         set
         {
-            this.radiusStartField = value;
+            radiusStartField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string rot
     {
         get
         {
-            return this.rotField;
+            return rotField;
         }
         set
         {
-            this.rotField = value;
+            rotField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string spiType
     {
         get
         {
-            return this.spiTypeField;
+            return spiTypeField;
         }
         set
         {
-            this.spiTypeField = value;
+            spiTypeField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal theta
     {
         get
         {
-            return this.thetaField;
+            return thetaField;
         }
         set
         {
-            this.thetaField = value;
+            thetaField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal totalY
     {
         get
         {
-            return this.totalYField;
+            return totalYField;
         }
         set
         {
-            this.totalYField = value;
+            totalYField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal totalX
     {
         get
         {
-            return this.totalXField;
+            return totalXField;
         }
         set
         {
-            this.totalXField = value;
+            totalXField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal tanLong
     {
         get
         {
-            return this.tanLongField;
+            return tanLongField;
         }
         set
         {
-            this.tanLongField = value;
+            tanLongField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal tanShort
     {
         get
         {
-            return this.tanShortField;
+            return tanShortField;
         }
         set
         {
-            this.tanShortField = value;
+            tanShortField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignmentsAlignmentProfile
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignmentProfile
 {
 
     private LandXMLAlignmentsAlignmentProfileProfAlign profAlignField;
@@ -1146,34 +1151,34 @@ public partial class LandXMLAlignmentsAlignmentProfile
     {
         get
         {
-            return this.profAlignField;
+            return profAlignField;
         }
         set
         {
-            this.profAlignField = value;
+            profAlignField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string name
     {
         get
         {
-            return this.nameField;
+            return nameField;
         }
         set
         {
-            this.nameField = value;
+            nameField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignmentsAlignmentProfileProfAlign
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignmentProfileProfAlign
 {
 
     private object[] itemsField;
@@ -1181,41 +1186,41 @@ public partial class LandXMLAlignmentsAlignmentProfileProfAlign
     private string nameField;
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlElementAttribute("CircCurve", typeof(LandXMLAlignmentsAlignmentProfileProfAlignCircCurve))]
-    [System.Xml.Serialization.XmlElementAttribute("PVI", typeof(string))]
-    [System.Xml.Serialization.XmlElementAttribute("ParaCurve", typeof(LandXMLAlignmentsAlignmentProfileProfAlignParaCurve))]
+    [XmlElement("CircCurve", typeof(LandXMLAlignmentsAlignmentProfileProfAlignCircCurve))]
+    [XmlElement("PVI", typeof(string))]
+    [XmlElement("ParaCurve", typeof(LandXMLAlignmentsAlignmentProfileProfAlignParaCurve))]
     public object[] Items
     {
         get
         {
-            return this.itemsField;
+            return itemsField;
         }
         set
         {
-            this.itemsField = value;
+            itemsField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public string name
     {
         get
         {
-            return this.nameField;
+            return nameField;
         }
         set
         {
-            this.nameField = value;
+            nameField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
 {
 
     private decimal lengthField;
@@ -1225,53 +1230,53 @@ public partial class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
     private string valueField;
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal length
     {
         get
         {
-            return this.lengthField;
+            return lengthField;
         }
         set
         {
-            this.lengthField = value;
+            lengthField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal radius
     {
         get
         {
-            return this.radiusField;
+            return radiusField;
         }
         set
         {
-            this.radiusField = value;
+            radiusField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlTextAttribute()]
+    [XmlText]
     public string Value
     {
         get
         {
-            return this.valueField;
+            return valueField;
         }
         set
         {
-            this.valueField = value;
+            valueField = value;
         }
     }
 }
 
 /// <remarks/>
-[System.SerializableAttribute()]
-[System.ComponentModel.DesignerCategoryAttribute("code")]
-[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
-public partial class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
 {
 
     private decimal lengthField;
@@ -1279,30 +1284,30 @@ public partial class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
     private string valueField;
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlAttributeAttribute()]
+    [XmlAttribute]
     public decimal length
     {
         get
         {
-            return this.lengthField;
+            return lengthField;
         }
         set
         {
-            this.lengthField = value;
+            lengthField = value;
         }
     }
 
     /// <remarks/>
-    [System.Xml.Serialization.XmlTextAttribute()]
+    [XmlText]
     public string Value
     {
         get
         {
-            return this.valueField;
+            return valueField;
         }
         set
         {
-            this.valueField = value;
+            valueField = value;
         }
     }
 }

@@ -23,6 +23,7 @@ namespace XmlToKtb
         {
             InitializeComponent();
             durumTip = DurumTip.Basladi;
+            dosyaTuruComboBox.SelectedIndex = (int)DosyaTip.KTB;
             gorunumuAyarla();
         }
 
@@ -45,11 +46,11 @@ namespace XmlToKtb
                         break;
 
                     case DosyaTip.ALNPRF:
-
-                        rootPath = Path.GetPathRoot(xmlOpenFileDialog.FileName);
+                        
                         dosyaAdi = Path.GetFileNameWithoutExtension(xmlOpenFileDialog.FileName);
+                        rootPath = Path.GetDirectoryName(xmlOpenFileDialog.FileName);
                         alnIcerigi = ALNIcerigi.Duzenleyici(landXml, dosyaAdi);
-                        prfIcerigi = PRFIcerigi.Duzenleyici(landXml.Alignments.Alignment, dosyaAdi);
+                        prfIcerigi = PrfIcerigi.Duzenleyici(landXml.Alignments.Alignment, dosyaAdi);
 
                         break;
                 }
@@ -92,7 +93,7 @@ namespace XmlToKtb
             bilgiLabel.ForeColor = rastgeleRenk;
         }
 
-        
+
 
         private static void ktbDosyasiniKaydet(string content)
         {
@@ -114,14 +115,43 @@ namespace XmlToKtb
             var saveAlnPrfFile = new FolderBrowserDialog
             {
                 SelectedPath = rootPath
+
             };
 
             if (saveAlnPrfFile.ShowDialog() == DialogResult.OK)
             {
-                using (var sw = new StreamWriter(saveAlnPrfFile.SelectedPath + "/ALN" + dosyaAdi + ".gsi"))
-                    sw.WriteLine(alnIcerigi);
-                using (var sw = new StreamWriter(saveAlnPrfFile.SelectedPath + "/PRF" + dosyaAdi + ".gsi"))
-                    sw.WriteLine(prfIcerigi);
+                string alnFileFullPath = saveAlnPrfFile.SelectedPath + "/ALN" + dosyaAdi + ".gsi";
+                string prfFileFullPath = saveAlnPrfFile.SelectedPath + "/PRF" + dosyaAdi + ".gsi";
+
+                if (!File.Exists(alnFileFullPath))
+                {
+                    using (var sw = new StreamWriter(alnFileFullPath))
+                        sw.WriteLine(alnIcerigi);
+                }
+                else
+                {
+                    var dialogResult = MessageBox.Show("Aynı isimde bir ALN dosyası mevcut. Üzerine yazılsın mı?", "Uyarı", MessageBoxButtons.YesNo);
+                    if (dialogResult == DialogResult.Yes)
+                    {
+                        using (var sw = new StreamWriter(alnFileFullPath))
+                            sw.WriteLine(alnIcerigi);
+                    }
+                }
+
+                if (!File.Exists(prfFileFullPath))
+                {
+                    using (var sw = new StreamWriter(prfFileFullPath))
+                        sw.WriteLine(prfIcerigi);
+                }
+                else
+                {
+                    var dialogResult = MessageBox.Show("Aynı isimde bir PRF dosyası mevcut. Üzerine yazılsın mı?", "Uyarı", MessageBoxButtons.YesNo);
+                    if (dialogResult == DialogResult.Yes)
+                    {
+                        using (var sw = new StreamWriter(prfFileFullPath))
+                            sw.WriteLine(prfIcerigi);
+                    }
+                }
             }
         }
 

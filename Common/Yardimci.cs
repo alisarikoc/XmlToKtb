@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Common.Enum;
+using Common.Packages;
 
 namespace XmlToKtb
 {
@@ -12,66 +10,69 @@ namespace XmlToKtb
         {
             return Math.Round(Convert.ToDecimal(deger.ToString()), 4, MidpointRounding.AwayFromZero);
         }
-        public static string SifirDolgusu(decimal deger)
+        public static string SifirDolgusu(object deger)
         {
-            return Convert.ToInt64(Math.Abs(deger * 1000)).ToString().PadLeft(16, '0');
+            return Convert.ToInt64(Math.Abs(Convert.ToDecimal(deger) * 1000)).ToString().PadLeft(16, '0');
         }
 
-        public static decimal[] GetirProfilAlignDetaylar(object item)
+        public static ProfilAlignPackage GetirProfilAlignDetaylar(object item)
         {
-            var detaylar = new decimal[5];
+            var profilAlignPackage = new ProfilAlignPackage();
 
             switch (item)
             {
                 case string _:
-                {
-                    var ikiDeger = item.ToString().Split();
+                    {
+                        var ikiDeger = item.ToString().Split();
 
-                    detaylar[0] = Yardimci.Yuvarla(ikiDeger[0]);
+                        profilAlignPackage.KM = Yuvarla(ikiDeger[0]);
 
-                    detaylar[1] = Yardimci.Yuvarla(ikiDeger[1]);
+                        profilAlignPackage.Kot = Yuvarla(ikiDeger[1]);
 
-                    detaylar[2] = 0m;
+                        profilAlignPackage.Length = 0m;
 
-                    break;
-                }
+                        profilAlignPackage.ProfilAlignTip = ProfileAlignTip.Line;
+
+                        break;
+                    }
 
                 case LandXMLAlignmentsAlignmentProfileProfAlignParaCurve _:
-                {
+                    {
 
-                    var paraCurve = (LandXMLAlignmentsAlignmentProfileProfAlignParaCurve)item;
+                        var paraCurve = (LandXMLAlignmentsAlignmentProfileProfAlignParaCurve)item;
 
-                    var ikiDeger = paraCurve.Value.Split();
+                        var ikiDeger = paraCurve.Value.Split();
 
-                    detaylar[0] = Yardimci.Yuvarla(ikiDeger[0]);
+                        profilAlignPackage.KM = Convert.ToDecimal(ikiDeger[0]);
 
-                    detaylar[1] = Yardimci.Yuvarla(ikiDeger[1]);
+                        profilAlignPackage.Kot = Convert.ToDecimal(ikiDeger[1]);
 
-                    detaylar[2] = Yardimci.Yuvarla(paraCurve.length);
-                    detaylar[3] = 1m;
+                        profilAlignPackage.Length = paraCurve.length;
 
-                    break;
+                        profilAlignPackage.ProfilAlignTip = ProfileAlignTip.Parabola;
 
-                }
+                        break;
+
+                    }
 
                 case LandXMLAlignmentsAlignmentProfileProfAlignCircCurve _:
-                {
-                    var circCurve = (LandXMLAlignmentsAlignmentProfileProfAlignCircCurve)item;
+                    {
+                        var circCurve = (LandXMLAlignmentsAlignmentProfileProfAlignCircCurve)item;
 
-                    var ikiDeger = circCurve.Value.Split();
-                    detaylar[0] = Yardimci.Yuvarla(ikiDeger[0]);
+                        var ikiDeger = circCurve.Value.Split();
+                        profilAlignPackage.KM = Convert.ToDecimal(ikiDeger[0]);
 
-                    detaylar[1] = Yardimci.Yuvarla(ikiDeger[1]);
+                        profilAlignPackage.Kot = Convert.ToDecimal(ikiDeger[1]);
 
-                    detaylar[2] = Yardimci.Yuvarla(circCurve.length);
-                    detaylar[3] = 2m;
-                    detaylar[4] = Yardimci.Yuvarla(circCurve.radius);
+                        profilAlignPackage.Length = circCurve.length;
+                        profilAlignPackage.ProfilAlignTip = ProfileAlignTip.Curve;
+                        profilAlignPackage.Radius = Yuvarla(circCurve.radius);
 
-                    break;
-                }
+                        break;
+                    }
             }
 
-            return detaylar;
+            return profilAlignPackage;
         }
     }
 }

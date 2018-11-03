@@ -34,6 +34,7 @@
             this.kaydetButton = new System.Windows.Forms.Button();
             this.bilgiLabel = new System.Windows.Forms.Label();
             this.dosyaTuruComboBox = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // xmlOpenFileDialog
@@ -49,7 +50,7 @@
             this.donusturButton.Name = "donusturButton";
             this.donusturButton.Size = new System.Drawing.Size(124, 38);
             this.donusturButton.TabIndex = 0;
-            this.donusturButton.Text = "KTB Dönüştür";
+            this.donusturButton.Text = "XML Dönüştür";
             this.donusturButton.UseVisualStyleBackColor = true;
             this.donusturButton.Click += new System.EventHandler(this.xmlDonustur_Tikla);
             // 
@@ -74,17 +75,18 @@
             this.kaydetButton.Name = "kaydetButton";
             this.kaydetButton.Size = new System.Drawing.Size(124, 38);
             this.kaydetButton.TabIndex = 2;
-            this.kaydetButton.Text = "KTB Kaydet";
+            this.kaydetButton.Text = "Çıktı Kaydet";
             this.kaydetButton.UseVisualStyleBackColor = true;
             this.kaydetButton.Click += new System.EventHandler(this.kaydet_Tikla);
             // 
             // bilgiLabel
             // 
             this.bilgiLabel.AutoSize = true;
+            this.bilgiLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.bilgiLabel.Location = new System.Drawing.Point(16, 11);
             this.bilgiLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.bilgiLabel.Name = "bilgiLabel";
-            this.bilgiLabel.Size = new System.Drawing.Size(182, 17);
+            this.bilgiLabel.Size = new System.Drawing.Size(241, 24);
             this.bilgiLabel.TabIndex = 3;
             this.bilgiLabel.Text = "Lütfen Xml Dosyası Seçiniz.";
             // 
@@ -94,17 +96,28 @@
             this.dosyaTuruComboBox.Items.AddRange(new object[] {
             "KTB",
             "ALN ve PRF"});
-            this.dosyaTuruComboBox.Location = new System.Drawing.Point(19, 47);
+            this.dosyaTuruComboBox.Location = new System.Drawing.Point(439, 86);
             this.dosyaTuruComboBox.Name = "dosyaTuruComboBox";
             this.dosyaTuruComboBox.Size = new System.Drawing.Size(121, 24);
             this.dosyaTuruComboBox.TabIndex = 6;
             this.dosyaTuruComboBox.SelectedIndexChanged += new System.EventHandler(this.dosyaTuruComboBox_SelectedIndexChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label1.Location = new System.Drawing.Point(351, 89);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(92, 17);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "Dosya Türü";
             // 
             // XmlToKtbUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(576, 282);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.dosyaTuruComboBox);
             this.Controls.Add(this.bilgiLabel);
             this.Controls.Add(this.kaydetButton);
@@ -131,6 +144,7 @@
         private System.Windows.Forms.Button kaydetButton;
         private System.Windows.Forms.Label bilgiLabel;
         private System.Windows.Forms.ComboBox dosyaTuruComboBox;
+        private System.Windows.Forms.Label label1;
     }
 }
 
