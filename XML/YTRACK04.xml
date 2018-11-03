@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.landxml.org/schema/LandXML-1.0 http://www.landxml.org/schema/LandXML-1.0/LandXML-1.0.xsd" version="1.0" date="2017-10-30" time="18:12:10" readOnly="false" language="english">
+ <Application name="LEICA Geo Office" version="8, 4, 0, 14023" manufacturer="LEICA Geosystems AG" manufacturerURL="">
+  <Author createdBy="sysadmin" />
+ </Application>
+ <Project name="YTRACK04" />
+ <Units>
+  <Metric linearUnit="meter" areaUnit="squareMeter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="HPA" />
+ </Units>
+ <Alignments name="YTRACK04">
+  <Alignment name="YTRACK04" length="85.605000" staStart="0.000000">
+   <CoordGeom>
+    <Curve staStart="0.000000" rot="cw" crvType="arc" radius="190.000000">
+     <Start>4532064.130000 427143.287000</Start>
+     <Center>4531899.004869 427049.299282</Center>
+     <End>4532049.179000 427165.694000</End>
+    </Curve>
+    <Line staStart="26.959000">
+     <Start>4532049.179000 427165.694000</Start>
+     <End>4532029.769000 427190.738000</End>
+    </Line>
+    <Curve staStart="58.644000" rot="ccw" crvType="arc" radius="190.000000">
+     <Start>4532029.769000 427190.738000</Start>
+     <Center>4532179.945274 427307.129954</Center>
+     <End>4532014.818000 427213.146000</End>
+    </Curve>
+   </CoordGeom>
+   <Profile>
+    <ProfAlign name="YTRACK04">
+     <PVI>0.000000 8.000000</PVI>
+     <PVI>29.589000 8.000000</PVI>
+     <ParaCurve length="25.226000" desc="10500.000000">42.202000 7.999849</ParaCurve>
+     <PVI>54.815000 8.030000</PVI>
+     <PVI>85.605000 8.104000</PVI>
+    </ProfAlign>
+   </Profile>
+  </Alignment>
+  <Feature code="RR Stringline Layers">
+   <Feature code="RR Stringline Layer">YTRACK04<Property label="name" value="YTRACK04" /><Property label="centerline" value="YTRACK04" /></Feature>
+  </Feature>
+ </Alignments>
+</LandXML>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.landxml.org/schema/LandXML-1.0 http://www.landxml.org/schema/LandXML-1.0/LandXML-1.0.xsd" version="1.0" date="2017-10-30" time="18:10:58" readOnly="false" language="english">
+ <Application name="LEICA Geo Office" version="8, 4, 0, 14023" manufacturer="LEICA Geosystems AG" manufacturerURL="">
+  <Author createdBy="sysadmin" />
+ </Application>
+ <Project name="YTRACK02" />
+ <Units>
+  <Metric linearUnit="meter" areaUnit="squareMeter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="HPA" />
+ </Units>
+ <Alignments name="YTRACK02">
+  <Alignment name="YTRACK02" length="74.751100" staStart="0.000000">
+   <CoordGeom>
+    <Curve staStart="0.000000" rot="cw" crvType="arc" radius="190.000000">
+     <Start>4539862.599000 419134.927000</Start>
+     <Center>4539775.776106 418965.924677</Center>
+     <End>4539837.826000 419145.507000</End>
+    </Curve>
+    <Line staStart="26.960000">
+     <Start>4539837.826000 419145.507000</Start>
+     <End>4539829.086000 419148.527000</End>
+    </Line>
+    <Curve staStart="36.207000" rot="ccw" crvType="arc" radius="140.000000">
+     <Start>4539829.086000 419148.527000</Start>
+     <Center>4539874.810183 419280.849708</Center>
+     <End>4539819.812000 419152.105000</End>
+    </Curve>
+    <Line staStart="46.149000">
+     <Start>4539819.812000 419152.105000</Start>
+     <End>4539818.302800 419152.749700</End>
+    </Line>
+    <Curve staStart="47.790100" rot="ccw" crvType="arc" radius="190.000000">
+     <Start>4539818.302800 419152.749700</Start>
+     <Center>4539892.943071 419327.474713</Center>
+     <End>4539794.342800 419165.061700</End>
+    </Curve>
+   </CoordGeom>
+   <Profile>
+    <ProfAlign name="YTRACK02">
+     <PVI>0.000000 12.826000</PVI>
+     <PVI>74.751000 12.730000</PVI>
+    </ProfAlign>
+   </Profile>
+  </Alignment>
+  <Feature code="RR Stringline Layers">
+   <Feature code="RR Stringline Layer">YTRACK02<Property label="name" value="YTRACK02" /><Property label="centerline" value="YTRACK02" /></Feature>
+  </Feature>
+ </Alignments>
+</LandXML>

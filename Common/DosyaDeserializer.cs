@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Xml.Serialization;
 
-namespace XmlToKtb
+namespace Common
 {
     public class DosyaDeserializer
     {

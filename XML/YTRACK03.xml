@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.landxml.org/schema/LandXML-1.0 http://www.landxml.org/schema/LandXML-1.0/LandXML-1.0.xsd" version="1.0" date="2017-10-30" time="18:11:37" readOnly="false" language="english">
+ <Application name="LEICA Geo Office" version="8, 4, 0, 14023" manufacturer="LEICA Geosystems AG" manufacturerURL="">
+  <Author createdBy="sysadmin" />
+ </Application>
+ <Project name="YTRACK03" />
+ <Units>
+  <Metric linearUnit="meter" areaUnit="squareMeter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="HPA" />
+ </Units>
+ <Alignments name="YTRACK03">
+  <Alignment name="YTRACK03" length="478.081000" staStart="0.000000">
+   <CoordGeom>
+    <Curve staStart="0.000000" rot="ccw" crvType="arc" radius="190.000000">
+     <Start>4532055.021000 427131.998000</Start>
+     <Center>4532220.150494 427225.978052</Center>
+     <End>4532043.390000 427156.295000</End>
+    </Curve>
+    <Line staStart="26.960000">
+     <Start>4532043.390000 427156.295000</Start>
+     <End>4532039.808000 427165.378000</End>
+    </Line>
+    <Curve staStart="36.723000" rot="cw" crvType="arc" radius="190.000000">
+     <Start>4532039.808000 427165.378000</Start>
+     <Center>4531863.051043 427095.685976</Center>
+     <End>4532028.176000 427189.674000</End>
+    </Curve>
+    <Line staStart="63.683000">
+     <Start>4532028.176000 427189.674000</Start>
+     <End>4531874.584000 427459.531000</End>
+    </Line>
+    <Curve staStart="374.188000" rot="cw" crvType="arc" radius="1200.000000">
+     <Start>4531874.584000 427459.531000</Start>
+     <Center>4530831.683044 426865.933833</Center>
+     <End>4531858.924000 427486.237000</End>
+    </Curve>
+    <Line staStart="405.148000">
+     <Start>4531858.924000 427486.237000</Start>
+     <End>4531848.293000 427503.843000</End>
+    </Line>
+    <Curve staStart="425.715000" rot="ccw" crvType="arc" radius="150.000000">
+     <Start>4531848.293000 427503.843000</Start>
+     <Center>4531976.697301 427581.382252</Center>
+     <End>4531838.618000 427522.781000</End>
+    </Curve>
+    <Line staStart="446.999000">
+     <Start>4531838.618000 427522.781000</Start>
+     <End>4531837.008000 427526.575000</End>
+    </Line>
+    <Curve staStart="451.120000" rot="cw" crvType="arc" radius="190.000000">
+     <Start>4531837.008000 427526.575000</Start>
+     <Center>4531662.106315 427452.349664</Center>
+     <End>4531824.753000 427550.564000</End>
+    </Curve>
+   </CoordGeom>
+   <Profile>
+    <ProfAlign name="YTRACK03">
+     <PVI>0.000000 8.000000</PVI>
+     <PVI>32.960000 8.000000</PVI>
+     <ParaCurve length="28.917000" desc="12000.000000">47.418500 8.000079</ParaCurve>
+     <PVI>61.877000 8.035000</PVI>
+     <PVI>196.234000 8.359000</PVI>
+     <ParaCurve length="24.766000" desc="-60000.000000">208.617000 8.388556</ParaCurve>
+     <PVI>221.000000 8.413000</PVI>
+     <PVI>478.081000 8.927000</PVI>
+    </ProfAlign>
+   </Profile>
+  </Alignment>
+  <Feature code="RR Stringline Layers">
+   <Feature code="RR Stringline Layer">YTRACK03<Property label="name" value="YTRACK03" /><Property label="centerline" value="YTRACK03" /></Feature>
+  </Feature>
+ </Alignments>
+</LandXML>

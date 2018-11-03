@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.landxml.org/schema/LandXML-1.0 http://www.landxml.org/schema/LandXML-1.0/LandXML-1.0.xsd" version="1.0" date="2017-10-30" time="18:05:10" readOnly="false" language="english">
+ <Application name="LEICA Geo Office" version="8, 4, 0, 14023" manufacturer="LEICA Geosystems AG" manufacturerURL="">
+  <Author createdBy="sysadmin" />
+ </Application>
+ <Project name="SID01" />
+ <Units>
+  <Metric linearUnit="meter" areaUnit="squareMeter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="HPA" />
+ </Units>
+ <Alignments name="SID01">
+  <Alignment name="SID01" length="110.478000" staStart="0.000000">
+   <CoordGeom>
+    <Curve staStart="0.000000" rot="cw" crvType="arc" radius="300.000000">
+     <Start>4540305.809000 418680.181000</Start>
+     <Center>4540055.536130 418514.761863</Center>
+     <End>4540286.011000 418706.807000</End>
+    </Curve>
+    <Line staStart="33.196000">
+     <Start>4540286.011000 418706.807000</Start>
+     <End>4540284.096000 418709.105000</End>
+    </Line>
+    <Curve staStart="36.188000" rot="ccw" crvType="arc" radius="300.000000">
+     <Start>4540284.096000 418709.105000</Start>
+     <Center>4540514.570870 418901.150137</Center>
+     <End>4540264.298000 418735.731000</End>
+    </Curve>
+    <Line staStart="69.384000">
+     <Start>4540264.298000 418735.731000</Start>
+     <End>4540253.775000 418751.652000</End>
+    </Line>
+    <Curve staStart="88.469000" rot="cw" crvType="arc" radius="296.000000">
+     <Start>4540253.775000 418751.652000</Start>
+     <Center>4540006.840072 418588.436984</Center>
+     <End>4540240.968000 418769.545000</End>
+    </Curve>
+   </CoordGeom>
+   <Profile>
+    <ProfAlign name="SID01">
+     <PVI>0.000000 13.893000</PVI>
+     <PVI>34.906000 13.696000</PVI>
+     <ParaCurve length="50.010000" desc="11690.000000">59.911000 13.555014</ParaCurve>
+     <PVI>84.916000 13.521000</PVI>
+     <PVI>110.478000 13.486000</PVI>
+    </ProfAlign>
+   </Profile>
+  </Alignment>
+  <Feature code="RR Stringline Layers">
+   <Feature code="RR Stringline Layer">SID01<Property label="name" value="SID01" /><Property label="centerline" value="SID01" /></Feature>
+  </Feature>
+ </Alignments>
+</LandXML>

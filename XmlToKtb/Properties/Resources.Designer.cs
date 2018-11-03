@@ -61,6 +61,15 @@ namespace XmlToKtb.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to GSI|*.gsi.
+        /// </summary>
+        internal static string gsiExtensionFilter {
+            get {
+                return ResourceManager.GetString("gsiExtensionFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to KTB|*.ktb.
         /// </summary>
         internal static string ktbExtensionFilter {

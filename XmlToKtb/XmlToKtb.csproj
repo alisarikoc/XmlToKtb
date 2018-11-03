@@ -45,8 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DosyaDeserializer.cs" />
-    <Compile Include="Durumlar.cs" />
+    <Compile Include="ALNIcerigi.cs" />
+    <Compile Include="KTBIcerigi.cs" />
+    <Compile Include="PRFIcerigi.cs" />
     <Compile Include="XmlToKtbUI.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -55,7 +56,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="LandXML.cs" />
     <EmbeddedResource Include="XmlToKtbUI.resx">
       <DependentUpon>XmlToKtbUI.cs</DependentUpon>
     </EmbeddedResource>
@@ -81,6 +81,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{512F8296-19C0-4626-BF1D-90F16287FF93}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

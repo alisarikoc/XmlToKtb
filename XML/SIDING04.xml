@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.landxml.org/schema/LandXML-1.0 http://www.landxml.org/schema/LandXML-1.0/LandXML-1.0.xsd" version="1.0" date="2017-10-30" time="18:07:46" readOnly="false" language="english">
+ <Application name="LEICA Geo Office" version="8, 4, 0, 14023" manufacturer="LEICA Geosystems AG" manufacturerURL="">
+  <Author createdBy="sysadmin" />
+ </Application>
+ <Project name="SIDING04" />
+ <Units>
+  <Metric linearUnit="meter" areaUnit="squareMeter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="HPA" />
+ </Units>
+ <Alignments name="SID04">
+  <Alignment name="SID04" length="562.372000" staStart="0.000000">
+   <CoordGeom>
+    <Curve staStart="0.000000" rot="cw" crvType="arc" radius="500.000000">
+     <Start>4535606.324000 424087.584000</Start>
+     <Center>4535352.664739 423656.704691</Center>
+     <End>4535569.665000 424107.161000</End>
+    </Curve>
+    <Line staStart="41.570000">
+     <Start>4535569.665000 424107.161000</Start>
+     <End>4535541.216000 424120.866000</End>
+    </Line>
+    <Curve staStart="73.148000" rot="ccw" crvType="arc" radius="362.000000">
+     <Start>4535541.216000 424120.866000</Start>
+     <Center>4535698.327183 424446.994926</Center>
+     <End>4535514.675000 424135.040000</End>
+    </Curve>
+    <Line staStart="103.246000">
+     <Start>4535514.675000 424135.040000</Start>
+     <End>4535262.620000 424283.425000</End>
+    </Line>
+    <Curve staStart="395.735000" rot="ccw" crvType="arc" radius="458.000000">
+     <Start>4535262.620000 424283.425000</Start>
+     <Center>4535494.973312 424678.109606</Center>
+     <End>4535185.677000 424340.323000</End>
+    </Curve>
+    <Line staStart="491.605000">
+     <Start>4535185.677000 424340.323000</Start>
+     <End>4535164.159000 424360.026000</End>
+    </Line>
+    <Curve staStart="520.781000" rot="cw" crvType="arc" radius="500.000000">
+     <Start>4535164.159000 424360.026000</Start>
+     <Center>4534826.499168 423991.263424</Center>
+     <End>4535132.369000 424386.793000</End>
+    </Curve>
+    <Line staStart="562.351000">
+     <Start>4535132.369000 424386.793000</Start>
+     <End>4535132.352000 424386.806000</End>
+    </Line>
+   </CoordGeom>
+   <Profile>
+    <ProfAlign name="SID04">
+     <PVI>0.000000 7.250000</PVI>
+     <PVI>61.213000 7.589000</PVI>
+     <ParaCurve length="50.000000" desc="-8270.963000">86.213000 7.727566</ParaCurve>
+     <PVI>111.213000 7.715000</PVI>
+     <PVI>375.079000 7.583000</PVI>
+     <ParaCurve length="68.873000" desc="6000.000000">409.515500 7.565855</ParaCurve>
+     <PVI>443.952000 7.944000</PVI>
+     <PVI>562.372000 9.244000</PVI>
+    </ProfAlign>
+   </Profile>
+  </Alignment>
+  <Feature code="RR Stringline Layers">
+   <Feature code="RR Stringline Layer">SID04<Property label="name" value="SID04" /><Property label="centerline" value="SID04" /></Feature>
+  </Feature>
+ </Alignments>
+</LandXML>

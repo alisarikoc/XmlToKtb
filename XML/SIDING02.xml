@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.landxml.org/schema/LandXML-1.0 http://www.landxml.org/schema/LandXML-1.0/LandXML-1.0.xsd" version="1.0" date="2018-01-02" time="08:11:20" readOnly="false" language="english">
+ <Application name="LEICA Geo Office" version="8, 4, 0, 14023" manufacturer="LEICA Geosystems AG" manufacturerURL="">
+  <Author createdBy="sysadmin" />
+ </Application>
+ <Project name="SIDING-02" />
+ <Units>
+  <Metric linearUnit="meter" areaUnit="squareMeter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="HPA" />
+ </Units>
+ <Alignments name="SIDING-02">
+  <Alignment name="SIDING-02" length="1123.916000" staStart="0.000000">
+   <CoordGeom>
+    <Curve staStart="0.000000" rot="cw" crvType="arc" radius="300.000000">
+     <Start>4540257.051000 418753.950000</Start>
+     <Center>4540006.778130 418588.530863</Center>
+     <End>4540237.253000 418780.576000</End>
+    </Curve>
+    <Line staStart="33.196000">
+     <Start>4540237.253000 418780.576000</Start>
+     <End>4540215.127000 418807.129000</End>
+    </Line>
+    <Spiral staStart="67.760000" desc="TangentToCurve" length="200.987000" radiusStart="INF" radiusEnd="593.006089" rot="cw" spiType="clothoid" constant="345.234">
+     <Start>4540215.127000 418807.129000</Start>
+     <PI>4540129.221876 418910.223559</PI>
+     <End>4540078.128000 418953.842000</End>
+    </Spiral>
+    <Curve staStart="268.747000" rot="cw" crvType="arc" radius="593.000000">
+     <Start>4540078.128000 418953.842000</Start>
+     <Center>4539693.098747 418502.841474</Center>
+     <End>4540054.373000 418973.086000</End>
+    </Curve>
+    <Spiral staStart="299.322000" desc="CurveToTangent" length="130.000000" radiusStart="593.000598" radiusEnd="INF" rot="cw" spiType="clothoid" constant="277.651">
+     <Start>4540054.373000 418973.086000</Start>
+     <PI>4540019.970079 418999.515422</PI>
+     <End>4539945.833000 419044.507000</End>
+    </Spiral>
+    <Line staStart="429.322000">
+     <Start>4539945.833000 419044.507000</Start>
+     <End>4539889.788000 419078.520000</End>
+    </Line>
+    <Spiral staStart="494.880000" desc="TangentToCurve" length="45.001000" radiusStart="INF" radiusEnd="519.991263" rot="ccw" spiType="clothoid" constant="152.971">
+     <Start>4539889.788000 419078.520000</Start>
+     <PI>4539864.138218 419094.085897</PI>
+     <End>4539851.661000 419102.417000</End>
+    </Spiral>
+    <Curve staStart="539.881000" rot="ccw" crvType="arc" radius="520.000000">
+     <Start>4539851.661000 419102.417000</Start>
+     <Center>4540140.424087 419534.870326</Center>
+     <End>4539826.482000 419120.334000</End>
+    </Curve>
+    <Line staStart="570.788000">
+     <Start>4539826.482000 419120.334000</Start>
+     <End>4539801.889000 419138.959000</End>
+    </Line>
+    <Curve staStart="601.638000" rot="cw" crvType="arc" radius="500.000000">
+     <Start>4539801.889000 419138.959000</Start>
+     <Center>4539500.031884 418740.358597</Center>
+     <End>4539759.566000 419167.725000</End>
+    </Curve>
+    <Line staStart="652.833000">
+     <Start>4539759.566000 419167.725000</Start>
+     <End>4539540.840000 419300.561000</End>
+    </Line>
+    <Spiral staStart="908.737000" desc="TangentToCurve" length="50.003000" radiusStart="INF" radiusEnd="514.968682" rot="cw" spiType="clothoid" constant="160.468">
+     <Start>4539540.840000 419300.561000</Start>
+     <PI>4539512.345728 419317.865541</PI>
+     <End>4539497.694000 419325.817000</End>
+    </Spiral>
+    <Curve staStart="958.740000" rot="cw" crvType="arc" radius="515.000000">
+     <Start>4539497.694000 419325.817000</Start>
+     <Center>4539252.037705 418873.182507</Center>
+     <End>4539444.968000 419350.679000</End>
+    </Curve>
+    <Spiral staStart="1017.064000" desc="CurveToTangent" length="50.000000" radiusStart="514.999580" radiusEnd="INF" rot="cw" spiType="clothoid" constant="160.468">
+     <Start>4539444.968000 419350.679000</Start>
+     <PI>4539429.511491 419356.923955</PI>
+     <End>4539398.032000 419367.898000</End>
+    </Spiral>
+    <Line staStart="1067.064000">
+     <Start>4539398.032000 419367.898000</Start>
+     <End>4539344.348000 419386.613000</End>
+    </Line>
+   </CoordGeom>
+   <Profile>
+    <ProfAlign name="SIDING02">
+     <PVI>0.000000 13.515000</PVI>
+     <PVI>654.545000 12.666000</PVI>
+     <ParaCurve length="55.015000" desc="14500.000000">682.052500 12.630316</ParaCurve>
+     <PVI>709.560000 12.699000</PVI>
+     <PVI>825.968000 12.990000</PVI>
+     <ParaCurve length="87.898000" desc="6000.000000">869.917000 13.099581</ParaCurve>
+     <PVI>913.866000 13.853000</PVI>
+     <PVI>1055.861000 16.288000</PVI>
+     <ParaCurve length="50.000000" desc="-292166.697000">1080.861000 16.716639</ParaCurve>
+     <PVI>1105.861000 17.141000</PVI>
+     <PVI>1149.597000 17.884000</PVI>
+    </ProfAlign>
+   </Profile>
+  </Alignment>
+  <Feature code="RR Stringline Layers">
+   <Feature code="RR Stringline Layer">SIDING-02<Property label="name" value="SIDING-02" /><Property label="centerline" value="SIDING-02" /></Feature>
+  </Feature>
+ </Alignments>
+</LandXML>

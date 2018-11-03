@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.landxml.org/schema/LandXML-1.0 http://www.landxml.org/schema/LandXML-1.0/LandXML-1.0.xsd" version="1.0" date="2017-10-30" time="17:50:18" readOnly="false" language="english">
+ <Application name="LEICA Geo Office" version="8, 4, 0, 14023" manufacturer="LEICA Geosystems AG" manufacturerURL="">
+  <Author createdBy="sysadmin" />
+ </Application>
+ <Project name="CROSSOVER12" />
+ <Units>
+  <Metric linearUnit="meter" areaUnit="squareMeter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="HPA" />
+ </Units>
+ <Alignments name="CROSSOVER12">
+  <Alignment name="CROSSOVER12" length="89.712000" staStart="0.000000">
+   <CoordGeom>
+    <Curve staStart="0.000000" rot="cw" crvType="arc" radius="500.000000">
+     <Start>4531959.189000 427300.370000</Start>
+     <Center>4531524.644231 427053.042599</Center>
+     <End>4531937.149000 427335.602000</End>
+    </Curve>
+    <Line staStart="41.569000">
+     <Start>4531937.149000 427335.602000</Start>
+     <End>4531933.435000 427341.024000</End>
+    </Line>
+    <Curve staStart="48.141000" rot="ccw" crvType="arc" radius="500.000000">
+     <Start>4531933.435000 427341.024000</Start>
+     <Center>4532345.943135 427623.578487</Center>
+     <End>4531911.395000 427376.257000</End>
+    </Curve>
+   </CoordGeom>
+   <Profile>
+    <ProfAlign name="CROSSOVER12">
+     <PVI>0.000000 8.359000</PVI>
+     <PVI>89.713000 8.538000</PVI>
+    </ProfAlign>
+   </Profile>
+  </Alignment>
+  <Feature code="RR Stringline Layers">
+   <Feature code="RR Stringline Layer">CROSSOVER12<Property label="name" value="CROSSOVER12" /><Property label="centerline" value="CROSSOVER12" /></Feature>
+  </Feature>
+ </Alignments>
+</LandXML>
