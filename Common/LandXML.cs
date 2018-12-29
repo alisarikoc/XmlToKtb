@@ -10,6 +10,7 @@ using System.Xml.Serialization;
 [DesignerCategory("code")]
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 [XmlRoot(Namespace = "http://www.landxml.org/schema/LandXML-1.2", IsNullable = false)]
+
 public class LandXML
 {
 
@@ -25,7 +26,7 @@ public class LandXML
 
     private DateTime timeField;
 
-    private decimal versionField;
+    private string versionField;
 
     private string languageField;
 
@@ -113,7 +114,7 @@ public class LandXML
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal version
+    public string version
     {
         get
         {
@@ -350,7 +351,7 @@ public class LandXMLApplication
 
     private string manufacturerField;
 
-    private ushort versionField;
+    private string versionField;
 
     private string manufacturerURLField;
 
@@ -400,7 +401,7 @@ public class LandXMLApplication
 
     /// <remarks/>
     [XmlAttribute]
-    public ushort version
+    public string version
     {
         get
         {

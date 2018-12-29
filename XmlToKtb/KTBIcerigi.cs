@@ -141,7 +141,7 @@ namespace XmlToKtb
 
             double semt1, spiralEndY, spiralEndX, semt2, spiralStartY, spiralStartX;
 
-            if (L2 > L1 && Y1 > Y2)
+            if (L2 > L1 && Y1 > Y2 || Math.Abs(Convert.ToDouble(spiral.radiusStart) - Convert.ToDouble(spiral.radiusEnd)) < 15)
             {
                 var kiris = Math.Sqrt(Math.Pow((endy - starty), 2) + Math.Pow((endx - startx), 2));
                 var ort_yaricap = (Convert.ToDouble(spiral.radiusStart) + Convert.ToDouble(spiral.radiusEnd)) / 2;
@@ -200,7 +200,7 @@ namespace XmlToKtb
             }
             double semt1;
             //var semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * Convert.ToInt32(yon) + Math.PI / 2 * Convert.ToInt32(yon);
-            if (L1 > L2 && Y2 > Y1)
+            if (L1 > L2 && Y2 > Y1 || Math.Abs(Convert.ToDouble(spiral.radiusStart) - Convert.ToDouble(spiral.radiusEnd))<15)
             {
                 var kiris = Math.Sqrt(Math.Pow((endy - starty), 2) + Math.Pow((endx - startx), 2));
                 var ort_yaricap = (Convert.ToDouble(spiral.radiusStart) + Convert.ToDouble(spiral.radiusEnd)) / 2;
