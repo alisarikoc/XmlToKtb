@@ -248,7 +248,7 @@ namespace XmlToKtb
                             var ilkDeger = Yardimci.Yuvarla(ikiDeger[0]);
                             var ikinciDeger = Yardimci.Yuvarla(ikiDeger[1]);
                             var length = Yardimci.Yuvarla(paraCurve.length);
-                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
+                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  0");
                             break;
                         }
                     case LandXMLAlignmentsAlignmentProfileProfAlignCircCurve _:
@@ -259,7 +259,8 @@ namespace XmlToKtb
                             var ilkDeger = Yardimci.Yuvarla(ikiDeger[0]);
                             var ikinciDeger = Yardimci.Yuvarla(ikiDeger[1]);
                             var length = Yardimci.Yuvarla(circCurve.length);
-                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1");
+                            var radius = Yardimci.Yuvarla(circCurve.radius);
+                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1 0 0 "+radius);
                             break;
                         }
                 }
