@@ -4,6 +4,8 @@
     {
         KTB = 0,
 
-        ALNPRF = 1
+        ALNPRF = 1,
+
+        XML = 2
     }
 }

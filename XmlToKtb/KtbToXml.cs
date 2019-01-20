@@ -1,41 +1,19 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using HaritaHesaplama;
 
-
-namespace HaritaHesaplama
+namespace XmlToKtb
 {
-    public partial class Form1 : Form
+    public class KTBtoXML
     {
-
         private static decimal _km0;
-   
-        //private Array xmlduseydizi=d
-
-        public Form1()
-        {
-            InitializeComponent();
-        }
-        private void openFileButton_Click(object sender, EventArgs e)
-        {
-            openVeriFileDialog.FileName = "Veriler Aç";
-            openVeriFileDialog.ShowDialog();
-
-            var ktbIcerigi = new StreamReader(openVeriFileDialog.FileName);
-            string shortName = Path.GetFileNameWithoutExtension(openVeriFileDialog.FileName);
-            var xmlData = GetirXmlData(ktbIcerigi);
-
-            LandXML landXml = LandXmlOlustur(shortName, xmlData);
-
-            Serialize(landXml);
-        }
-
-        private void Serialize(LandXML landXml)
+        internal static string Serialize(LandXML landXml)
         {
             XmlSerializer xsSubmit = new XmlSerializer(typeof(LandXML));
             string xml;
@@ -55,10 +33,12 @@ namespace HaritaHesaplama
                 }
             }
 
-            File.WriteAllText("C:\\Users\\sysadmin\\Desktop\\hat4gardoğu.xml", xml, Encoding.UTF8);
+            //File.WriteAllText("C:\\Users\\sysadmin\\Desktop\\hat4gardoğu.xml", xml, Encoding.UTF8);
+
+            return xml;
         }
 
-        private LandXML LandXmlOlustur(string shortFileName, List<Array> xmlData)
+        internal static LandXML LandXmlOlustur(string shortFileName, List<Array> xmlData)
         {
             
             LandXML landXml = new LandXML
@@ -166,13 +146,13 @@ namespace HaritaHesaplama
                 }
                 else if (satirTipi == "PR")
                 {
-                    string duseykurptipi = satir.GetValue(1).ToString();
+                    var duseykurptipi = satir.GetValue(1).ToString();
                     if ((double) satir.GetValue(4) == 0)
                     {
-                        LandXMLAlignmentsAlignmentProfileProfAlignPVI pvi=new LandXMLAlignmentsAlignmentProfileProfAlignPVI();
+                        var pvi=new LandXMLAlignmentsAlignmentProfileProfAlignPVI();
                         {
                             string[] kmkot = { Convert.ToString((double)satir.GetValue(2)), " ", Convert.ToString((double)satir.GetValue(3)) };
-                            pvi.Value = String.Concat(kmkot);
+                            pvi.Value = string.Concat(kmkot);
                         };
                         landXml.Alignments.Alignment.Profile.ProfAlign.Items[xmlData.IndexOf(satir)] = pvi;
                     }
@@ -207,7 +187,7 @@ namespace HaritaHesaplama
                 return landXml;
         }
 
-        private static List<Array> GetirXmlData(StreamReader veriReader)
+        internal static List<Array> GetirXmlData(StreamReader veriReader)
         {
             List<Array> tumsatirlar = new List<Array>();
             List<Array> yataydizi = new List<Array>();
@@ -815,6 +795,6 @@ namespace HaritaHesaplama
             return Y;
         }
 
-  
+        
     }
 }

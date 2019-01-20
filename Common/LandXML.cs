@@ -1313,3 +1313,42 @@ public class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
     }
 }
 
+/// <remarks/>
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public class LandXMLAlignmentsAlignmentProfileProfAlignPVI
+{
+
+    private decimal lengthField;
+
+    private string valueField;
+
+    /// <remarks/>
+    [XmlAttribute]
+    public decimal length
+    {
+        get
+        {
+            return lengthField;
+        }
+        set
+        {
+            lengthField = value;
+        }
+    }
+
+    /// <remarks/>
+    [XmlText]
+    public string Value
+    {
+        get
+        {
+            return valueField;
+        }
+        set
+        {
+            valueField = value;
+        }
+    }
+}

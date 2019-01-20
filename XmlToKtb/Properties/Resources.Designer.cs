@@ -77,5 +77,14 @@ namespace XmlToKtb.Properties {
                 return ResourceManager.GetString("ktbExtensionFilter", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to XML|*.xml.
+        /// </summary>
+        internal static string xmlExtensionFilter {
+            get {
+                return ResourceManager.GetString("xmlExtensionFilter", resourceCulture);
+            }
+        }
     }
 }

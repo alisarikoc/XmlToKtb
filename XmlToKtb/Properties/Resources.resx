@@ -125,4 +125,8 @@
     <value>KTB|*.ktb</value>
     <comment>KTB|*.ktb</comment>
   </data>
+  <data name="xmlExtensionFilter" xml:space="preserve">
+    <value>XML|*.xml</value>
+    <comment>XML|*.xml</comment>
+  </data>
 </root>
