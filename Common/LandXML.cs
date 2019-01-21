@@ -13,37 +13,13 @@ using System.Xml.Serialization;
 
 public class LandXML
 {
-
-    private LandXMLUnits unitsField;
-
     private LandXMLProject projectField;
-
-    private LandXMLApplication applicationField;
-
     private LandXMLAlignments alignmentsField;
-
-    private DateTime dateField;
-
     private DateTime timeField;
-
-    private string versionField;
-
     private string languageField;
 
-    private bool readOnlyField;
-
     /// <remarks/>
-    public LandXMLUnits Units
-    {
-        get
-        {
-            return unitsField;
-        }
-        set
-        {
-            unitsField = value;
-        }
-    }
+    public LandXMLUnits Units { get; set; }
 
     /// <remarks/>
     public LandXMLProject Project
@@ -59,17 +35,7 @@ public class LandXML
     }
 
     /// <remarks/>
-    public LandXMLApplication Application
-    {
-        get
-        {
-            return applicationField;
-        }
-        set
-        {
-            applicationField = value;
-        }
-    }
+    public LandXMLApplication Application { get; set; }
 
     /// <remarks/>
     public LandXMLAlignments Alignments
@@ -86,17 +52,7 @@ public class LandXML
 
     /// <remarks/>
     [XmlAttribute(DataType = "date")]
-    public DateTime date
-    {
-        get
-        {
-            return dateField;
-        }
-        set
-        {
-            dateField = value;
-        }
-    }
+    public DateTime date { get; set; }
 
     /// <remarks/>
     [XmlAttribute(DataType = "time")]
@@ -114,17 +70,7 @@ public class LandXML
 
     /// <remarks/>
     [XmlAttribute]
-    public string version
-    {
-        get
-        {
-            return versionField;
-        }
-        set
-        {
-            versionField = value;
-        }
-    }
+    public string version { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -142,17 +88,7 @@ public class LandXML
 
     /// <remarks/>
     [XmlAttribute]
-    public bool readOnly
-    {
-        get
-        {
-            return readOnlyField;
-        }
-        set
-        {
-            readOnlyField = value;
-        }
-    }
+    public bool readOnly { get; set; }
 }
 
 /// <remarks/>
@@ -162,20 +98,8 @@ public class LandXML
 public class LandXMLUnits
 {
 
-    private LandXMLUnitsMetric metricField;
-
     /// <remarks/>
-    public LandXMLUnitsMetric Metric
-    {
-        get
-        {
-            return metricField;
-        }
-        set
-        {
-            metricField = value;
-        }
-    }
+    public LandXMLUnitsMetric Metric { get; set; }
 }
 
 /// <remarks/>
@@ -184,36 +108,14 @@ public class LandXMLUnits
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLUnitsMetric
 {
-
-    private string areaUnitField;
-
     private string linearUnitField;
-
-    private string volumeUnitField;
-
     private string temperatureUnitField;
-
-    private string pressureUnitField;
-
     private string diameterUnitField;
-
-    private string angularUnitField;
-
     private string directionUnitField;
 
     /// <remarks/>
     [XmlAttribute]
-    public string areaUnit
-    {
-        get
-        {
-            return areaUnitField;
-        }
-        set
-        {
-            areaUnitField = value;
-        }
-    }
+    public string areaUnit { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -231,17 +133,7 @@ public class LandXMLUnitsMetric
 
     /// <remarks/>
     [XmlAttribute]
-    public string volumeUnit
-    {
-        get
-        {
-            return volumeUnitField;
-        }
-        set
-        {
-            volumeUnitField = value;
-        }
-    }
+    public string volumeUnit { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -259,17 +151,7 @@ public class LandXMLUnitsMetric
 
     /// <remarks/>
     [XmlAttribute]
-    public string pressureUnit
-    {
-        get
-        {
-            return pressureUnitField;
-        }
-        set
-        {
-            pressureUnitField = value;
-        }
-    }
+    public string pressureUnit { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -287,17 +169,7 @@ public class LandXMLUnitsMetric
 
     /// <remarks/>
     [XmlAttribute]
-    public string angularUnit
-    {
-        get
-        {
-            return angularUnitField;
-        }
-        set
-        {
-            angularUnitField = value;
-        }
-    }
+    public string angularUnit { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -321,21 +193,9 @@ public class LandXMLUnitsMetric
 public class LandXMLProject
 {
 
-    private string nameField;
-
     /// <remarks/>
     [XmlAttribute]
-    public string name
-    {
-        get
-        {
-            return nameField;
-        }
-        set
-        {
-            nameField = value;
-        }
-    }
+    public string name { get; set; }
 }
 
 /// <remarks/>
@@ -344,32 +204,13 @@ public class LandXMLProject
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLApplication
 {
-
-    private string nameField;
-
     private string descField;
-
-    private string manufacturerField;
-
     private string versionField;
-
-    private string manufacturerURLField;
-
     private DateTime timeStampField;
 
     /// <remarks/>
     [XmlAttribute]
-    public string name
-    {
-        get
-        {
-            return nameField;
-        }
-        set
-        {
-            nameField = value;
-        }
-    }
+    public string name { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -387,17 +228,7 @@ public class LandXMLApplication
 
     /// <remarks/>
     [XmlAttribute]
-    public string manufacturer
-    {
-        get
-        {
-            return manufacturerField;
-        }
-        set
-        {
-            manufacturerField = value;
-        }
-    }
+    public string manufacturer { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -415,17 +246,7 @@ public class LandXMLApplication
 
     /// <remarks/>
     [XmlAttribute]
-    public string manufacturerURL
-    {
-        get
-        {
-            return manufacturerURLField;
-        }
-        set
-        {
-            manufacturerURLField = value;
-        }
-    }
+    public string manufacturerURL { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -448,23 +269,10 @@ public class LandXMLApplication
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignments
 {
-
-    private LandXMLAlignmentsAlignment alignmentField;
-
     private string nameField;
 
     /// <remarks/>
-    public LandXMLAlignmentsAlignment Alignment
-    {
-        get
-        {
-            return alignmentField;
-        }
-        set
-        {
-            alignmentField = value;
-        }
-    }
+    public LandXMLAlignmentsAlignment Alignment { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -487,31 +295,12 @@ public class LandXMLAlignments
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignmentsAlignment
 {
-
-    private LandXMLAlignmentsAlignmentCoordGeom coordGeomField;
-
     private LandXMLAlignmentsAlignmentProfile profileField;
-
-    private string nameField;
-
     private decimal lengthField;
-
-    private decimal staStartField;
-
     private string descField;
 
     /// <remarks/>
-    public LandXMLAlignmentsAlignmentCoordGeom CoordGeom
-    {
-        get
-        {
-            return coordGeomField;
-        }
-        set
-        {
-            coordGeomField = value;
-        }
-    }
+    public LandXMLAlignmentsAlignmentCoordGeom CoordGeom { get; set; }
 
     /// <remarks/>
     public LandXMLAlignmentsAlignmentProfile Profile
@@ -528,17 +317,7 @@ public class LandXMLAlignmentsAlignment
 
     /// <remarks/>
     [XmlAttribute]
-    public string name
-    {
-        get
-        {
-            return nameField;
-        }
-        set
-        {
-            nameField = value;
-        }
-    }
+    public string name { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -556,17 +335,7 @@ public class LandXMLAlignmentsAlignment
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal staStart
-    {
-        get
-        {
-            return staStartField;
-        }
-        set
-        {
-            staStartField = value;
-        }
-    }
+    public decimal staStart { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -590,23 +359,11 @@ public class LandXMLAlignmentsAlignment
 public class LandXMLAlignmentsAlignmentCoordGeom
 {
 
-    private object[] itemsField;
-
     /// <remarks/>
     [XmlElement("Curve", typeof(LandXMLAlignmentsAlignmentCoordGeomCurve))]
     [XmlElement("Line", typeof(LandXMLAlignmentsAlignmentCoordGeomLine))]
     [XmlElement("Spiral", typeof(LandXMLAlignmentsAlignmentCoordGeomSpiral))]
-    public object[] Items
-    {
-        get
-        {
-            return itemsField;
-        }
-        set
-        {
-            itemsField = value;
-        }
-    }
+    public object[] Items { get; set; }
 }
 
 /// <remarks/>
@@ -615,49 +372,16 @@ public class LandXMLAlignmentsAlignmentCoordGeom
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignmentsAlignmentCoordGeomCurve
 {
-
-    private string startField;
-
     private string centerField;
-
-    private string endField;
-
     private string piField;
-
-    private string rotField;
-
     private decimal chordField;
-
-    private string crvTypeField;
-
     private decimal deltaField;
-
-    private decimal dirEndField;
-
     private decimal dirStartField;
-
-    private decimal externalField;
-
     private decimal lengthField;
-
-    private decimal midOrdField;
-
     private decimal radiusField;
 
-    private decimal tangentField;
-
     /// <remarks/>
-    public string Start
-    {
-        get
-        {
-            return startField;
-        }
-        set
-        {
-            startField = value;
-        }
-    }
+    public string Start { get; set; }
 
     /// <remarks/>
     public string Center
@@ -673,17 +397,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomCurve
     }
 
     /// <remarks/>
-    public string End
-    {
-        get
-        {
-            return endField;
-        }
-        set
-        {
-            endField = value;
-        }
-    }
+    public string End { get; set; }
 
     /// <remarks/>
     public string PI
@@ -700,17 +414,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomCurve
 
     /// <remarks/>
     [XmlAttribute]
-    public string rot
-    {
-        get
-        {
-            return rotField;
-        }
-        set
-        {
-            rotField = value;
-        }
-    }
+    public string rot { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -728,17 +432,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomCurve
 
     /// <remarks/>
     [XmlAttribute]
-    public string crvType
-    {
-        get
-        {
-            return crvTypeField;
-        }
-        set
-        {
-            crvTypeField = value;
-        }
-    }
+    public string crvType { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -756,17 +450,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomCurve
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal dirEnd
-    {
-        get
-        {
-            return dirEndField;
-        }
-        set
-        {
-            dirEndField = value;
-        }
-    }
+    public decimal dirEnd { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -784,17 +468,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomCurve
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal external
-    {
-        get
-        {
-            return externalField;
-        }
-        set
-        {
-            externalField = value;
-        }
-    }
+    public decimal external { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -812,17 +486,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomCurve
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal midOrd
-    {
-        get
-        {
-            return midOrdField;
-        }
-        set
-        {
-            midOrdField = value;
-        }
-    }
+    public decimal midOrd { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -840,17 +504,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomCurve
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal tangent
-    {
-        get
-        {
-            return tangentField;
-        }
-        set
-        {
-            tangentField = value;
-        }
-    }
+    public decimal tangent { get; set; }
 }
 
 /// <remarks/>
@@ -859,27 +513,11 @@ public class LandXMLAlignmentsAlignmentCoordGeomCurve
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignmentsAlignmentCoordGeomLine
 {
-
-    private string startField;
-
     private string endField;
-
-    private decimal dirField;
-
     private decimal lengthField;
 
     /// <remarks/>
-    public string Start
-    {
-        get
-        {
-            return startField;
-        }
-        set
-        {
-            startField = value;
-        }
-    }
+    public string Start { get; set; }
 
     /// <remarks/>
     public string End
@@ -896,17 +534,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomLine
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal dir
-    {
-        get
-        {
-            return dirField;
-        }
-        set
-        {
-            dirField = value;
-        }
-    }
+    public decimal dir { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -929,45 +557,15 @@ public class LandXMLAlignmentsAlignmentCoordGeomLine
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 {
-
-    private string startField;
-
     private string piField;
-
-    private string endField;
-
     private decimal lengthField;
-
-    private string radiusEndField;
-
     private string radiusStartField;
-
-    private string rotField;
-
     private string spiTypeField;
-
-    private decimal thetaField;
-
     private decimal totalYField;
-
-    private decimal totalXField;
-
     private decimal tanLongField;
 
-    private decimal tanShortField;
-
     /// <remarks/>
-    public string Start
-    {
-        get
-        {
-            return startField;
-        }
-        set
-        {
-            startField = value;
-        }
-    }
+    public string Start { get; set; }
 
     /// <remarks/>
     public string PI
@@ -983,17 +581,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomSpiral
     }
 
     /// <remarks/>
-    public string End
-    {
-        get
-        {
-            return endField;
-        }
-        set
-        {
-            endField = value;
-        }
-    }
+    public string End { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -1011,17 +599,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 
     /// <remarks/>
     [XmlAttribute]
-    public string radiusEnd
-    {
-        get
-        {
-            return radiusEndField;
-        }
-        set
-        {
-            radiusEndField = value;
-        }
-    }
+    public string radiusEnd { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -1039,17 +617,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 
     /// <remarks/>
     [XmlAttribute]
-    public string rot
-    {
-        get
-        {
-            return rotField;
-        }
-        set
-        {
-            rotField = value;
-        }
-    }
+    public string rot { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -1067,17 +635,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal theta
-    {
-        get
-        {
-            return thetaField;
-        }
-        set
-        {
-            thetaField = value;
-        }
-    }
+    public decimal theta { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -1095,17 +653,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal totalX
-    {
-        get
-        {
-            return totalXField;
-        }
-        set
-        {
-            totalXField = value;
-        }
-    }
+    public decimal totalX { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -1123,17 +671,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal tanShort
-    {
-        get
-        {
-            return tanShortField;
-        }
-        set
-        {
-            tanShortField = value;
-        }
-    }
+    public decimal tanShort { get; set; }
 }
 
 /// <remarks/>
@@ -1142,23 +680,10 @@ public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignmentsAlignmentProfile
 {
-
-    private LandXMLAlignmentsAlignmentProfileProfAlign profAlignField;
-
     private string nameField;
 
     /// <remarks/>
-    public LandXMLAlignmentsAlignmentProfileProfAlign ProfAlign
-    {
-        get
-        {
-            return profAlignField;
-        }
-        set
-        {
-            profAlignField = value;
-        }
-    }
+    public LandXMLAlignmentsAlignmentProfileProfAlign ProfAlign { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -1181,26 +706,13 @@ public class LandXMLAlignmentsAlignmentProfile
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignmentsAlignmentProfileProfAlign
 {
-
-    private object[] itemsField;
-
     private string nameField;
 
     /// <remarks/>
     [XmlElement("CircCurve", typeof(LandXMLAlignmentsAlignmentProfileProfAlignCircCurve))]
-    [XmlElement("PVI", typeof(string))]
+    [XmlElement("PVI", typeof(LandXMLAlignmentsAlignmentProfileProfAlignPVI))]
     [XmlElement("ParaCurve", typeof(LandXMLAlignmentsAlignmentProfileProfAlignParaCurve))]
-    public object[] Items
-    {
-        get
-        {
-            return itemsField;
-        }
-        set
-        {
-            itemsField = value;
-        }
-    }
+    public object[] Items { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -1223,26 +735,11 @@ public class LandXMLAlignmentsAlignmentProfileProfAlign
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
 {
-
-    private decimal lengthField;
-
     private decimal radiusField;
-
-    private string valueField;
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal length
-    {
-        get
-        {
-            return lengthField;
-        }
-        set
-        {
-            lengthField = value;
-        }
-    }
+    public decimal length { get; set; }
 
     /// <remarks/>
     [XmlAttribute]
@@ -1260,17 +757,7 @@ public class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
 
     /// <remarks/>
     [XmlText]
-    public string Value
-    {
-        get
-        {
-            return valueField;
-        }
-        set
-        {
-            valueField = value;
-        }
-    }
+    public string Value { get; set; }
 }
 
 /// <remarks/>
@@ -1279,24 +766,11 @@ public class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
 {
-
-    private decimal lengthField;
-
     private string valueField;
 
     /// <remarks/>
     [XmlAttribute]
-    public decimal length
-    {
-        get
-        {
-            return lengthField;
-        }
-        set
-        {
-            lengthField = value;
-        }
-    }
+    public decimal length { get; set; }
 
     /// <remarks/>
     [XmlText]
@@ -1312,43 +786,10 @@ public class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
         }
     }
 }
-
-/// <remarks/>
-[Serializable]
-[DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 public class LandXMLAlignmentsAlignmentProfileProfAlignPVI
 {
-
-    private decimal lengthField;
-
-    private string valueField;
-
-    /// <remarks/>
-    [XmlAttribute]
-    public decimal length
-    {
-        get
-        {
-            return lengthField;
-        }
-        set
-        {
-            lengthField = value;
-        }
-    }
-
     /// <remarks/>
     [XmlText]
-    public string Value
-    {
-        get
-        {
-            return valueField;
-        }
-        set
-        {
-            valueField = value;
-        }
-    }
+    public string Value { get; set; }
 }
+
