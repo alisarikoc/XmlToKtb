@@ -97,7 +97,7 @@
             this.dosyaTuruComboBox.Name = "dosyaTuruComboBox";
             this.dosyaTuruComboBox.Size = new System.Drawing.Size(92, 21);
             this.dosyaTuruComboBox.TabIndex = 6;
-            this.dosyaTuruComboBox.Visible = false;
+            this.dosyaTuruComboBox.Visible = true;
             this.dosyaTuruComboBox.SelectedIndexChanged += new System.EventHandler(this.dosyaTuruComboBox_SelectedIndexChanged);
             // 
             // kayitTuruLabel

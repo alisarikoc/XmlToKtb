@@ -19,11 +19,11 @@ namespace XmlToKtb
             foreach (var item in profAlign.Items)
             {
                 object oncekiItem;
-                object sonrakiItem;
+                object sonrakiItem = null;
                 if (profAlignItems.IndexOf(item) == 0)//ilk item
                 {
                     oncekiItem = null;
-                    sonrakiItem = profAlignItems[profAlignItems.IndexOf(item) + 1];
+                    //sonrakiItem = profAlignItems[profAlignItems.IndexOf(item) + 1];
                 }
                 else if (profAlignItems.IndexOf(item) == profAlignItems.Count - 1)//son item
                 {

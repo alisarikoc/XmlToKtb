@@ -21,15 +21,17 @@ namespace XmlToKtb
 
             switch (item)
             {
-                case string _:
+                case LandXMLAlignmentsAlignmentProfileProfAlignPVI _:
                     {
-                        var ikiDeger = item.ToString().Split();
+                        var paraline = (LandXMLAlignmentsAlignmentProfileProfAlignPVI)item;
 
-                        profilAlignPackage.KM = Yuvarla(ikiDeger[0]);
+                        var ikiDeger = paraline.Value.Split();
 
-                        profilAlignPackage.Kot = Yuvarla(ikiDeger[1]);
+                        profilAlignPackage.KM = Convert.ToDecimal(ikiDeger[0]);
 
-                        profilAlignPackage.Length = 0m;
+                        profilAlignPackage.Kot = Convert.ToDecimal(ikiDeger[1]);
+
+                        profilAlignPackage.Length = 0;
 
                         profilAlignPackage.ProfilAlignTip = ProfileAlignTip.Line;
 

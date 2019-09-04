@@ -22,20 +22,20 @@ namespace XmlToKtb
                 switch (item)
                 {
                     case LandXMLAlignmentsAlignmentCoordGeomLine _:
-                    {
-                        guncelKM = LineYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomLine)item, guncelKM);
-                        break;
-                    }
+                        {
+                            guncelKM = LineYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomLine)item, guncelKM);
+                            break;
+                        }
                     case LandXMLAlignmentsAlignmentCoordGeomCurve _:
-                    {
-                        guncelKM = CurveYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomCurve)item, guncelKM);
-                        break;
-                    }
+                        {
+                            guncelKM = CurveYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomCurve)item, guncelKM);
+                            break;
+                        }
                     case LandXMLAlignmentsAlignmentCoordGeomSpiral _:
-                    {
-                        guncelKM = SpiralYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomSpiral)item, guncelKM);
-                        break;
-                    }
+                        {
+                            guncelKM = SpiralYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomSpiral)item, guncelKM);
+                            break;
+                        }
                 }
             }
 
@@ -200,7 +200,7 @@ namespace XmlToKtb
             }
             double semt1;
             //var semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * Convert.ToInt32(yon) + Math.PI / 2 * Convert.ToInt32(yon);
-            if (L1 > L2 && Y2 > Y1 || Math.Abs(Convert.ToDouble(spiral.radiusStart) - Convert.ToDouble(spiral.radiusEnd))<15)
+            if (L1 > L2 && Y2 > Y1 || Math.Abs(Convert.ToDouble(spiral.radiusStart) - Convert.ToDouble(spiral.radiusEnd)) < 15)
             {
                 var kiris = Math.Sqrt(Math.Pow((endy - starty), 2) + Math.Pow((endx - startx), 2));
                 var ort_yaricap = (Convert.ToDouble(spiral.radiusStart) + Convert.ToDouble(spiral.radiusEnd)) / 2;
@@ -260,7 +260,17 @@ namespace XmlToKtb
                             var ikinciDeger = Yardimci.Yuvarla(ikiDeger[1]);
                             var length = Yardimci.Yuvarla(circCurve.length);
                             var radius = Yardimci.Yuvarla(circCurve.radius);
-                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1 0 0 "+radius);
+                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + "  " + length + "  1 0 0 " + radius);
+                            break;
+                        }
+                    case LandXMLAlignmentsAlignmentProfileProfAlignPVI _:
+                        {
+                            var pvi = (LandXMLAlignmentsAlignmentProfileProfAlignPVI)item;
+                            var ikiDeger = pvi.Value.Split();
+
+                            var ilkDeger = Yardimci.Yuvarla(ikiDeger[0]);
+                            var ikinciDeger = Yardimci.Yuvarla(ikiDeger[1]);
+                            sb.AppendLine(ilkDeger + "  " + ikinciDeger + " 0  0");
                             break;
                         }
                 }

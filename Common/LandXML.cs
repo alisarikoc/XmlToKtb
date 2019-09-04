@@ -788,8 +788,24 @@ public class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
 }
 public class LandXMLAlignmentsAlignmentProfileProfAlignPVI
 {
+    private string valueField;
+
+    /// <remarks/>
+    [XmlAttribute]
+    public decimal length { get; set; }
+
     /// <remarks/>
     [XmlText]
-    public string Value { get; set; }
+    public string Value
+    {
+        get
+        {
+            return valueField;
+        }
+        set
+        {
+            valueField = value;
+        }
+    }
 }
 
