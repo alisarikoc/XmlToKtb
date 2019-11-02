@@ -76,5 +76,29 @@ namespace XmlToKtb
 
             return profilAlignPackage;
         }
+
+        public static CantPackage GetirCantDetaylar(object item)
+        {
+            var CantPackage = new CantPackage();
+
+            switch (item)
+            {
+                case LandXMLAlignmentsAlignmentCant _:
+                {
+                    var satir = (LandXMLAlignmentsAlignmentCantCantStation)item;
+
+                    CantPackage.KM = satir.station;
+
+                    CantPackage.Cant = satir.appliedCant;
+
+                    CantPackage.Yon = satir.curvature;
+
+
+                    break;
+                }
+            }
+
+            return CantPackage;
+        }
     }
 }

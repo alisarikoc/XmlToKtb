@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using Common;
 using Common.Enum;
@@ -40,9 +42,9 @@ namespace XmlToKtb
                 dosyaTuruComboBox.Visible = false;
                 dosyaTip = DosyaTip.XML;
 
-                var ktbIcerigi = new StreamReader(openFileDialog.FileName);
+                StreamReader ktbStreamReader = new StreamReader(openFileDialog.FileName);
                 string shortName = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
-                var xmlData = KTBtoXML.GetirXmlData(ktbIcerigi);
+                var xmlData = KTBtoXML.GetirXmlData(ktbStreamReader);
                 LandXML landXml = KTBtoXML.LandXmlOlustur(shortName, xmlData);
 
                 xmlIcerigi = KTBtoXML.Serialize(landXml);
@@ -111,20 +113,18 @@ namespace XmlToKtb
             bilgiLabel.ForeColor = rastgeleRenk;
         }
 
-
-
-        private static void ktbDosyasiniKaydet(string content)
+        private static void DosyaKaydetFiltreIle(string icerik, string filtre)
         {
-            var saveKtbfile = new SaveFileDialog
+            var saveFileDialog = new SaveFileDialog
             {
                 FileName = "output",
-                Filter = Resources.ktbExtensionFilter
+                Filter = filtre
             };
 
-            if (saveKtbfile.ShowDialog() == DialogResult.OK)
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                using (var sw = new StreamWriter(saveKtbfile.FileName))
-                    sw.WriteLine(content);
+                using (var sw = new StreamWriter(saveFileDialog.FileName))
+                    sw.WriteLine(icerik);
             }
         }
 
@@ -173,28 +173,13 @@ namespace XmlToKtb
             }
         }
 
-        private static void xmlDosyasiniKaydet(string content)
-        {
-            var saveXmlfile = new SaveFileDialog
-            {
-                FileName = "output",
-                Filter = Resources.xmlExtensionFilter
-            };
-
-            if (saveXmlfile.ShowDialog() == DialogResult.OK)
-            {
-                using (var sw = new StreamWriter(saveXmlfile.FileName))
-                    sw.WriteLine(content);
-            }
-        }
-
         private void kaydet_Tikla(object sender, EventArgs e)
         {
             switch (dosyaTip)
             {
                 case DosyaTip.KTB:
 
-                    ktbDosyasiniKaydet(ktbIcerigi);
+                    DosyaKaydetFiltreIle(ktbIcerigi, Resources.ktbExtensionFilter);
                     break;
 
                 case DosyaTip.ALNPRF:
@@ -204,7 +189,7 @@ namespace XmlToKtb
 
                 case DosyaTip.XML:
 
-                    xmlDosyasiniKaydet(xmlIcerigi);
+                    DosyaKaydetFiltreIle(xmlIcerigi, Resources.xmlExtensionFilter);
                     break;
             }
             durumTip = DurumTip.Kaydedildi;
@@ -216,6 +201,63 @@ namespace XmlToKtb
             dosyaTip = (DosyaTip)dosyaTuruComboBox.SelectedIndex;
         }
 
+        private void enkesitButton_Click(object sender, EventArgs e)
+        {
+            LandXML landXml = GetirLandXmlDosyaTipiIle();
+            List<Array> ncnData = GetirNcnData();
+
+            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData);
+            string kseIcerigi = KSEIcerigi.Duzenleyici(kesitler);
+
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
+        }
+
+        private LandXML GetirLandXmlDosyaTipiIle()
+        {
+            openFileDialog.ShowDialog();
+
+            var dosyaUzantisi = Path.GetExtension(openFileDialog.FileName);
+            LandXML landXml = new LandXML();
+
+            if (dosyaUzantisi != null && dosyaUzantisi.ToLower().Equals(".ktb"))
+            {
+                StreamReader ktbStreamReader = new StreamReader(openFileDialog.FileName);
+                string shortName = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
+                var xmlData = KTBtoXML.GetirXmlData(ktbStreamReader);
+                landXml = KTBtoXML.LandXmlOlustur(shortName, xmlData);
+            }
+            else if (dosyaUzantisi != null && dosyaUzantisi.ToLower().Equals(".xml"))
+            {
+                var serializer = new DosyaDeserializer();
+                landXml = serializer.XmlDeserializer<LandXML>(openFileDialog.FileName);
+            }
+
+            return landXml;
+        }
+
+        private List<Array> GetirNcnData()
+        {
+            ncnOpenFileDialog.ShowDialog();
+            StreamReader ncnIcerigi = new StreamReader(ncnOpenFileDialog.FileName);
+
+            List<Array> tumsatirlar = new List<Array>();
+
+            while (!ncnIcerigi.EndOfStream)
+            {
+                char[] separator = { ' ', '\t' };
+                var veriSatir = ncnIcerigi.ReadLine();
+                var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions)1);
+                tumsatirlar.Add(veriKelimeleri);
+            }
+
+            return tumsatirlar;
+        }
+
+        private void tipKesitButton_Click(object sender, EventArgs e)
+        {
+            LandXML landXml = GetirLandXmlDosyaTipiIle();
+
+        }
 
         //TODO burak burası farklı sınıfa alınacak
 

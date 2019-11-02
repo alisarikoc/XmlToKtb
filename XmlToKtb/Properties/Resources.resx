@@ -129,4 +129,8 @@
     <value>XML|*.xml</value>
     <comment>XML|*.xml</comment>
   </data>
+  <data name="kseExtensionFilter" xml:space="preserve">
+    <value>KSE|*.kse</value>
+    <comment>KSE|*.kse</comment>
+  </data>
 </root>

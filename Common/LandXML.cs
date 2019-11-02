@@ -11,6 +11,8 @@ using System.Xml.Serialization;
 [XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
 [XmlRoot(Namespace = "http://www.landxml.org/schema/LandXML-1.2", IsNullable = false)]
 
+
+
 public class LandXML
 {
     private LandXMLProject projectField;
@@ -94,7 +96,7 @@ public class LandXML
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLUnits
 {
 
@@ -105,7 +107,7 @@ public class LandXMLUnits
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLUnitsMetric
 {
     private string linearUnitField;
@@ -189,7 +191,7 @@ public class LandXMLUnitsMetric
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLProject
 {
 
@@ -201,7 +203,7 @@ public class LandXMLProject
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLApplication
 {
     private string descField;
@@ -266,7 +268,7 @@ public class LandXMLApplication
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignments
 {
     private string nameField;
@@ -292,10 +294,11 @@ public class LandXMLAlignments
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignment
 {
     private LandXMLAlignmentsAlignmentProfile profileField;
+    private LandXMLAlignmentsAlignmentCant cantField;
     private decimal lengthField;
     private string descField;
 
@@ -312,6 +315,19 @@ public class LandXMLAlignmentsAlignment
         set
         {
             profileField = value;
+        }
+    }
+
+    /// <remarks/>
+    public LandXMLAlignmentsAlignmentCant Cant
+    {
+        get
+        {
+            return this.cantField;
+        }
+        set
+        {
+            this.cantField = value;
         }
     }
 
@@ -355,7 +371,7 @@ public class LandXMLAlignmentsAlignment
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignmentCoordGeom
 {
 
@@ -369,7 +385,7 @@ public class LandXMLAlignmentsAlignmentCoordGeom
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignmentCoordGeomCurve
 {
     private string centerField;
@@ -510,7 +526,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomCurve
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignmentCoordGeomLine
 {
     private string endField;
@@ -554,7 +570,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomLine
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 {
     private string piField;
@@ -677,7 +693,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignmentProfile
 {
     private string nameField;
@@ -703,7 +719,7 @@ public class LandXMLAlignmentsAlignmentProfile
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignmentProfileProfAlign
 {
     private string nameField;
@@ -732,7 +748,7 @@ public class LandXMLAlignmentsAlignmentProfileProfAlign
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
 {
     private decimal radiusField;
@@ -763,7 +779,7 @@ public class LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
 /// <remarks/>
 [Serializable]
 [DesignerCategory("code")]
-[XmlType(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+[XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
 {
     private string valueField;
@@ -805,6 +821,261 @@ public class LandXMLAlignmentsAlignmentProfileProfAlignPVI
         set
         {
             valueField = value;
+        }
+    }
+}
+/// <remarks/>
+[System.SerializableAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public partial class LandXMLAlignmentsAlignmentCant
+{
+
+    private LandXMLAlignmentsAlignmentCantCantStation[] cantStationField;
+
+    private string nameField;
+
+    private decimal gaugeField;
+
+    private string rotationPointField;
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlElementAttribute("CantStation")]
+    public LandXMLAlignmentsAlignmentCantCantStation[] CantStation
+    {
+        get
+        {
+            return this.cantStationField;
+        }
+        set
+        {
+            this.cantStationField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string name
+    {
+        get
+        {
+            return this.nameField;
+        }
+        set
+        {
+            this.nameField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal gauge
+    {
+        get
+        {
+            return this.gaugeField;
+        }
+        set
+        {
+            this.gaugeField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string rotationPoint
+    {
+        get
+        {
+            return this.rotationPointField;
+        }
+        set
+        {
+            this.rotationPointField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.SerializableAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public partial class LandXMLAlignmentsAlignmentCantCantStation
+{
+
+    private decimal stationField;
+
+    private decimal appliedCantField;
+
+    private string curvatureField;
+
+    private decimal equilibriumCantField;
+
+    private bool equilibriumCantFieldSpecified;
+
+    private decimal cantDeficiencyField;
+
+    private bool cantDeficiencyFieldSpecified;
+
+    private decimal cantGradientField;
+
+    private bool cantGradientFieldSpecified;
+
+    private decimal speedField;
+
+    private bool speedFieldSpecified;
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal station
+    {
+        get
+        {
+            return this.stationField;
+        }
+        set
+        {
+            this.stationField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal appliedCant
+    {
+        get
+        {
+            return this.appliedCantField;
+        }
+        set
+        {
+            this.appliedCantField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string curvature
+    {
+        get
+        {
+            return this.curvatureField;
+        }
+        set
+        {
+            this.curvatureField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal equilibriumCant
+    {
+        get
+        {
+            return this.equilibriumCantField;
+        }
+        set
+        {
+            this.equilibriumCantField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlIgnoreAttribute()]
+    public bool equilibriumCantSpecified
+    {
+        get
+        {
+            return this.equilibriumCantFieldSpecified;
+        }
+        set
+        {
+            this.equilibriumCantFieldSpecified = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal cantDeficiency
+    {
+        get
+        {
+            return this.cantDeficiencyField;
+        }
+        set
+        {
+            this.cantDeficiencyField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlIgnoreAttribute()]
+    public bool cantDeficiencySpecified
+    {
+        get
+        {
+            return this.cantDeficiencyFieldSpecified;
+        }
+        set
+        {
+            this.cantDeficiencyFieldSpecified = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal cantGradient
+    {
+        get
+        {
+            return this.cantGradientField;
+        }
+        set
+        {
+            this.cantGradientField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlIgnoreAttribute()]
+    public bool cantGradientSpecified
+    {
+        get
+        {
+            return this.cantGradientFieldSpecified;
+        }
+        set
+        {
+            this.cantGradientFieldSpecified = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal speed
+    {
+        get
+        {
+            return this.speedField;
+        }
+        set
+        {
+            this.speedField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlIgnoreAttribute()]
+    public bool speedSpecified
+    {
+        get
+        {
+            return this.speedFieldSpecified;
+        }
+        set
+        {
+            this.speedFieldSpecified = value;
         }
     }
 }

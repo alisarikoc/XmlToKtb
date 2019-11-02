@@ -47,8 +47,10 @@
   <ItemGroup>
     <Compile Include="ALNIcerigi.cs" />
     <Compile Include="deneme.cs" />
+    <Compile Include="KSEIcerigi.cs" />
     <Compile Include="KTBIcerigi.cs" />
     <Compile Include="KTBtoXML.cs" />
+    <Compile Include="PRFhesap.cs" />
     <Compile Include="PRFIcerigi.cs" />
     <Compile Include="Utf8StringWriter.cs" />
     <Compile Include="XmlToKtbUI.cs">
