@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using Common;
 using Common.Enum;
 using Common.Packages;
 
@@ -23,12 +24,10 @@ namespace XmlToKtb
                 if (profAlignItems.IndexOf(item) == 0)//ilk item
                 {
                     oncekiItem = null;
-                    //sonrakiItem = profAlignItems[profAlignItems.IndexOf(item) + 1];
                 }
                 else if (profAlignItems.IndexOf(item) == profAlignItems.Count - 1)//son item
                 {
                     oncekiItem = profAlignItems[profAlignItems.IndexOf(item) - 1];
-                    sonrakiItem = null;
                 }
                 else//aradaki itemlar
                 {
@@ -73,7 +72,7 @@ namespace XmlToKtb
                     var g2 = (sonrakiKot - guncelKot) / (sonrakiKm - guncelKm);
 
 
-                    bool ekstraNoktaVarIse = EkstraNoktaMi(oncekiKm, guncelLength, sonrakiKm, guncelKm, oncekiLength, sonrakiLength);
+                    bool ekstraNoktaVarIse = EkstraNoktaMi(oncekiKm, sonrakiKm, guncelKm, oncekiLength, sonrakiLength);
 
                     if (!ekstraNoktaVarIse)
                     {
@@ -103,7 +102,7 @@ namespace XmlToKtb
             return prf.ToString();
         }
 
-        private static bool EkstraNoktaMi(decimal oncekiKm, decimal guncelLength, decimal sonrakiKm, decimal guncelKm, decimal oncekiLength, decimal sonrakiLength)
+        private static bool EkstraNoktaMi(decimal oncekiKm, decimal sonrakiKm, decimal guncelKm, decimal oncekiLength, decimal sonrakiLength)
         {
             bool onceYakinNoktaVarMi = Math.Abs(oncekiKm + oncekiLength / 2 - guncelKm) < 0.1m;
 

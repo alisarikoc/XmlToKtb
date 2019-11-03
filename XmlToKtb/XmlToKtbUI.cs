@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
 using Common;
 using Common.Enum;
@@ -28,7 +27,7 @@ namespace XmlToKtb
             InitializeComponent();
             durumTip = DurumTip.Basladi;
             dosyaTuruComboBox.SelectedIndex = (int)DosyaTip.KTB;
-            gorunumuAyarla();
+            GorunumuAyarla();
         }
 
         private void xmlDonustur_Tikla(object sender, EventArgs e)
@@ -77,10 +76,10 @@ namespace XmlToKtb
                 }
             }
             durumTip = DurumTip.Donusturuldu;
-            gorunumuAyarla();
+            GorunumuAyarla();
         }
 
-        private void gorunumuAyarla()
+        private void GorunumuAyarla()
         {
             switch (durumTip)
             {
@@ -128,7 +127,7 @@ namespace XmlToKtb
             }
         }
 
-        private static void alnPrfDosyasiniKaydet(string alnIcerigi, string prfIcerigi)
+        private static void AlnPrfDosyasiniKaydet(string alnIcerigi, string prfIcerigi)
         {
             var saveAlnPrfFile = new FolderBrowserDialog
             {
@@ -148,7 +147,7 @@ namespace XmlToKtb
                 }
                 else
                 {
-                    var dialogResult = MessageBox.Show("Aynı isimde bir ALN dosyası mevcut. Üzerine yazılsın mı?", "Uyarı", MessageBoxButtons.YesNo);
+                    var dialogResult = MessageBox.Show(@"Aynı isimde bir ALN dosyası mevcut. Üzerine yazılsın mı?", @"Uyarı", MessageBoxButtons.YesNo);
                     if (dialogResult == DialogResult.Yes)
                     {
                         using (var sw = new StreamWriter(alnFileFullPath))
@@ -163,7 +162,7 @@ namespace XmlToKtb
                 }
                 else
                 {
-                    var dialogResult = MessageBox.Show("Aynı isimde bir PRF dosyası mevcut. Üzerine yazılsın mı?", "Uyarı", MessageBoxButtons.YesNo);
+                    var dialogResult = MessageBox.Show(@"Aynı isimde bir PRF dosyası mevcut. Üzerine yazılsın mı?", @"Uyarı", MessageBoxButtons.YesNo);
                     if (dialogResult == DialogResult.Yes)
                     {
                         using (var sw = new StreamWriter(prfFileFullPath))
@@ -184,7 +183,7 @@ namespace XmlToKtb
 
                 case DosyaTip.ALNPRF:
 
-                    alnPrfDosyasiniKaydet(alnIcerigi, prfIcerigi);
+                    AlnPrfDosyasiniKaydet(alnIcerigi, prfIcerigi);
                     break;
 
                 case DosyaTip.XML:
@@ -193,7 +192,7 @@ namespace XmlToKtb
                     break;
             }
             durumTip = DurumTip.Kaydedildi;
-            gorunumuAyarla();
+            GorunumuAyarla();
         }
 
         private void dosyaTuruComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -205,9 +204,9 @@ namespace XmlToKtb
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();
             List<Array> ncnData = GetirNcnData();
-
             List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData);
-            string kseIcerigi = KSEIcerigi.Duzenleyici(kesitler);
+
+            string kseIcerigi = KSEIcerigi.NoktalardanEnkesitOlustur(kesitler);
 
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
         }
@@ -246,8 +245,11 @@ namespace XmlToKtb
             {
                 char[] separator = { ' ', '\t' };
                 var veriSatir = ncnIcerigi.ReadLine();
-                var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions)1);
-                tumsatirlar.Add(veriKelimeleri);
+                if (veriSatir != null)
+                {
+                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions)1);
+                    tumsatirlar.Add(veriKelimeleri);
+                }
             }
 
             return tumsatirlar;
@@ -256,26 +258,25 @@ namespace XmlToKtb
         private void tipKesitButton_Click(object sender, EventArgs e)
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();
+            List<Array> ncnData = GetirNcnData();
+            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData);
 
+            string kseIcerigi = KSEIcerigi.TipkesittenEnkesitOlustur(kesitler);
+
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
         }
 
-        //TODO burak burası farklı sınıfa alınacak
+        
 
-        //private void openFileButton_Click(object sender, EventArgs e)
-        //{
-        //    openVeriFileDialog.FileName = "Veriler Aç";
-        //    openVeriFileDialog.ShowDialog();
+        private void gabariButton_Click(object sender, EventArgs e)
+        {
+            LandXML landXml = GetirLandXmlDosyaTipiIle();
+            List<Array> ncnData = GetirNcnData();
+            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData);
 
-        //    var ktbIcerigi = new StreamReader(openVeriFileDialog.FileName);
-        //    string shortName = Path.GetFileNameWithoutExtension(openVeriFileDialog.FileName);
-        //    var xmlData = KTBtoXML.GetirXmlData(ktbIcerigi);
+            string kseIcerigi = KSEIcerigi.GabariKesitleriOlustur(kesitler, landXml);
 
-        //    LandXML landXml = KTBtoXML.LandXmlOlustur(shortName, xmlData);
-
-        //    KTBtoXML.Serialize(landXml);
-        //}
-
-
-
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
+        }
     }
 }

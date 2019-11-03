@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Text;
+using Common;
 
 namespace XmlToKtb
 {
@@ -44,6 +46,12 @@ namespace XmlToKtb
             ktb.AppendLine("$DUSEY");
 
             duseyBilgileriDoldur(alignment, ktb);
+
+            ktb.AppendLine("$SON");
+
+            ktb.AppendLine("$DEVER");
+
+            deverBilgileriDoldur(alignment, ktb);
 
             ktb.AppendLine("$SON");
 
@@ -151,15 +159,13 @@ namespace XmlToKtb
                 ktb.AppendLine("AR " + guncelKm + " " + ort_yaricap + " " + yon + " 0 0 " + Ym + " " + Xm + " " + starty + " " + startx + " " + endy + " " + endx);
                 return;
             }
-            else
-            {
-                semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * (Convert.ToInt32(yon)) - (Convert.ToInt32(yon) * (Math.PI) / 2);
-                spiralEndY = Math.Sin(semt1) * X2 + endy;
-                spiralEndX = Math.Cos(semt1) * X2 + endx;
-                semt2 = semt1 - (Convert.ToInt32(yon) * (Math.PI) / 2);
-                spiralStartY = Math.Sin(semt2) * Y2 + spiralEndY;
-                spiralStartX = Math.Cos(semt2) * Y2 + spiralEndX;
-            }
+
+            semt1 = semt - Math.Atan(Math.Abs(X2 - X1) / Math.Abs(Y2 - Y1)) * (Convert.ToInt32(yon)) - (Convert.ToInt32(yon) * (Math.PI) / 2);
+            spiralEndY = Math.Sin(semt1) * X2 + endy;
+            spiralEndX = Math.Cos(semt1) * X2 + endx;
+            semt2 = semt1 - (Convert.ToInt32(yon) * (Math.PI) / 2);
+            spiralStartY = Math.Sin(semt2) * Y2 + spiralEndY;
+            spiralStartX = Math.Cos(semt2) * Y2 + spiralEndX;
 
 
 
@@ -275,6 +281,53 @@ namespace XmlToKtb
                         }
                 }
             }
+        }
+        private static void deverBilgileriDoldur(LandXMLAlignmentsAlignment alignment, StringBuilder sb)
+        {
+            if (alignment.Cant == null)
+            {
+                return;
+            }
+
+            var Cant = alignment.Cant;
+            var CantItems = alignment.Cant.CantStation.ToList();
+
+            foreach (var cantStation in Cant.CantStation)
+            {
+                int cantStationIndex = CantItems.IndexOf(cantStation);
+                decimal guncelKm = cantStation.station;
+                decimal guncelCant = cantStation.appliedCant;
+                string guncelYon = cantStation.curvature;
+                double guncelDever = Convert.ToDouble(guncelCant) / 1500;
+                if (guncelYon == "ccw")
+                {
+                    guncelDever = guncelDever * -1;
+                }
+
+
+                if (cantStationIndex != CantItems.Count - 1) //son item
+                {
+                    var nextCantStation = Cant.CantStation[cantStationIndex + 1];
+                    decimal ileriKm = nextCantStation.station;
+                    decimal ileriCant = nextCantStation.appliedCant;
+                    string ileriYon = nextCantStation.curvature;
+                    double ileriDever = Convert.ToDouble(ileriCant) / 1500;
+
+                    if (ileriYon == "ccw")
+                    {
+                        ileriDever = ileriDever * -1;
+                    }
+
+                    sb.AppendLine(guncelKm + "  " + ileriKm + " 0 " + guncelDever + "  " + ileriDever);
+                }
+                else
+                {
+                    return;
+                }
+
+            }
+
+
         }
 
         private static double Faktoryel(double faktor)

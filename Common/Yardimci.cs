@@ -2,7 +2,7 @@
 using Common.Enum;
 using Common.Packages;
 
-namespace XmlToKtb
+namespace Common
 {
     public static class Yardimci
     {
@@ -100,5 +100,14 @@ namespace XmlToKtb
 
             return CantPackage;
         }
+    }
+
+    public class CantPackage
+    {
+        public decimal KM { get; set; }
+
+        public decimal Cant { get; set; }
+
+        public string Yon { get; set; }
     }
 }

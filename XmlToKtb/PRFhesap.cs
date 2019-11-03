@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Common;
 using Common.Enum;
 using Common.Packages;
 
@@ -11,8 +11,6 @@ namespace XmlToKtb
     {
         public static decimal Duzenleyici(LandXMLAlignmentsAlignment alignment, decimal kilometre)
         {
-            
-
             if (alignment.Profile == null) { return 0; }
             var profAlign = alignment.Profile.ProfAlign;
             var profAlignItems = alignment.Profile.ProfAlign.Items.ToList();
@@ -30,7 +28,6 @@ namespace XmlToKtb
                 else if (profAlignItems.IndexOf(item) == profAlignItems.Count - 1)//son item
                 {
                     oncekiItem = profAlignItems[profAlignItems.IndexOf(item) - 1];
-                    sonrakiItem = null;
                 }
                 else//aradaki itemlar
                 {
@@ -85,11 +82,10 @@ namespace XmlToKtb
                     var g2 = (sonrakiKot - guncelKot) / (sonrakiKm - guncelKm);
 
 
-                    bool ekstraNoktaVarIse = EkstraNoktaMi(oncekiKm, guncelLength, sonrakiKm, guncelKm, oncekiLength, sonrakiLength);
+                    bool ekstraNoktaVarIse = EkstraNoktaMi(oncekiKm, sonrakiKm, guncelKm, oncekiLength, sonrakiLength);
 
                     if (!ekstraNoktaVarIse)
                     {
-                        var katSayiIsareti = g1 - g2 < 0 ? "+" : "-";
                         guncelKm = guncelKm - guncelLength / 2;
                         var geriKot = guncelKot - g1 * guncelLength / 2;
                         var ileriKot = guncelKot + g2 * guncelLength / 2;
@@ -159,7 +155,7 @@ namespace XmlToKtb
             return kirmizikot;
         }
 
-        private static bool EkstraNoktaMi(decimal oncekiKm, decimal guncelLength, decimal sonrakiKm, decimal guncelKm, decimal oncekiLength, decimal sonrakiLength)
+        private static bool EkstraNoktaMi(decimal oncekiKm, decimal sonrakiKm, decimal guncelKm, decimal oncekiLength, decimal sonrakiLength)
         {
             bool onceYakinNoktaVarMi = Math.Abs(oncekiKm + oncekiLength / 2 - guncelKm) < 0.1m;
 

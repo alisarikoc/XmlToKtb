@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace HaritaHesaplama
+namespace XmlToKtb
 {
     public class Utf8StringWriter : StringWriter
     {

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
-using HaritaHesaplama;
+using Common;
 
 namespace XmlToKtb
 {
@@ -18,9 +16,8 @@ namespace XmlToKtb
             XmlSerializer xsSubmit = new XmlSerializer(typeof(LandXML));
             string xml;
 
-            var xmlWriterSettings = new XmlWriterSettings();
-            xmlWriterSettings.Encoding = Encoding.UTF8;  // no BOM in a .NET string
-            xmlWriterSettings.Indent = true;
+            var xmlWriterSettings = new XmlWriterSettings {Encoding = Encoding.UTF8, Indent = true};
+            // no BOM in a .NET string
 
             //xmlWriterSettings.OmitXmlDeclaration = true;
 
@@ -67,9 +64,10 @@ namespace XmlToKtb
                         desc = string.Empty,
                         staStart = _km0,
                         CoordGeom = new LandXMLAlignmentsAlignmentCoordGeom(),
-                        Profile = new LandXMLAlignmentsAlignmentProfile()
+                        Cant = new LandXMLAlignmentsAlignmentCant(),
+                        Profile = new LandXMLAlignmentsAlignmentProfile
                         {
-                            ProfAlign = new LandXMLAlignmentsAlignmentProfileProfAlign()
+                            ProfAlign = new LandXMLAlignmentsAlignmentProfileProfAlign
                             {
                                 name = shortFileName
                             }
@@ -79,25 +77,26 @@ namespace XmlToKtb
                 }
             };
 
-
-
             landXml.Alignments.Alignment.CoordGeom.Items = new object[xmlData.Count];
             landXml.Alignments.Alignment.Profile.name = shortFileName;
             landXml.Alignments.Alignment.Profile.ProfAlign.Items = new object[xmlData.Count];
+            List<object> coordGeomItems = new List<object>();
+            List<object> profAlignItems = new List<object>();
+            List<LandXMLAlignmentsAlignmentCantCantStation> cantStations = new List<LandXMLAlignmentsAlignmentCantCantStation>();
             foreach (Array satir in xmlData)
             {
                 string satirTipi = satir.GetValue(0).ToString();
                 if (satirTipi == "LN")
                 {
-                    LandXMLAlignmentsAlignmentCoordGeomLine line = new LandXMLAlignmentsAlignmentCoordGeomLine();
+                    LandXMLAlignmentsAlignmentCoordGeomLine line = new LandXMLAlignmentsAlignmentCoordGeomLine
+                    {
+                        Start = satir.GetValue(3) + " " + satir.GetValue(4),
+                        End = satir.GetValue(5) + " " + satir.GetValue(6),
+                        dir = (decimal) (double) satir.GetValue(1),
+                        length = (decimal) (double) satir.GetValue(2)
+                    };
 
-                    line.Start = satir.GetValue(3) + " " + satir.GetValue(4);
-                    line.End = satir.GetValue(5) + " " + satir.GetValue(6);
-                    line.dir = (decimal)(double)(double)satir.GetValue(1);
-                    line.length = (decimal)(double)(double)satir.GetValue(2);
-
-
-                    landXml.Alignments.Alignment.CoordGeom.Items[xmlData.IndexOf(satir)] = line;
+                    coordGeomItems.Add(line);
                 }
                 else if (satirTipi == "SP")
                 {
@@ -117,7 +116,7 @@ namespace XmlToKtb
                         PI = satir.GetValue(12) + " " + satir.GetValue(13),
                         End = satir.GetValue(14) + " " + satir.GetValue(15)
                     };
-                    landXml.Alignments.Alignment.CoordGeom.Items[xmlData.IndexOf(satir)] = spiral;
+                    coordGeomItems.Add(spiral);
                 }
                 else if (satirTipi == "AR")
                 {
@@ -140,8 +139,7 @@ namespace XmlToKtb
                         PI = satir.GetValue(18) + " " + satir.GetValue(19)
                     };
 
-
-                    landXml.Alignments.Alignment.CoordGeom.Items[xmlData.IndexOf(satir)] = curve;
+                    coordGeomItems.Add(curve);
 
                 }
                 else if (satirTipi == "PR")
@@ -153,35 +151,48 @@ namespace XmlToKtb
                         {
                             string[] kmkot = { Convert.ToString((double)satir.GetValue(2)), " ", Convert.ToString((double)satir.GetValue(3)) };
                             pvi.Value = string.Concat(kmkot);
-                        };
-                        landXml.Alignments.Alignment.Profile.ProfAlign.Items[xmlData.IndexOf(satir)] = pvi;
+                        }
+                        profAlignItems.Add(pvi);
                     }
                     else if (duseykurptipi == "0")
                     {
-                        LandXMLAlignmentsAlignmentProfileProfAlignParaCurve paraCurve = new LandXMLAlignmentsAlignmentProfileProfAlignParaCurve()
+                        LandXMLAlignmentsAlignmentProfileProfAlignParaCurve paraCurve = new LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
                         {
-                            length = (decimal)(double)satir.GetValue(4),
+                            length = (decimal)(double)satir.GetValue(4)
 
                         };
                         string[] kmkot = { Convert.ToString((double)satir.GetValue(2)), " ", Convert.ToString((double)satir.GetValue(3)) };
-                        paraCurve.Value = String.Concat(kmkot);
-                        landXml.Alignments.Alignment.Profile.ProfAlign.Items[xmlData.IndexOf(satir)] = paraCurve;
+                        paraCurve.Value = string.Concat(kmkot);
+                        profAlignItems.Add(paraCurve);
                     }
                     else if (duseykurptipi == "1" && satir.Length > 5)
                     {
-                        LandXMLAlignmentsAlignmentProfileProfAlignCircCurve circCurve = new LandXMLAlignmentsAlignmentProfileProfAlignCircCurve()
+                        LandXMLAlignmentsAlignmentProfileProfAlignCircCurve circCurve = new LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
                         {
                             length = (decimal)(double)satir.GetValue(4),
-                            radius = (decimal)(double)satir.GetValue(5),
+                            radius = (decimal)(double)satir.GetValue(5)
 
                         };
                         string[] kmkot = { Convert.ToString((double)satir.GetValue(2)), " ", Convert.ToString((double)satir.GetValue(3)) };
-                        circCurve.Value = String.Concat(kmkot);
-                        landXml.Alignments.Alignment.Profile.ProfAlign.Items[xmlData.IndexOf(satir)] = circCurve;
+                        circCurve.Value = string.Concat(kmkot);
+                        profAlignItems.Add(circCurve);
                     }
 
                 }
+                else if (satirTipi == "DEVER")
+                {
+                    LandXMLAlignmentsAlignmentCantCantStation cantStation = new LandXMLAlignmentsAlignmentCantCantStation
+                    {
+                        station = (decimal)(double)satir.GetValue(1),
+                        appliedCant = (decimal)(double)satir.GetValue(2) * 1500,
+                        curvature = satir.GetValue(2).ToString(),
+                    };
+                    cantStations.Add(cantStation);
+                }
 
+                landXml.Alignments.Alignment.CoordGeom.Items = coordGeomItems.ToArray();
+                landXml.Alignments.Alignment.Profile.ProfAlign.Items = profAlignItems.ToArray();
+                landXml.Alignments.Alignment.Cant.CantStation = cantStations.ToArray();
             }
 
             return landXml;
@@ -199,8 +210,11 @@ namespace XmlToKtb
             {
                 char[] separator = { ' ', '\t' };
                 var veriSatir = veriReader.ReadLine();
-                var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions)1);
-                tumsatirlar.Add(veriKelimeleri);
+                if (veriSatir != null)
+                {
+                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions)1);
+                    tumsatirlar.Add(veriKelimeleri);
+                }
             }
 
             veriReader.Close();
@@ -266,8 +280,40 @@ namespace XmlToKtb
                         {
                             radius = Convert.ToDouble(tumsatirlar[l].GetValue(6));
                         }
-
                         object[] array = { "PR", type, km, kot, boy, radius };
+                        XMLDATA.Add(array);
+                    }
+                }
+                if (Convert.ToString(tumsatirlar[jj].GetValue(0)) == "$DEVER")
+                {
+                    for (int l = jj + 1; l < tumsatirlar.Count - 1; l++)
+
+
+                    {
+                        double km;
+                        double dever;
+                        string yon = null;
+                        if (Convert.ToString(tumsatirlar[l].GetValue(0)) == "$SON")
+                        {
+                            km = Convert.ToDouble(tumsatirlar[l - 1].GetValue(1));
+                            dever = Convert.ToDouble(tumsatirlar[l - 1].GetValue(4));
+                            if (dever < 0) { yon = "ccw"; }
+                            if (dever >= 0) { yon = "cw"; }
+                            object[] array1 = { "DEVER", km, dever, yon };
+                            XMLDATA.Add(array1);
+                            break;
+                        }
+                        km = Convert.ToDouble(tumsatirlar[l].GetValue(0));
+                        dever = Convert.ToDouble(tumsatirlar[l].GetValue(3));
+                       
+                        if (dever < 0) { yon = "ccw"; }
+                        if (dever >= 0) { yon = "cw"; }
+
+
+
+
+
+                        object[] array = { "DEVER", km, dever, yon };
                         XMLDATA.Add(array);
                     }
                 }
@@ -285,7 +331,6 @@ namespace XmlToKtb
                         string type = Convert.ToString(tumsatirlar[l].GetValue(0));
                         if (type == "LN")
                         {
-                            var km = Convert.ToDouble(tumsatirlar[l].GetValue(1));
                             double Line_Sta_Y = Convert.ToDouble(tumsatirlar[l].GetValue(2));
                             double Line_Sta_X = Convert.ToDouble(tumsatirlar[l].GetValue(3));
                             double Line_Son_Y = Convert.ToDouble(tumsatirlar[l].GetValue(4));
@@ -293,7 +338,7 @@ namespace XmlToKtb
                             double semt_ilk = Math.Atan2((Line_Son_Y - Line_Sta_Y), (Line_Son_X - Line_Sta_X));
                             if (semt_ilk < 0)
                             {
-                                semt_ilk = semt_ilk + 2 * Math.PI;
+                                semt_ilk += 2 * Math.PI;
                             }
                             double line_mes = Math.Sqrt(Math.Pow((Line_Sta_Y - Line_Son_Y), 2) + Math.Pow((Line_Sta_X - Line_Son_X), 2));
                             object[] array =
@@ -303,14 +348,12 @@ namespace XmlToKtb
                             };
 
                             XMLDATA.Add(array);
-                            eleman_sayisi = eleman_sayisi + 1;
+                            eleman_sayisi += 1;
                         }
                         if (type == "SP")
                         {
-                            var km = Convert.ToDouble(tumsatirlar[l].GetValue(1));
                             double L1 = Convert.ToDouble(tumsatirlar[l].GetValue(2));
                             double L2 = Convert.ToDouble(tumsatirlar[l].GetValue(10));
-                            double Length = Math.Abs(L2 - L1);
                             double Akare = Convert.ToDouble(tumsatirlar[l].GetValue(3));
                             double R1 = Akare / L1;
                             double R2 = Akare / L2;
@@ -334,7 +377,7 @@ namespace XmlToKtb
 
                             double Xm_Gir = X + R1 * Math.Cos(tetha);
                             double Ym_Gir = Y - R1 * Math.Sin(tetha);
-                            double semt_ilk = Math.Atan2((Spi_PI_Y - Spi_Sta_Y), (Spi_PI_X - Spi_Sta_X)); if (semt_ilk < 0) { semt_ilk = semt_ilk + 2 * Math.PI; }
+                            double semt_ilk = Math.Atan2((Spi_PI_Y - Spi_Sta_Y), (Spi_PI_X - Spi_Sta_X)); if (semt_ilk < 0) { semt_ilk += 2 * Math.PI; }
 
                             double Spi_End_Y = Spi_PI_Y + Tk * Math.Sin(semt_ilk + tetha);
                             double Spi_End_X = Spi_PI_X + Tk * Math.Cos(semt_ilk + tetha);
@@ -392,7 +435,7 @@ namespace XmlToKtb
                                     double semtilk_0 = Math.Atan2((Spi_PI_Y_0 - Spi_Sta_Y_0), (Spi_PI_X_0 - Spi_Sta_X_0));
                                     if (semtilk_0 < 0)
                                     {
-                                        semtilk_0 = semtilk_0 + 2 * Math.PI;
+                                        semtilk_0 += 2 * Math.PI;
                                     }
 
                                     double X_0 = SL * Math.Sin(tetha2_donuk);
@@ -453,7 +496,6 @@ namespace XmlToKtb
                                     //....................................
                                     double theta_tum = (Math.Atan2((X1 - X2), (Y1 - Y2)));
                                     double tetha2_donuk = theta_tum - tetha2;
-                                    double tetha1_donuk = theta_tum - tetha1;
                                     double SL = (Math.Sqrt(Math.Pow((Y1 - Y2), 2) + Math.Pow((X1 - X2), 2)));
 
                                     double Spi_Sta_Y_0 = Convert.ToDouble(tumsatirlar[l].GetValue(6));
@@ -463,7 +505,7 @@ namespace XmlToKtb
                                     double semtilk_0 = Math.Atan2((Spi_Sta_Y_0 - Spi_PI_Y_0), (Spi_Sta_X_0 - Spi_PI_X_0));
                                     if (semtilk_0 < 0)
                                     {
-                                        semtilk_0 = semtilk_0 + 2 * Math.PI;
+                                        semtilk_0 += 2 * Math.PI;
                                     }
 
                                     double X_0 = SL * Math.Sin(tetha2_donuk);
@@ -486,11 +528,10 @@ namespace XmlToKtb
                                 }
                             }
 
-                            eleman_sayisi = eleman_sayisi + 1;
+                            eleman_sayisi += 1;
                         }
                         if (type == "AR")
                         {
-                            var km = Convert.ToDouble(tumsatirlar[l].GetValue(1));
                             double R = Convert.ToDouble(tumsatirlar[l].GetValue(2));
                             double Yon = Convert.ToDouble(tumsatirlar[l].GetValue(3));
                             double Cur_Cen_Y = Convert.ToDouble(tumsatirlar[l].GetValue(6));
@@ -504,18 +545,18 @@ namespace XmlToKtb
                             double dir_Start = Math.Atan2((Cur_Cen_Y - Cur_Sta_Y), (Cur_Cen_X - Cur_Sta_X));
                             if (dir_Start < 0)
                             {
-                                dir_Start = dir_Start + 2 * Math.PI;
+                                dir_Start += 2 * Math.PI;
                             }
-                            dir_Start = dir_Start - (Convert.ToDouble(Yon) * Math.PI / 2);
+                            dir_Start -= (Convert.ToDouble(Yon) * Math.PI / 2);
 
 
                             double dir_End = Math.Atan2((Cur_Cen_Y - Cur_End_Y), (Cur_Cen_X - Cur_End_X));
                             if (dir_End < 0)
                             {
-                                dir_End = dir_End + 2 * Math.PI;
+                                dir_End += 2 * Math.PI;
                             }
-                            dir_End = dir_End - (Convert.ToDouble(Yon) * Math.PI / 2);
-                            double kurp_acisi = Math.Abs(dir_End - dir_Start); if (kurp_acisi > 2 * Math.PI) kurp_acisi = kurp_acisi - Math.PI * 2;
+                            dir_End -= (Convert.ToDouble(Yon) * Math.PI / 2);
+                            double kurp_acisi = Math.Abs(dir_End - dir_Start); if (kurp_acisi > 2 * Math.PI) kurp_acisi -= Math.PI * 2;
                             if (kurp_acisi > Math.PI) kurp_acisi = 2 * Math.Asin(chord / 2 / R);
                             double kurp_t = R * Math.Tan(kurp_acisi / 2);
                             double external = R / Math.Cos(kurp_acisi / 2) - R;
@@ -532,13 +573,13 @@ namespace XmlToKtb
                                 Cur_Cen_X, Cur_Cen_Y, Cur_End_X, Cur_End_Y, Cur_PI_X, Cur_PI_Y
                             };
                             XMLDATA.Add(array2);
-                            eleman_sayisi = eleman_sayisi + 1;
+                            eleman_sayisi += 1;
                         }
 
                     }
                 }
 
-                jj = jj + 1;
+                jj += 1;
             }
 
             double Line_Start_Y = 0;
@@ -560,7 +601,7 @@ namespace XmlToKtb
                         Convert.ToDouble(yataydizi[i].GetValue(2)) - Convert.ToDouble(yataydizi[i - 1].GetValue(2)));
                 if (semt_ilk < 0)
                 {
-                    semt_ilk = semt_ilk + 2 * Math.PI;
+                    semt_ilk += 2 * Math.PI;
                 }
 
                 double semt_ikinci =
@@ -568,22 +609,14 @@ namespace XmlToKtb
                         Convert.ToDouble(yataydizi[i + 1].GetValue(2)) - Convert.ToDouble(yataydizi[i].GetValue(2)));
                 if (semt_ikinci < 0)
                 {
-                    semt_ikinci = semt_ikinci + 2 * Math.PI;
+                    semt_ikinci += 2 * Math.PI;
                 }
 
                 double some_acisi = Math.PI - (semt_ilk + Math.PI - semt_ikinci);
-                string some_yon = "";
-                if (semt_ilk - semt_ikinci > 0)
-                {
-                    some_yon = "ccw";
-                }
-                else
-                {
-                    some_yon = "cw";
-                }
+                var some_yon = semt_ilk - semt_ikinci > 0 ? "ccw" : "cw";
 
                 some_acisi = Math.Abs(some_acisi);
-                ///....................SPİRAL HESAPLARI....................//////////////////////////////////////////////////////////////////////////////////////////////
+                //....................SPİRAL HESAPLARI....................//////////////////////////////////////////////////////////////////////////////////////////////
                 double L_Giris = Convert.ToDouble(gecisdizi[i].GetValue(1));
                 double L_Cikis = Convert.ToDouble(gecisdizi[i].GetValue(2));
                 double R = Convert.ToDouble(yataydizi[i].GetValue(3));
@@ -602,11 +635,10 @@ namespace XmlToKtb
                 double tethaCikis = L_Cikis / 2 / R;
                 double S_kat_G = Math.Sqrt(R * L_Giris);
                 double S_kat_C = Math.Sqrt(R * L_Cikis);
-                double X_Gir = 0, X_Cik = 0, Y_Gir = 0, Y_Cik = 0;
-                X_Gir = Spiral_X_Hesapla(L_Giris, S_kat_G);
-                X_Cik = Spiral_X_Hesapla(L_Cikis, S_kat_C);
-                Y_Gir = Spiral_Y_Hesapla(L_Giris, S_kat_G);
-                Y_Cik = Spiral_Y_Hesapla(L_Cikis, S_kat_C);
+                double X_Gir = Spiral_X_Hesapla(L_Giris, S_kat_G);
+                double X_Cik = Spiral_X_Hesapla(L_Cikis, S_kat_C);
+                double Y_Gir = Spiral_Y_Hesapla(L_Giris, S_kat_G);
+                double Y_Cik = Spiral_Y_Hesapla(L_Cikis, S_kat_C);
 
                 double Tu_Gir = Y_Gir - X_Gir / Math.Tan(tethaGiris);
                 double Tu_Cik = Y_Cik - X_Cik / Math.Tan(tethaCikis);
@@ -619,7 +651,7 @@ namespace XmlToKtb
                 double Ym_Cik = Y_Cik - R * Math.Sin(tethaCikis);
                 double Delte_R_Gir = Xm_Gir - R;
                 double Delte_R_Cik = Xm_Cik - R;
-                ///.........................................................//////////////////////////////////////////////////////////////////////////////////////////
+                //.........................................................//////////////////////////////////////////////////////////////////////////////////////////
                 double Ana_teget_Gir = Ym_Gir + R * Math.Tan(some_acisi / 2) +
                                        (Delte_R_Cik - Math.Cos(some_acisi) * Delte_R_Gir) / Math.Sin(some_acisi);
 
@@ -654,15 +686,13 @@ namespace XmlToKtb
                     XMLDATA.Add(array);
                 }
 
-                ///....................KURP HESAPLARI...................////////////////////////////////////////////////////////////////////////////////////////////
+                //....................KURP HESAPLARI...................////////////////////////////////////////////////////////////////////////////////////////////
                 double kurp_acisi = some_acisi - tethaGiris - tethaCikis;
                 double kurp_t = R * Math.Tan(kurp_acisi / 2);
                 double kurp_boyu = R * kurp_acisi;
                 double external = R / Math.Cos(kurp_acisi / 2) - R;
                 double midOrd = R - R * Math.Cos(kurp_acisi / 2);
                 double chord = R * Math.Sin(kurp_acisi / 2) * 2;
-                double delta = kurp_acisi * 180 / Math.PI;
-
 
                 //............................KOORDİNAT HESAPLARI...........................................
 
@@ -707,8 +737,6 @@ namespace XmlToKtb
                 //............................SPİRAL ÇIKIŞ...............................
                 if (L_Cikis > 0)
                 {
-                    double Ana_teget_Cik = Ym_Cik + R * Math.Tan(some_acisi / 2) +
-                                           (Delte_R_Gir - Math.Cos(some_acisi) * Delte_R_Cik) / Math.Sin(some_acisi);
                     double Spi_Cik_Start_Y = Curve_End_Y;
                     double Spi_Cik_Start_X = Curve_End_x;
                     double Spi_Cik_PI_Y = Spi_Cik_Start_Y + Tk_Cik * Math.Sin(dir_End);
@@ -763,7 +791,7 @@ namespace XmlToKtb
             double sonuc = 1;
             for (int i = 1; i <= faktor; i++)
             {
-                sonuc = sonuc * i;
+                sonuc *= i;
             }
             if (faktor == 0) sonuc = 1;
             return sonuc;
@@ -775,8 +803,8 @@ namespace XmlToKtb
             for (int n = 1; n <= 4; n++)
             {
                 int faktorx = 2 * n - 1;
-                X = X + Math.Pow(-1, n - 1) * Math.Pow(L, 4 * n - 1) /
-                        ((4 * n - 1) * Faktoryel(faktorx) * Math.Pow(Sip_kat, 4 * n - 2) * Math.Pow(2, 2 * n - 1));
+                X += Math.Pow(-1, n - 1) * Math.Pow(L, 4 * n - 1) /
+                     ((4 * n - 1) * Faktoryel(faktorx) * Math.Pow(Sip_kat, 4 * n - 2) * Math.Pow(2, 2 * n - 1));
             }
 
             return X;
@@ -788,8 +816,8 @@ namespace XmlToKtb
             for (int n = 1; n <= 5; n++)
             {
                 int faktory = 2 * n - 2;
-                Y = Y + Math.Pow(-1, n - 1) * Math.Pow(L, 4 * n - 3) /
-                        ((4 * n - 3) * Faktoryel(faktory) * Math.Pow(Sip_kat, 4 * n - 4) * Math.Pow(2, 2 * n - 2));
+                Y += Math.Pow(-1, n - 1) * Math.Pow(L, 4 * n - 3) /
+                     ((4 * n - 3) * Faktoryel(faktory) * Math.Pow(Sip_kat, 4 * n - 4) * Math.Pow(2, 2 * n - 2));
             }
 
             return Y;

@@ -1,11 +1,14 @@
-﻿namespace XmlToKtb
+﻿using System.ComponentModel;
+using System.Windows.Forms;
+
+namespace XmlToKtb
 {
     partial class XmlToKtbUI
     {
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -43,6 +46,8 @@
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.tipKesitButton = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
+            this.gabariButton = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -149,6 +154,8 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.gabariButton);
+            this.tabPage2.Controls.Add(this.label3);
             this.tabPage2.Controls.Add(this.tipKesitButton);
             this.tabPage2.Controls.Add(this.label2);
             this.tabPage2.Controls.Add(this.enkesitButton);
@@ -175,7 +182,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.label1.Location = new System.Drawing.Point(6, 22);
+            this.label1.Location = new System.Drawing.Point(9, 22);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(197, 18);
             this.label1.TabIndex = 4;
@@ -199,11 +206,31 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.label2.Location = new System.Drawing.Point(6, 73);
+            this.label2.Location = new System.Drawing.Point(9, 73);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(194, 18);
             this.label2.TabIndex = 7;
             this.label2.Text = "Tip Kesitten Enkesit Oluştur:";
+            // 
+            // gabariButton
+            // 
+            this.gabariButton.Location = new System.Drawing.Point(209, 114);
+            this.gabariButton.Name = "gabariButton";
+            this.gabariButton.Size = new System.Drawing.Size(93, 31);
+            this.gabariButton.TabIndex = 10;
+            this.gabariButton.Text = "Başlat";
+            this.gabariButton.UseVisualStyleBackColor = true;
+            this.gabariButton.Click += new System.EventHandler(this.gabariButton_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label3.Location = new System.Drawing.Point(9, 120);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(185, 18);
+            this.label3.TabIndex = 9;
+            this.label3.Text = "Gabariden Enkesit Oluştur:";
             // 
             // XmlToKtbUI
             // 
@@ -231,21 +258,23 @@
 
         #endregion
 
-        private System.Windows.Forms.OpenFileDialog openFileDialog;
-        private System.Windows.Forms.Button donusturButton;
-        private System.Windows.Forms.Label isimHaklariLabel;
-        private System.Windows.Forms.Button kaydetButton;
-        private System.Windows.Forms.Label bilgiLabel;
-        private System.Windows.Forms.ComboBox dosyaTuruComboBox;
-        private System.Windows.Forms.Label kayitTuruLabel;
-        private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button enkesitButton;
-        private System.Windows.Forms.OpenFileDialog ncnOpenFileDialog;
-        private System.Windows.Forms.Button tipKesitButton;
-        private System.Windows.Forms.Label label2;
+        private OpenFileDialog openFileDialog;
+        private Button donusturButton;
+        private Label isimHaklariLabel;
+        private Button kaydetButton;
+        private Label bilgiLabel;
+        private ComboBox dosyaTuruComboBox;
+        private Label kayitTuruLabel;
+        private TabControl tabControl1;
+        private TabPage tabPage1;
+        private TabPage tabPage2;
+        private Label label1;
+        private Button enkesitButton;
+        private OpenFileDialog ncnOpenFileDialog;
+        private Button tipKesitButton;
+        private Label label2;
+        private Button gabariButton;
+        private Label label3;
     }
 }
 
