@@ -9,6 +9,7 @@ namespace XmlToKtb
 {
     public static class KSEIcerigi
     {
+
         public static List<Array> KseGetir(LandXML landXml, List<Array> ncndata)
         {
             var alignment = landXml.Alignments.Alignment;
@@ -475,7 +476,6 @@ namespace XmlToKtb
             }
 
             araNoktaListe.Clear();
-            //shortdizi(eknoktadizi);
             foreach (var ara in eknoktadizi)
             {
                 object[] array5 = {ara.GetValue(0), ara.GetValue(1), ara.GetValue(2), ara.GetValue(3), ara.GetValue(4)};
@@ -612,9 +612,10 @@ namespace XmlToKtb
             {
                 int cantStationIndex = CantItems.IndexOf(cantStation);
                 decimal guncelKm = Yardimci.GetirCantDetaylar(cantStation).KM;
-                decimal sonucDever = 0;
                 if (cantStationIndex == 0 && kilometre < guncelKm)
                 {
+
+                    dever = 0;
                     yon = "cw";
                     break;
                 }
@@ -624,8 +625,9 @@ namespace XmlToKtb
 
                 if (cantStationIndex == CantItems.Count - 1) //son item
                 {
-                    sonucDever = 0;
+                    dever = 0;
                     yon = "cw";
+                    break;
                 }
                 else
                 {
@@ -634,13 +636,14 @@ namespace XmlToKtb
 
                     if (kilometre >= guncelKm && kilometre < ilerilKm)
                     {
-                        sonucDever = (ileriDever - guncelDever) / (ilerilKm - guncelKm) * (kilometre - guncelKm) +
+                        dever = (ileriDever - guncelDever) / (ilerilKm - guncelKm) * (kilometre - guncelKm) +
                                      guncelDever;
                         yon = guncelYon;
+                        break;
+                        
                     }
                 }
 
-                dever = sonucDever;
             }
 
             object[] deverVeYon = {(Convert.ToString(dever, CultureInfo.InvariantCulture)), yon};
@@ -661,16 +664,17 @@ namespace XmlToKtb
             return kseSb.ToString();
         }
 
-        public static string TipkesittenEnkesitOlustur(List<Array> kesitler)
+        public static string TipkesittenEnkesitOlustur(LandXML landXml, List<Array> kesitler)
         {
             var daireSb = new StringBuilder();
+            var alignment = landXml.Alignments.Alignment;
             int kesitNo = 1;
             foreach (var kesit in kesitler)
             {
                 if (Convert.ToInt32(kesit.GetValue(0)) == 1)
                 {
-                    double kilometre = Convert.ToDouble(kesit.GetValue(2));
-                    double kirmizikotD = Convert.ToDouble(kesit.GetValue(3));
+                    decimal kilometre = Convert.ToDecimal(kesit.GetValue(2));
+                    var kirmizikotD = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, kilometre));
                     double sapma = Convert.ToDouble(kesit.GetValue(4));
 
                     daireSb.AppendLine("1" + " " + kesitNo + " " + kilometre + " " + sapma);
@@ -698,14 +702,14 @@ namespace XmlToKtb
         public static string GabariKesitleriOlustur(List<Array> kesitler, LandXML landXml)
         {
             var gabariCizim = new StringBuilder();
+            var alignment = landXml.Alignments.Alignment;
             foreach (var kesit in kesitler)
             {
                 if (Convert.ToDecimal(kesit.GetValue(0)) == 1)
                 {
                     double kilometre = Convert.ToDouble(kesit.GetValue(2));
-                    double kirmizikotD = Convert.ToDouble(kesit.GetValue(3));
+                    var kirmizikotD = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, Convert.ToDecimal(kilometre)));
                     double sapma = Convert.ToDouble(kesit.GetValue(4));
-                    var alignment = landXml.Alignments.Alignment;
                     Array deverveyon = GetirDeverVeYon(alignment, Convert.ToDecimal(kilometre));
                     double dever = Convert.ToDouble(deverveyon.GetValue(0));
                     string yon = Convert.ToString(deverveyon.GetValue(1));
@@ -722,10 +726,11 @@ namespace XmlToKtb
             var aci = Math.Atan(dever / 1000 / 1.50); if (yon == "ccw") { aci = aci * -1; }
 
             var gabariSb = new StringBuilder();
-            gabariSb.Append("1" + " " + "1" + " " + Convert.ToString(kilometre) + " " + Convert.ToString(sapma));
+            gabariSb.AppendLine("1" + " " + "1" + " " + (Convert.ToString(kilometre)) + " " + (Convert.ToString(sapma)));
+            gabariSb.AppendLine("0" + " " + 0 + " " + (kirmizikot + Math.Abs(dever) / 2000) + " " + "EKS");
 
-            var mes = sapma + Math.Sin(3 * Math.PI / 2 + aci) * 1.356; 
-            var kot = kirmizikot + dever / 2000 + Math.Cos(3 * Math.PI / 2 + aci) * 1.356; 
+            var mes = 0+Math.Sin(3 * Math.PI / 2 + aci) * 1.356; 
+            var kot = kirmizikot + Math.Abs(dever) / 2000 + Math.Cos(3 * Math.PI / 2 + aci) * 1.356; 
             gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "1");
 
             mes = mes + Math.Sin(0 + aci) * 0.031; kot = kot + Math.Cos(0 + aci) * 0.031; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "2");

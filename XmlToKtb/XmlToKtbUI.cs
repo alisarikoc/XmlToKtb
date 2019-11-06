@@ -261,7 +261,7 @@ namespace XmlToKtb
             List<Array> ncnData = GetirNcnData();
             List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData);
 
-            string kseIcerigi = KSEIcerigi.TipkesittenEnkesitOlustur(kesitler);
+            string kseIcerigi = KSEIcerigi.TipkesittenEnkesitOlustur(landXml,kesitler);
 
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
         }

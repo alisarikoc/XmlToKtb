@@ -83,7 +83,7 @@ namespace Common
 
             switch (item)
             {
-                case LandXMLAlignmentsAlignmentCant _:
+                case LandXMLAlignmentsAlignmentCantCantStation _:
                 {
                     var satir = (LandXMLAlignmentsAlignmentCantCantStation)item;
 
