@@ -47,6 +47,12 @@
   <ItemGroup>
     <Compile Include="ALNIcerigi.cs" />
     <Compile Include="deneme.cs" />
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
     <Compile Include="KSEIcerigi.cs" />
     <Compile Include="KTBIcerigi.cs" />
     <Compile Include="KTBtoXML.cs" />

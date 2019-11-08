@@ -207,8 +207,15 @@ namespace XmlToKtb
             List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData);
 
             string kseIcerigi = KSEIcerigi.NoktalardanEnkesitOlustur(kesitler);
+            string listeIcerigi = KSEIcerigi.EnkesitListesiOlustur(kesitler);
+            if (enkestlistesiBox.Checked == true) //Eğer checkbox seçiliyse
+            {
+                DosyaKaydetFiltreIle(listeIcerigi, Resources.lisExtensionFilter);
+            }
+
 
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
+
         }
 
         private LandXML GetirLandXmlDosyaTipiIle()
@@ -278,5 +285,7 @@ namespace XmlToKtb
 
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
         }
+
+
     }
 }

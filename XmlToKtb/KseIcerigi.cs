@@ -390,6 +390,8 @@ namespace XmlToKtb
                 }
             }
 
+
+
             return kseliste;
         }
 
@@ -767,6 +769,22 @@ namespace XmlToKtb
 
             return gabariSb.ToString();
 
+        }
+
+
+        public static string EnkesitListesiOlustur(List<Array> kseliste)
+        {
+            var kmlisSb = new StringBuilder("$ENKLIST").AppendLine();
+            foreach (var satir in kseliste)
+            {
+                if (Convert.ToInt32(satir.GetValue(0)) == 1)
+                {
+                    var km = Math.Round(Convert.ToDouble(satir.GetValue(2)), 3);
+                    kmlisSb.AppendLine(km + "  50  50 0.000");
+                }
+            }
+            kmlisSb.AppendLine("$SON");
+            return kmlisSb.ToString();
         }
     }
 }

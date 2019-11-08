@@ -41,13 +41,14 @@ namespace XmlToKtb
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.enkestlistesiBox = new System.Windows.Forms.CheckBox();
+            this.gabariButton = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.tipKesitButton = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
             this.enkesitButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.tipKesitButton = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.gabariButton = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -134,7 +135,7 @@ namespace XmlToKtb
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(418, 191);
+            this.tabControl1.Size = new System.Drawing.Size(428, 191);
             this.tabControl1.TabIndex = 8;
             // 
             // tabPage1
@@ -147,13 +148,14 @@ namespace XmlToKtb
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(410, 165);
+            this.tabPage1.Size = new System.Drawing.Size(420, 165);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Güzergah";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.enkestlistesiBox);
             this.tabPage2.Controls.Add(this.gabariButton);
             this.tabPage2.Controls.Add(this.label3);
             this.tabPage2.Controls.Add(this.tipKesitButton);
@@ -163,54 +165,20 @@ namespace XmlToKtb
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(410, 165);
+            this.tabPage2.Size = new System.Drawing.Size(420, 165);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Kesit";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // enkesitButton
+            // enkestlistesiBox
             // 
-            this.enkesitButton.Location = new System.Drawing.Point(209, 16);
-            this.enkesitButton.Name = "enkesitButton";
-            this.enkesitButton.Size = new System.Drawing.Size(93, 31);
-            this.enkesitButton.TabIndex = 6;
-            this.enkesitButton.Text = "Başlat";
-            this.enkesitButton.UseVisualStyleBackColor = true;
-            this.enkesitButton.Click += new System.EventHandler(this.enkesitButton_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.label1.Location = new System.Drawing.Point(9, 22);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(197, 18);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Noktalardan Enkesit Oluştur:";
-            // 
-            // ncnOpenFileDialog
-            // 
-            this.ncnOpenFileDialog.Filter = "NCN veya ASC (*.ncn;*asc)|*.ncn;*.asc";
-            // 
-            // tipKesitButton
-            // 
-            this.tipKesitButton.Location = new System.Drawing.Point(209, 67);
-            this.tipKesitButton.Name = "tipKesitButton";
-            this.tipKesitButton.Size = new System.Drawing.Size(93, 31);
-            this.tipKesitButton.TabIndex = 8;
-            this.tipKesitButton.Text = "Başlat";
-            this.tipKesitButton.UseVisualStyleBackColor = true;
-            this.tipKesitButton.Click += new System.EventHandler(this.tipKesitButton_Click);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.label2.Location = new System.Drawing.Point(9, 73);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(194, 18);
-            this.label2.TabIndex = 7;
-            this.label2.Text = "Tip Kesitten Enkesit Oluştur:";
+            this.enkestlistesiBox.AutoSize = true;
+            this.enkestlistesiBox.Location = new System.Drawing.Point(321, 18);
+            this.enkestlistesiBox.Name = "enkestlistesiBox";
+            this.enkestlistesiBox.Size = new System.Drawing.Size(93, 30);
+            this.enkestlistesiBox.TabIndex = 11;
+            this.enkestlistesiBox.Text = "Enkesit Listesi\r\nOluştur";
+            this.enkestlistesiBox.UseVisualStyleBackColor = true;
             // 
             // gabariButton
             // 
@@ -232,17 +200,61 @@ namespace XmlToKtb
             this.label3.TabIndex = 9;
             this.label3.Text = "Gabariden Enkesit Oluştur:";
             // 
+            // tipKesitButton
+            // 
+            this.tipKesitButton.Location = new System.Drawing.Point(209, 67);
+            this.tipKesitButton.Name = "tipKesitButton";
+            this.tipKesitButton.Size = new System.Drawing.Size(93, 31);
+            this.tipKesitButton.TabIndex = 8;
+            this.tipKesitButton.Text = "Başlat";
+            this.tipKesitButton.UseVisualStyleBackColor = true;
+            this.tipKesitButton.Click += new System.EventHandler(this.tipKesitButton_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label2.Location = new System.Drawing.Point(9, 73);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(194, 18);
+            this.label2.TabIndex = 7;
+            this.label2.Text = "Tip Kesitten Enkesit Oluştur:";
+            // 
+            // enkesitButton
+            // 
+            this.enkesitButton.Location = new System.Drawing.Point(212, 17);
+            this.enkesitButton.Name = "enkesitButton";
+            this.enkesitButton.Size = new System.Drawing.Size(93, 31);
+            this.enkesitButton.TabIndex = 6;
+            this.enkesitButton.Text = "Başlat";
+            this.enkesitButton.UseVisualStyleBackColor = true;
+            this.enkesitButton.Click += new System.EventHandler(this.enkesitButton_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label1.Location = new System.Drawing.Point(9, 22);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(197, 18);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "Noktalardan Enkesit Oluştur:";
+            // 
+            // ncnOpenFileDialog
+            // 
+            this.ncnOpenFileDialog.Filter = "NCN veya ASC (*.ncn;*asc)|*.ncn;*.asc";
+            // 
             // XmlToKtbUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(442, 248);
+            this.ClientSize = new System.Drawing.Size(452, 248);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.isimHaklariLabel);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(450, 275);
+            this.MaximumSize = new System.Drawing.Size(460, 275);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(450, 275);
+            this.MinimumSize = new System.Drawing.Size(460, 275);
             this.Name = "XmlToKtbUI";
             this.ShowIcon = false;
             this.Text = "XML to KTB";
@@ -275,6 +287,7 @@ namespace XmlToKtb
         private Label label2;
         private Button gabariButton;
         private Label label3;
+        private CheckBox enkestlistesiBox;
     }
 }
 

@@ -133,4 +133,8 @@
     <value>KSE|*.kse</value>
     <comment>KSE|*.kse</comment>
   </data>
+  <data name="lisExtensionFilter" xml:space="preserve">
+    <value>LIS|*.lis</value>
+    <comment>LIS|*.lis</comment>
+  </data>
 </root>
