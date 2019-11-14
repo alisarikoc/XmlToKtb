@@ -78,9 +78,6 @@ namespace XmlToKtb
             };
 
             landXml.Alignments.Alignment.CoordGeom.Items = new object[xmlData.Count];
-            landXml.Alignments.Alignment.Cant.name = shortFileName;
-            landXml.Alignments.Alignment.Cant.gauge = (decimal)1.5;
-            landXml.Alignments.Alignment.Cant.rotationPoint = "insideRail";
             landXml.Alignments.Alignment.Profile.name = shortFileName;
             landXml.Alignments.Alignment.Profile.ProfAlign.Items = new object[xmlData.Count];
             List<object> coordGeomItems = new List<object>();
@@ -184,7 +181,11 @@ namespace XmlToKtb
                 }
                 else if (satirTipi == "DEVER")
                 {
-                    
+
+                    landXml.Alignments.Alignment.Cant.name = shortFileName;
+                    landXml.Alignments.Alignment.Cant.gauge = (decimal)1.5;
+                    landXml.Alignments.Alignment.Cant.rotationPoint = "insideRail";
+
                     LandXMLAlignmentsAlignmentCantCantStation cantStation = new LandXMLAlignmentsAlignmentCantCantStation
                     {
                         station = (decimal)(double)satir.GetValue(1),
@@ -192,11 +193,13 @@ namespace XmlToKtb
                         curvature = (string)satir.GetValue(3),
                     };
                     cantStations.Add(cantStation);
+                    landXml.Alignments.Alignment.Cant.CantStation = cantStations.ToArray();
                 }
 
                 landXml.Alignments.Alignment.CoordGeom.Items = coordGeomItems.ToArray();
                 landXml.Alignments.Alignment.Profile.ProfAlign.Items = profAlignItems.ToArray();
-                landXml.Alignments.Alignment.Cant.CantStation = cantStations.ToArray();
+
+                
             }
 
             return landXml;

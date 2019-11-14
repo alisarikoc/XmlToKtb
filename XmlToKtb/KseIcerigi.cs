@@ -308,19 +308,6 @@ namespace XmlToKtb
 
             kesitliste = kesitliste.OrderBy(x => x.GetValue(0)).ToList();
 
-            //for (int i = 0; i < kesitliste.Count - 1; i++)
-            //{
-            //    for (int j = i; j < kesitliste.Count; j++)
-            //    {
-            //        // >(büyük) işareti <(küçük ) olarak değiştirilirse büyükten küçüğe sıralanır
-            //        if ((Convert.ToDecimal(kesitliste[i].GetValue(0))) > (Convert.ToDecimal(kesitliste[j].GetValue(0))))
-            //        {
-            //            var gecici = kesitliste[j];
-            //            kesitliste[j] = kesitliste[i];
-            //            kesitliste[i] = gecici;
-            //        }
-            //    }
-            //}
 
             var k = 0;
             var c = 0;
@@ -356,9 +343,9 @@ namespace XmlToKtb
 
                     var Kes_Ortal_KM = toplam / k;
                     var indekx = kseliste.Count;
-                    object[] array1 = {1, indekx - c, Kes_Ortal_KM, kirmizikot, EksenKaydir};
+                    object[] array1 = {1, indekx - c, Math.Round(Kes_Ortal_KM,3), Math.Round(kirmizikot,3), EksenKaydir};
                     kseliste[indekx - c] = array1;
-                    object[] array2 = {1, Kes_No, Kes_KM, kirmizikot, EksenKaydir};
+                    object[] array2 = {1, Kes_No, Math.Round(Kes_KM,3), Math.Round(kirmizikot,3), EksenKaydir};
                     kseliste.Add(array2);
                     c = 1;
                     toplam = 0;
@@ -405,7 +392,7 @@ namespace XmlToKtb
             double Yson = (Convert.ToDouble(araNoktaListe[araNoktaListe.Count - 1].GetValue(1)));
             double Xson = (Convert.ToDouble(araNoktaListe[araNoktaListe.Count - 1].GetValue(2)));
             double semtson = (Convert.ToDouble(araNoktaListe[araNoktaListe.Count - 1].GetValue(0)));
-            object[] array3 = {semtson, Yson, Xson, "NOK", kirmizikot};
+            object[] array3 = {semtson, Math.Round(Yson,3), Math.Round(Xson,3), "NOK", Math.Round(kirmizikot,3)};
             eknoktadizi.Add(array3);
             double Y1 = 0;
             double X1 = 0;
@@ -462,13 +449,13 @@ namespace XmlToKtb
                     object[] array =
                     {
                         semtMve1 + ni * (delta / (noktaadedi + 1)),
-                        Ym + Math.Sin(semtMve1 + delta / noktaadedi * ni) * 2.62,
-                        Xm + Math.Cos(semtMve1 + delta / noktaadedi * ni) * 2.62, ni, kirmizikot
+                        Math.Round((Ym + Math.Sin(semtMve1 + delta / noktaadedi * ni) * 2.62),3),
+                        Math.Round((Xm + Math.Cos(semtMve1 + delta / noktaadedi * ni) * 2.62),3), ni, Math.Round(kirmizikot,3)
                     };
                     eknoktadizi.Add(array);
                 }
 
-                object[] array2 = {semt2, Y2, X2, "NOK", kirmizikot};
+                object[] array2 = {semt2, Math.Round(Y2,3), Math.Round(X2,3), "NOK", Math.Round(kirmizikot,3)};
                 eknoktadizi.Add(array2);
 
                 Y1 = Y2;
@@ -687,18 +674,18 @@ namespace XmlToKtb
                     var kirmizikotD = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, kilometre));
                     double sapma = EKSENkaydir.eksenkaydirGetir(landXml, kilometre);
 
-                    daireSb.AppendLine("1" + " " + kesitNo + " " + kilometre + " " + sapma);
+                    daireSb.AppendLine("1" + " " + kesitNo + " " + Math.Round(kilometre,3) + " " + Math.Round(sapma,3));
 
                     for (int j = 0; j < 21; j++)
                     {
                         double mesafe = sapma + Math.Sin(j * (2 * Math.PI) / 21) * 2.62;
                         double kot = kirmizikotD + 1.72 + Math.Cos(j * (2 * Math.PI) / 21) * 2.62;
-                        daireSb.AppendLine("0" + " " + mesafe + " " + kot + " " + j);
+                        daireSb.AppendLine("0" + " " + Math.Round(mesafe,3) + " " + Math.Round(kot,3) + " " + j);
                         if (j == 20)
                         {
                             var sonMesafe = sapma + Math.Sin(0 * (2 * Math.PI) / 21) * 2.62;
                             var sonKot = kirmizikotD + 1.72 + Math.Cos(0 * (2 * Math.PI) / 21) * 2.62;
-                            daireSb.AppendLine("0" + " " + sonMesafe + " " + sonKot + " " + "21");
+                            daireSb.AppendLine("0" + " " + Math.Round(sonMesafe,3) + " " + Math.Round(sonKot,3) + " " + "21");
                         }
                     }
 
@@ -718,19 +705,11 @@ namespace XmlToKtb
             var gabariCizim = new StringBuilder();
             var alignment = landXml.Alignments.Alignment;
             var deveryon = landXml.Alignments.Alignment.Cant.CantStation;
-
-
-
             if(deveryon==null)
             {
                 DialogResult secenek = MessageBox.Show("Güzergah Dosyasında Dever Tanımlı Değil !!! \n Dever Değeri '0' Olarak Çizilecek", "Devam", MessageBoxButtons.OK, MessageBoxIcon.Error);
        
             }
-            
-
-
-
-
             foreach (var kesit in kmList)
             {
                 string satir = kesit.GetValue(0).ToString();
@@ -748,7 +727,6 @@ namespace XmlToKtb
                     string yon = Convert.ToString(deverveyon.GetValue(1));
 
                     gabariCizim.AppendLine(GabariCiz(kilometre, kirmizikotD, dever, yon));
-                
             }
 
             return gabariCizim.ToString();
@@ -760,43 +738,43 @@ namespace XmlToKtb
 
             var gabariSb = new StringBuilder();
             gabariSb.AppendLine("1" + " " + "1" + " " + (Convert.ToString(kilometre)) + " " + "MOD");
-            gabariSb.AppendLine("0" + " " + 0 + " " + (kirmizikot + Math.Abs(dever) / 2000) + " " + "EKS");
+            gabariSb.AppendLine("0" + " " + 0 + " " + Math.Round((kirmizikot + Math.Abs(dever) / 2000),3) + " " + "EKS");
 
             var mes = 0+Math.Sin(3 * Math.PI / 2 + aci) * 1.356; 
             var kot = kirmizikot + Math.Abs(dever) / 2000 + Math.Cos(3 * Math.PI / 2 + aci) * 1.356; 
-            gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "1");
+            gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "1");
 
-            mes = mes + Math.Sin(0 + aci) * 0.031; kot = kot + Math.Cos(0 + aci) * 0.031; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "2");
-            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 0.202; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 0.202; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "3");
-            mes = mes + Math.Sin(0 + aci) * 0.171; kot = kot + Math.Cos(0 + aci) * 0.171; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "4");
-            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 0.222; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 0.222; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "5");
-            mes = mes + Math.Sin(6.2221 + aci) * 2.358; kot = kot + Math.Cos(6.2221 + aci) * 2.358; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "6");
-            mes = mes + Math.Sin(5.0679 + aci) * 0.063; kot = kot + Math.Cos(5.0679 + aci) * 0.063; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "7");
-            mes = mes + Math.Sin(5.9744 + aci) * 0.063; kot = kot + Math.Cos(5.9744 + aci) * 0.063; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "8");
-            mes = mes + Math.Sin(0.1116 + aci) * 0.336; kot = kot + Math.Cos(0.1116 + aci) * 0.336; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "9");
-            mes = mes + Math.Sin(Math.PI / 2 + aci) * 0.017; kot = kot + Math.Cos(Math.PI / 2 + aci) * 0.017; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "10");
-            mes = mes + Math.Sin(0 + aci) * 0.170; kot = kot + Math.Cos(0 + aci) * 0.170; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "11");
-            mes = mes + Math.Sin(0.7163 + aci) * 0.301; kot = kot + Math.Cos(0.7163 + aci) * 0.301; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "12");
-            mes = mes + Math.Sin(0.9259 + aci) * 0.301; kot = kot + Math.Cos(0.9259 + aci) * 0.301; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "13");
-            mes = mes + Math.Sin(1.1360 + aci) * 0.301; kot = kot + Math.Cos(1.1360 + aci) * 0.301; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "14");
-            mes = mes + Math.Sin(1.3451 + aci) * 0.301; kot = kot + Math.Cos(1.3451 + aci) * 0.301; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "15");
-            mes = mes + Math.Sin(Math.PI / 2 + aci) * 0.942; kot = kot + Math.Cos(Math.PI / 2 + aci) * 0.942; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "16");
-            mes = mes + Math.Sin(Math.PI / 2 + aci) * 0.942; kot = kot + Math.Cos(Math.PI / 2 + aci) * 0.942; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "17");
-            mes = mes + Math.Sin(1.7965 + aci) * 0.301; kot = kot + Math.Cos(1.7965 + aci) * 0.301; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "18");
-            mes = mes + Math.Sin(2.0055 + aci) * 0.301; kot = kot + Math.Cos(2.0055 + aci) * 0.301; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "19");
-            mes = mes + Math.Sin(2.2157 + aci) * 0.301; kot = kot + Math.Cos(2.2157 + aci) * 0.301; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "20");
-            mes = mes + Math.Sin(2.4253 + aci) * 0.301; kot = kot + Math.Cos(2.4253 + aci) * 0.301; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "21");
-            mes = mes + Math.Sin(Math.PI + aci) * 0.170; kot = kot + Math.Cos(Math.PI + aci) * 0.170; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "22");
-            mes = mes + Math.Sin(Math.PI / 2 + aci) * 0.017; kot = kot + Math.Cos(Math.PI / 2 + aci) * 0.017; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "23");
-            mes = mes + Math.Sin(3.0300 + aci) * 0.336; kot = kot + Math.Cos(3.0300 + aci) * 0.336; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "24");
-            mes = mes + Math.Sin(3.4504 + aci) * 0.063; kot = kot + Math.Cos(3.4504 + aci) * 0.063; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "25");
-            mes = mes + Math.Sin(4.3569 + aci) * 0.063; kot = kot + Math.Cos(4.3569 + aci) * 0.063; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "26");
-            mes = mes + Math.Sin(3.2027 + aci) * 2.358; kot = kot + Math.Cos(3.2027 + aci) * 2.358; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "27");
-            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 0.222; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 0.222; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "28");
-            mes = mes + Math.Sin(Math.PI + aci) * 0.171; kot = kot + Math.Cos(Math.PI + aci) * 0.171; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "29");
-            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 0.202; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 0.202; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "30");
-            mes = mes + Math.Sin(Math.PI + aci) * 0.031; kot = kot + Math.Cos(Math.PI + aci) * 0.031; gabariSb.AppendLine("0" + " " + mes + " " + kot + " " + "31");
-            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 1.356; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 1.356; gabariSb.Append("0" + " " + mes + " " + kot + " " + "32");
+            mes = mes + Math.Sin(0 + aci) * 0.031; kot = kot + Math.Cos(0 + aci) * 0.031; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "2");
+            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 0.202; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 0.202; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "3");
+            mes = mes + Math.Sin(0 + aci) * 0.171; kot = kot + Math.Cos(0 + aci) * 0.171; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "4");
+            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 0.222; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 0.222; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "5");
+            mes = mes + Math.Sin(6.2221 + aci) * 2.358; kot = kot + Math.Cos(6.2221 + aci) * 2.358; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "6");
+            mes = mes + Math.Sin(5.0679 + aci) * 0.063; kot = kot + Math.Cos(5.0679 + aci) * 0.063; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "7");
+            mes = mes + Math.Sin(5.9744 + aci) * 0.063; kot = kot + Math.Cos(5.9744 + aci) * 0.063; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "8");
+            mes = mes + Math.Sin(0.1116 + aci) * 0.336; kot = kot + Math.Cos(0.1116 + aci) * 0.336; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "9");
+            mes = mes + Math.Sin(Math.PI / 2 + aci) * 0.017; kot = kot + Math.Cos(Math.PI / 2 + aci) * 0.017; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "10");
+            mes = mes + Math.Sin(0 + aci) * 0.170; kot = kot + Math.Cos(0 + aci) * 0.170; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "11");
+            mes = mes + Math.Sin(0.7163 + aci) * 0.301; kot = kot + Math.Cos(0.7163 + aci) * 0.301; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "12");
+            mes = mes + Math.Sin(0.9259 + aci) * 0.301; kot = kot + Math.Cos(0.9259 + aci) * 0.301; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "13");
+            mes = mes + Math.Sin(1.1360 + aci) * 0.301; kot = kot + Math.Cos(1.1360 + aci) * 0.301; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "14");
+            mes = mes + Math.Sin(1.3451 + aci) * 0.301; kot = kot + Math.Cos(1.3451 + aci) * 0.301; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "15");
+            mes = mes + Math.Sin(Math.PI / 2 + aci) * 0.942; kot = kot + Math.Cos(Math.PI / 2 + aci) * 0.942; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "16");
+            mes = mes + Math.Sin(Math.PI / 2 + aci) * 0.942; kot = kot + Math.Cos(Math.PI / 2 + aci) * 0.942; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "17");
+            mes = mes + Math.Sin(1.7965 + aci) * 0.301; kot = kot + Math.Cos(1.7965 + aci) * 0.301; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "18");
+            mes = mes + Math.Sin(2.0055 + aci) * 0.301; kot = kot + Math.Cos(2.0055 + aci) * 0.301; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "19");
+            mes = mes + Math.Sin(2.2157 + aci) * 0.301; kot = kot + Math.Cos(2.2157 + aci) * 0.301; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "20");
+            mes = mes + Math.Sin(2.4253 + aci) * 0.301; kot = kot + Math.Cos(2.4253 + aci) * 0.301; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "21");
+            mes = mes + Math.Sin(Math.PI + aci) * 0.170; kot = kot + Math.Cos(Math.PI + aci) * 0.170; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "22");
+            mes = mes + Math.Sin(Math.PI / 2 + aci) * 0.017; kot = kot + Math.Cos(Math.PI / 2 + aci) * 0.017; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "23");
+            mes = mes + Math.Sin(3.0300 + aci) * 0.336; kot = kot + Math.Cos(3.0300 + aci) * 0.336; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "24");
+            mes = mes + Math.Sin(3.4504 + aci) * 0.063; kot = kot + Math.Cos(3.4504 + aci) * 0.063; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "25");
+            mes = mes + Math.Sin(4.3569 + aci) * 0.063; kot = kot + Math.Cos(4.3569 + aci) * 0.063; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "26");
+            mes = mes + Math.Sin(3.2027 + aci) * 2.358; kot = kot + Math.Cos(3.2027 + aci) * 2.358; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "27");
+            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 0.222; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 0.222; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "28");
+            mes = mes + Math.Sin(Math.PI + aci) * 0.171; kot = kot + Math.Cos(Math.PI + aci) * 0.171; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "29");
+            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 0.202; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 0.202; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "30");
+            mes = mes + Math.Sin(Math.PI + aci) * 0.031; kot = kot + Math.Cos(Math.PI + aci) * 0.031; gabariSb.AppendLine("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "31");
+            mes = mes + Math.Sin(3 * Math.PI / 2 + aci) * 1.356; kot = kot + Math.Cos(3 * Math.PI / 2 + aci) * 1.356; gabariSb.Append("0" + " " + Math.Round(mes,3) + " " + Math.Round(kot,3) + " " + "32");
 
             return gabariSb.ToString();
 
