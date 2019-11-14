@@ -78,6 +78,9 @@ namespace XmlToKtb
             };
 
             landXml.Alignments.Alignment.CoordGeom.Items = new object[xmlData.Count];
+            landXml.Alignments.Alignment.Cant.name = shortFileName;
+            landXml.Alignments.Alignment.Cant.gauge = (decimal)1.5;
+            landXml.Alignments.Alignment.Cant.rotationPoint = "insideRail";
             landXml.Alignments.Alignment.Profile.name = shortFileName;
             landXml.Alignments.Alignment.Profile.ProfAlign.Items = new object[xmlData.Count];
             List<object> coordGeomItems = new List<object>();
@@ -181,11 +184,12 @@ namespace XmlToKtb
                 }
                 else if (satirTipi == "DEVER")
                 {
+                    
                     LandXMLAlignmentsAlignmentCantCantStation cantStation = new LandXMLAlignmentsAlignmentCantCantStation
                     {
                         station = (decimal)(double)satir.GetValue(1),
-                        appliedCant = (decimal)(double)satir.GetValue(2) * 1500,
-                        curvature = satir.GetValue(2).ToString(),
+                        appliedCant =(decimal)Math.Abs((double)satir.GetValue(2)) * 15,
+                        curvature = (string)satir.GetValue(3),
                     };
                     cantStations.Add(cantStation);
                 }
@@ -210,13 +214,12 @@ namespace XmlToKtb
             {
                 char[] separator = { ' ', '\t' };
                 var veriSatir = veriReader.ReadLine();
-                if (veriSatir != null)
+                if (veriSatir != null&&veriSatir!="")
                 {
                     var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions)1);
                     tumsatirlar.Add(veriKelimeleri);
                 }
             }
-
             veriReader.Close();
 
             var jj = 0;
@@ -627,6 +630,21 @@ namespace XmlToKtb
                     object[] array =
                         {"LN", semt_ilk * 180 / Math.PI, Somelerarası_mes, Line_Start_X, Line_Start_Y, Line_End_X, Line_End_Y};
                     XMLDATA.Add(array);
+                    if (i == yataydizi.Count - 2)
+                    {
+                        Line_End_Y = Convert.ToDouble(yataydizi[i + 1].GetValue(1));
+                        Line_End_X = Convert.ToDouble(yataydizi[i + 1].GetValue(2));
+
+                        double line_mes = Math.Sqrt(Math.Pow((Line_Start_Y - Line_End_Y), 2) + Math.Pow((Line_Start_X - Line_End_X), 2));
+                        object[] array1 =
+                        {
+
+                            "LN", semt_ikinci * 180 / Math.PI, line_mes, Line_Start_X, Line_Start_Y,
+                            Line_End_X, Line_End_Y
+                        };
+
+                        XMLDATA.Add(array1);
+                    }
 
                     continue;
                 }
@@ -700,8 +718,11 @@ namespace XmlToKtb
                 double Curve_Start_X = Spi_Gir_End_X;
                 if (L_Giris == 0)
                 {
-                    Curve_Start_Y = Line_Start_Y + (Somelerarası_mes - kurp_t) * Math.Sin(some_acisi);
-                    Curve_Start_X = Line_Start_X + (Somelerarası_mes - kurp_t) * Math.Cos(some_acisi);
+                    Curve_Start_Y = Line_Start_Y + (Somelerarası_mes - kurp_t) * Math.Sin(semt_ilk);
+                    Curve_Start_X = Line_Start_X + (Somelerarası_mes - kurp_t) * Math.Cos(semt_ilk);
+                    object[] array =
+                        {"LN", semt_ilk * 180 / Math.PI, Somelerarası_mes - kurp_t, Line_Start_X, Line_Start_Y, Curve_Start_X, Curve_Start_Y};
+                    XMLDATA.Add(array);
                 }
 
                 double dir_Start = semt_ilk + tethaGiris;

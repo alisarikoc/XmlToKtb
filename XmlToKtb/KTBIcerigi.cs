@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Common;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Common;
 
 namespace XmlToKtb
 {
@@ -12,6 +13,7 @@ namespace XmlToKtb
         {
             var alignment = landXml.Alignments.Alignment;
 
+            List<Array> eksKaydirList = new List<Array>();
             var ktb = new StringBuilder("$KM0").AppendLine();
             var baslangicKM = alignment.staStart;
             var guncelKM = baslangicKM;
@@ -25,16 +27,129 @@ namespace XmlToKtb
                 {
                     case LandXMLAlignmentsAlignmentCoordGeomLine _:
                         {
+                            var line = (LandXMLAlignmentsAlignmentCoordGeomLine)item;
+                            object[] array = { guncelKM, guncelKM + line.length, 0, 0 };
+                            eksKaydirList.Add(array);
+
                             guncelKM = LineYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomLine)item, guncelKM);
                             break;
                         }
                     case LandXMLAlignmentsAlignmentCoordGeomCurve _:
                         {
+                            var curve = (LandXMLAlignmentsAlignmentCoordGeomCurve)item;
+                            var eksenkayma = sapmaHesabi(Convert.ToDouble(curve.radius));
+                            if (curve.rot == "ccw") eksenkayma = eksenkayma * -1;
+                            object[] array = { guncelKM, guncelKM + curve.length, eksenkayma, eksenkayma };
+                            eksKaydirList.Add(array);
+
                             guncelKM = CurveYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomCurve)item, guncelKM);
                             break;
                         }
                     case LandXMLAlignmentsAlignmentCoordGeomSpiral _:
                         {
+                            var spiral = (LandXMLAlignmentsAlignmentCoordGeomSpiral)item;
+                            double yon = 1;
+                            decimal eksKaydirİleriKm = 0;
+                            double eksKaydirİleriSapma = 0;
+                            if (spiral.rot == "ccw") yon = -1;
+                            if (spiral.radiusStart.ToUpper() == "INF")
+                            {
+                                var aKare = Convert.ToDecimal(spiral.radiusEnd) * spiral.length;
+
+                                if (Convert.ToDecimal(spiral.radiusEnd) > 800)
+                                {
+                                    object[] array1 = { guncelKM, guncelKM + spiral.length, 0, 0 };
+                                    eksKaydirList.Add(array1);
+                                    continue;
+                                }
+                                if (Convert.ToDecimal(spiral.radiusEnd) < 700)
+                                {
+                                    object[] array1 = { guncelKM, guncelKM + aKare / 800, 0, 0 };
+                                    eksKaydirList.Add(array1);
+                                    object[] array3 = { guncelKM + aKare / 800, guncelKM + aKare / 700, 0, 0.0375 * yon };
+                                    eksKaydirList.Add(array3);
+                                    eksKaydirİleriKm = guncelKM + aKare / 700;
+                                    eksKaydirİleriSapma = 0.0375 * yon;
+                                }
+                                if (Convert.ToDecimal(spiral.radiusEnd) < 600)
+                                {
+                                    object[] array3 = { guncelKM + aKare / 700, guncelKM + aKare / 600, 0.0375 * yon, 0.075 * yon };
+                                    eksKaydirList.Add(array3);
+                                    eksKaydirİleriKm = guncelKM + aKare / 600;
+                                    eksKaydirİleriSapma = 0.075 * yon;
+                                }
+                                if (Convert.ToDecimal(spiral.radiusEnd) < 500)
+                                {
+                                    object[] array3 = { guncelKM + aKare / 600, guncelKM + aKare / 500, 0.075 * yon, 0.1125 * yon };
+                                    eksKaydirList.Add(array3);
+                                    eksKaydirİleriKm = guncelKM + aKare / 500;
+                                    eksKaydirİleriSapma = 0.1125 * yon;
+                                }
+                                if (Convert.ToDecimal(spiral.radiusEnd) <= 400)
+                                {
+                                    object[] array3 = { guncelKM + aKare / 500, guncelKM + aKare / 400, 0.1125 * yon, 0.150 * yon };
+                                    eksKaydirList.Add(array3);
+                                    eksKaydirİleriKm = guncelKM + aKare / 400;
+                                    eksKaydirİleriSapma = 0.150 * yon;
+                                }
+
+                                if (Convert.ToDecimal(spiral.radiusEnd) > 400)
+                                {
+                                    object[] array3 = { eksKaydirİleriKm, guncelKM + aKare / Convert.ToDecimal(spiral.radiusEnd), eksKaydirİleriSapma, sapmaHesabi(Convert.ToDouble(spiral.radiusEnd)) * yon };
+                                    eksKaydirList.Add(array3);
+                                }
+                            }
+
+                            if (spiral.radiusEnd.ToUpper() == "INF")
+                            {
+                                var aKare = Convert.ToDecimal(spiral.radiusStart) * spiral.length;
+                                decimal spiSonKM = guncelKM + spiral.length;
+                                if (Convert.ToDecimal(spiral.radiusStart) > 800)
+                                {
+                                    object[] array1 = { guncelKM, guncelKM + spiral.length, 0, 0 };
+                                    eksKaydirList.Add(array1);
+                                    continue;
+                                }
+
+                                if (Convert.ToDecimal(spiral.radiusStart) < 700)
+                                {
+                                    object[] array1 = { spiSonKM - aKare / 800, spiSonKM, 0, 0 };
+                                    eksKaydirList.Add(array1);
+                                    object[] array3 = { spiSonKM - aKare / 700, spiSonKM - aKare / 800, 0.0375 * yon, 0 };
+                                    eksKaydirList.Add(array3);
+                                    eksKaydirİleriKm = spiSonKM - aKare / 700;
+                                    eksKaydirİleriSapma = 0.0375 * yon;
+                                }
+                                if (Convert.ToDecimal(spiral.radiusStart) < 600)
+                                {
+                                    object[] array3 = { spiSonKM - aKare / 600, spiSonKM - aKare / 700, 0.075 * yon, 0.0375 * yon };
+                                    eksKaydirList.Add(array3);
+                                    eksKaydirİleriKm = spiSonKM - aKare / 600;
+                                    eksKaydirİleriSapma = 0.075 * yon;
+                                }
+                                if (Convert.ToDecimal(spiral.radiusStart) < 500)
+                                {
+                                    object[] array3 = { spiSonKM - aKare / 500, spiSonKM - aKare / 600, 0.1125 * yon, 0.075 * yon };
+                                    eksKaydirList.Add(array3);
+                                    eksKaydirİleriKm = spiSonKM - aKare / 500;
+                                    eksKaydirİleriSapma = 0.1125 * yon;
+                                }
+                                if (Convert.ToDecimal(spiral.radiusStart) <= 400)
+                                {
+                                    object[] array3 = { spiSonKM - aKare / 400, spiSonKM - aKare / 500, 0.150 * yon, 0.1125 * yon };
+                                    eksKaydirList.Add(array3);
+                                    eksKaydirİleriKm = spiSonKM - aKare / 400;
+                                    eksKaydirİleriSapma = 0.150 * yon;
+                                }
+
+                                if (Convert.ToDecimal(spiral.radiusStart) > 400)
+                                {
+                                    object[] array3 = { guncelKM, eksKaydirİleriKm, sapmaHesabi(Convert.ToDouble(spiral.radiusStart)) * yon, eksKaydirİleriSapma };
+                                    eksKaydirList.Add(array3);
+                                }
+
+                            }
+
                             guncelKM = SpiralYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomSpiral)item, guncelKM);
                             break;
                         }
@@ -58,6 +173,12 @@ namespace XmlToKtb
             ktb.AppendLine("$D 2");
 
             d2BilgileriDoldur(alignment, ktb);
+
+            ktb.AppendLine("$SON");
+
+            ktb.AppendLine("$R 1");
+
+            EksenKaymaBilgileriDoldur(eksKaydirList, ktb);
 
             ktb.AppendLine("$SON");
 
@@ -429,6 +550,15 @@ namespace XmlToKtb
 
 
         }
+        private static void EksenKaymaBilgileriDoldur(List<Array> liste, StringBuilder sb)
+        {
+            liste = liste.OrderBy(x => x.GetValue(0)).ToList();
+
+            for (int i = 0; i < liste.Count - 1; i++)
+            {
+                sb.AppendLine(liste[i].GetValue(0) + "  " + liste[i].GetValue(1) + " 0 " + liste[i].GetValue(2) + "  " + liste[i].GetValue(3));
+            }
+        }
 
         private static double Faktoryel(double faktor)
         {
@@ -440,6 +570,33 @@ namespace XmlToKtb
             }
             if (faktor == 0) sonuc = 1;
             return sonuc;
+        }
+        private static double sapmaHesabi(double radius)
+        {
+            double sapma = 0;
+            if (radius >= 800) sapma = 0;
+            if (radius >= 700 && radius < 800)
+            {
+                sapma = 0.0375 / 100 * (Convert.ToDouble(radius) - 700);
+            }
+
+            if (radius >= 600 && radius < 700)
+            {
+                sapma = 0.0375 / 100 * (Convert.ToDouble(radius) - 600) + 0.0375;
+            }
+
+            if (radius >= 500 && radius < 600)
+            {
+                sapma = 0.0375 / 100 * (Convert.ToDouble(radius) - 500) + 0.0750;
+            }
+
+            if (radius >= 400 && radius < 500)
+            {
+                sapma = 0.0375 / 100 * (Convert.ToDouble(radius) - 400) + 0.1125;
+            }
+
+            if (radius < 400) sapma = 0.150;
+            return sapma;
         }
     }
 }

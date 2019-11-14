@@ -49,6 +49,7 @@ namespace XmlToKtb
             this.enkesitButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.LisopenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -244,6 +245,10 @@ namespace XmlToKtb
             // 
             this.ncnOpenFileDialog.Filter = "NCN veya ASC (*.ncn;*asc)|*.ncn;*.asc";
             // 
+            // LisopenFileDialog
+            // 
+            this.LisopenFileDialog.Filter = "LIS (*.lis)|*.lis";
+            // 
             // XmlToKtbUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -288,6 +293,7 @@ namespace XmlToKtb
         private Button gabariButton;
         private Label label3;
         private CheckBox enkestlistesiBox;
+        private OpenFileDialog LisopenFileDialog;
     }
 }
 

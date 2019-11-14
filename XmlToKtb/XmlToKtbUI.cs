@@ -200,6 +200,7 @@ namespace XmlToKtb
             dosyaTip = (DosyaTip)dosyaTuruComboBox.SelectedIndex;
         }
 
+
         private void enkesitButton_Click(object sender, EventArgs e)
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();
@@ -217,6 +218,27 @@ namespace XmlToKtb
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
 
         }
+
+        private void tipKesitButton_Click(object sender, EventArgs e)
+        {
+            LandXML landXml = GetirLandXmlDosyaTipiIle();
+            List<Array> kmData = GetirKmListeDosyasi();
+
+            string kseIcerigi = KSEIcerigi.TipkesittenEnkesitOlustur(landXml, kmData);
+
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
+        }
+
+        private void gabariButton_Click(object sender, EventArgs e)
+        {
+            LandXML landXml = GetirLandXmlDosyaTipiIle();
+            List<Array> kmData = GetirKmListeDosyasi();
+
+            string kseIcerigi = KSEIcerigi.GabariKesitleriOlustur(kmData, landXml);
+
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
+        }
+
 
         private LandXML GetirLandXmlDosyaTipiIle()
         {
@@ -262,29 +284,28 @@ namespace XmlToKtb
             return tumsatirlar;
         }
 
-        private void tipKesitButton_Click(object sender, EventArgs e)
+        private List<Array> GetirKmListeDosyasi()
         {
-            LandXML landXml = GetirLandXmlDosyaTipiIle();
-            List<Array> ncnData = GetirNcnData();
-            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData);
+            LisopenFileDialog.ShowDialog();
+            StreamReader lisIcerigi = new StreamReader(LisopenFileDialog.FileName);
 
-            string kseIcerigi = KSEIcerigi.TipkesittenEnkesitOlustur(landXml,kesitler);
+            List<Array> kmSatirlar = new List<Array>();
 
-            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
+            while (!lisIcerigi.EndOfStream)
+            {
+                char[] separator = { ' ', '\t' };
+                var veriSatir = lisIcerigi.ReadLine();
+                if (veriSatir != null)
+                {
+                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions)1);
+                    kmSatirlar.Add(veriKelimeleri);
+                }
+            }
+
+            return kmSatirlar;
         }
 
-        
-
-        private void gabariButton_Click(object sender, EventArgs e)
-        {
-            LandXML landXml = GetirLandXmlDosyaTipiIle();
-            List<Array> ncnData = GetirNcnData();
-            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData);
-
-            string kseIcerigi = KSEIcerigi.GabariKesitleriOlustur(kesitler, landXml);
-
-            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
-        }
+ 
 
 
     }

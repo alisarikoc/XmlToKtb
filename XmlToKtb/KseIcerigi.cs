@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using Common;
 
 namespace XmlToKtb
@@ -600,12 +601,14 @@ namespace XmlToKtb
 
         private static Array GetirDeverVeYon(LandXMLAlignmentsAlignment alignment, decimal kilometre)
         {
-            if (alignment.Cant == null)
+            if (alignment.Cant.CantStation == null)
             {
-                return null;
+                    object[] deverVeYon0 = { 0, "cw" };
+                    return deverVeYon0;
             }
 
             var Cant = alignment.Cant;
+
             var CantItems = alignment.Cant.CantStation.ToList();
             decimal dever = 0;
             string yon = null;
@@ -666,18 +669,23 @@ namespace XmlToKtb
             return kseSb.ToString();
         }
 
-        public static string TipkesittenEnkesitOlustur(LandXML landXml, List<Array> kesitler)
+        public static string TipkesittenEnkesitOlustur(LandXML landXml, List<Array> kmList)
         {
             var daireSb = new StringBuilder();
             var alignment = landXml.Alignments.Alignment;
             int kesitNo = 1;
-            foreach (var kesit in kesitler)
+            foreach (var kesit in kmList)
             {
-                if (Convert.ToInt32(kesit.GetValue(0)) == 1)
+                string satir = kesit.GetValue(0).ToString();
+                if (satir == "$ENKLIST")
                 {
-                    decimal kilometre = Convert.ToDecimal(kesit.GetValue(2));
+                    continue;
+                }
+                if (satir == "$SON") break;
+
+                    decimal kilometre = Convert.ToDecimal(kesit.GetValue(0));
                     var kirmizikotD = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, kilometre));
-                    double sapma = Convert.ToDouble(kesit.GetValue(4));
+                    double sapma = EKSENkaydir.eksenkaydirGetir(landXml, kilometre);
 
                     daireSb.AppendLine("1" + " " + kesitNo + " " + kilometre + " " + sapma);
 
@@ -695,40 +703,63 @@ namespace XmlToKtb
                     }
 
                     kesitNo++;
-                }
+                
+                
+ 
+
+                
             }
 
             return daireSb.ToString();
         }
 
-        public static string GabariKesitleriOlustur(List<Array> kesitler, LandXML landXml)
+        public static string GabariKesitleriOlustur(List<Array> kmList, LandXML landXml)
         {
             var gabariCizim = new StringBuilder();
             var alignment = landXml.Alignments.Alignment;
-            foreach (var kesit in kesitler)
+            var deveryon = landXml.Alignments.Alignment.Cant.CantStation;
+
+
+
+            if(deveryon==null)
             {
-                if (Convert.ToDecimal(kesit.GetValue(0)) == 1)
+                DialogResult secenek = MessageBox.Show("Güzergah Dosyasında Dever Tanımlı Değil !!! \n Dever Değeri '0' Olarak Çizilecek", "Devam", MessageBoxButtons.OK, MessageBoxIcon.Error);
+       
+            }
+            
+
+
+
+
+            foreach (var kesit in kmList)
+            {
+                string satir = kesit.GetValue(0).ToString();
+                if (satir == "$ENKLIST")
                 {
-                    double kilometre = Convert.ToDouble(kesit.GetValue(2));
+                    continue;
+                }
+                if (satir == "$SON") break;
+
+
+                double kilometre = Convert.ToDouble(kesit.GetValue(0));
                     var kirmizikotD = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, Convert.ToDecimal(kilometre)));
-                    double sapma = Convert.ToDouble(kesit.GetValue(4));
                     Array deverveyon = GetirDeverVeYon(alignment, Convert.ToDecimal(kilometre));
                     double dever = Convert.ToDouble(deverveyon.GetValue(0));
                     string yon = Convert.ToString(deverveyon.GetValue(1));
 
-                    gabariCizim.AppendLine(GabariCiz(kilometre, kirmizikotD, sapma, dever, yon));
-                }
+                    gabariCizim.AppendLine(GabariCiz(kilometre, kirmizikotD, dever, yon));
+                
             }
 
             return gabariCizim.ToString();
         }
 
-        private static string GabariCiz(double kilometre, double kirmizikot, double sapma, double dever, string yon)
+        private static string GabariCiz(double kilometre, double kirmizikot, double dever, string yon)
         {
             var aci = Math.Atan(dever / 1000 / 1.50); if (yon == "ccw") { aci = aci * -1; }
 
             var gabariSb = new StringBuilder();
-            gabariSb.AppendLine("1" + " " + "1" + " " + (Convert.ToString(kilometre)) + " " + (Convert.ToString(sapma)));
+            gabariSb.AppendLine("1" + " " + "1" + " " + (Convert.ToString(kilometre)) + " " + "MOD");
             gabariSb.AppendLine("0" + " " + 0 + " " + (kirmizikot + Math.Abs(dever) / 2000) + " " + "EKS");
 
             var mes = 0+Math.Sin(3 * Math.PI / 2 + aci) * 1.356; 
