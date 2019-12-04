@@ -11,7 +11,7 @@ namespace XmlToKtb
     public static class KSEIcerigi
     {
 
-        public static List<Array> KseGetir(LandXML landXml, List<Array> ncndata)
+        public static List<Array> KseGetir(LandXML landXml, List<Array> ncndata, bool aranokta)
         {
             var alignment = landXml.Alignments.Alignment;
             //var kse = new StringBuilder("2  @=COLOR=SECTION=DISPLAY=-12796356").AppendLine();
@@ -307,9 +307,8 @@ namespace XmlToKtb
             }
 
             kesitliste = kesitliste.OrderBy(x => x.GetValue(0)).ToList();
-
-
-            var k = 0;
+ 
+        var k = 0;
             var c = 0;
             decimal toplam = 0;
             decimal Kes_KMSON = 0;
@@ -379,8 +378,23 @@ namespace XmlToKtb
             }
 
 
+            if (aranokta)
+            {
+                return kseliste;
+            }
 
-            return kseliste;
+            List<Array> SadeKseliste = new List<Array>();
+
+            for (int i = 0; i < kseliste.Count - 1; i++)
+            {
+                if (Convert.ToString(kseliste[i].GetValue(3)) == "NOK" ||Convert.ToInt32(kseliste[i].GetValue(0))==1)
+                {
+                    object[] array4 = { kseliste[i].GetValue(0), kseliste[i].GetValue(1), kseliste[i].GetValue(2), kseliste[i].GetValue(3), kseliste[i].GetValue(4) };
+                    SadeKseliste.Add(array4);
+                }
+                
+            }
+            return SadeKseliste;
         }
 
 

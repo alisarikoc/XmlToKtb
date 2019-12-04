@@ -200,12 +200,12 @@ namespace XmlToKtb
             dosyaTip = (DosyaTip)dosyaTuruComboBox.SelectedIndex;
         }
 
-
         private void enkesitButton_Click(object sender, EventArgs e)
         {
+            bool aranokta = false;
             LandXML landXml = GetirLandXmlDosyaTipiIle();
             List<Array> ncnData = GetirNcnData();
-            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData);
+            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData,aranokta);
 
             string kseIcerigi = KSEIcerigi.NoktalardanEnkesitOlustur(kesitler);
             string listeIcerigi = KSEIcerigi.EnkesitListesiOlustur(kesitler);
@@ -213,6 +213,20 @@ namespace XmlToKtb
             {
                 DosyaKaydetFiltreIle(listeIcerigi, Resources.lisExtensionFilter);
             }
+
+
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);
+        }
+
+
+        private void daire_enkesitButton_Click(object sender, EventArgs e)
+        {
+            bool aranokta = true;
+            LandXML landXml = GetirLandXmlDosyaTipiIle();
+            List<Array> ncnData = GetirNcnData();
+            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData, aranokta);
+
+            string kseIcerigi = KSEIcerigi.NoktalardanEnkesitOlustur(kesitler);
 
 
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter);

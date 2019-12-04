@@ -93,9 +93,9 @@ namespace XmlToKtb
                                     eksKaydirİleriSapma = 0.150 * yon;
                                 }
 
-                                if (Convert.ToDecimal(spiral.radiusEnd) > 400)
+                                if (Convert.ToDecimal(spiral.radiusEnd) < 400)
                                 {
-                                    object[] array3 = { eksKaydirİleriKm, guncelKM + aKare / Convert.ToDecimal(spiral.radiusEnd), eksKaydirİleriSapma, sapmaHesabi(Convert.ToDouble(spiral.radiusEnd)) * yon };
+                                    object[] array3 = { eksKaydirİleriKm, guncelKM + aKare / Convert.ToDecimal(spiral.radiusEnd), 0.150 * yon, 0.150 * yon };
                                     eksKaydirList.Add(array3);
                                 }
                             }
@@ -109,6 +109,11 @@ namespace XmlToKtb
                                     object[] array1 = { guncelKM, guncelKM + spiral.length, 0, 0 };
                                     eksKaydirList.Add(array1);
                                     continue;
+                                }
+                                if (Convert.ToDecimal(spiral.radiusStart) < 400)
+                                {
+                                    object[] array3 = { guncelKM, spiSonKM - aKare / 400, 0.150 * yon, 0.150 * yon };
+                                    eksKaydirList.Add(array3);
                                 }
 
                                 if (Convert.ToDecimal(spiral.radiusStart) < 700)
@@ -142,11 +147,7 @@ namespace XmlToKtb
                                     eksKaydirİleriSapma = 0.150 * yon;
                                 }
 
-                                if (Convert.ToDecimal(spiral.radiusStart) > 400)
-                                {
-                                    object[] array3 = { guncelKM, eksKaydirİleriKm, sapmaHesabi(Convert.ToDouble(spiral.radiusStart)) * yon, eksKaydirİleriSapma };
-                                    eksKaydirList.Add(array3);
-                                }
+
 
                             }
 

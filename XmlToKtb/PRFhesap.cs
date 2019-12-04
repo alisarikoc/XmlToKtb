@@ -23,6 +23,7 @@ namespace XmlToKtb
                 if (profAlignItems.IndexOf(item) == 0)//ilk item
                 {
                     oncekiItem = null;
+                    continue;
                     //sonrakiItem = profAlignItems[profAlignItems.IndexOf(item) + 1];
                 }
                 else if (profAlignItems.IndexOf(item) == profAlignItems.Count - 1)//son item
