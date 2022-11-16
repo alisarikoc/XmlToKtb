@@ -35,27 +35,40 @@ namespace XmlToKtb
             this.enkestlistesiBox = new System.Windows.Forms.CheckBox();
             this.gabariButton = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             this.tipKesitButton = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.daire_enkesitButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.donusturButton = new System.Windows.Forms.Button();
-            this.isimHaklariLabel = new System.Windows.Forms.Label();
-            this.kaydetButton = new System.Windows.Forms.Button();
-            this.bilgiLabel = new System.Windows.Forms.Label();
-            this.dosyaTuruComboBox = new System.Windows.Forms.ComboBox();
-            this.kayitTuruLabel = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.bilgiLabel = new System.Windows.Forms.Label();
+            this.kayitTuruLabel = new System.Windows.Forms.Label();
+            this.dosyaTuruComboBox = new System.Windows.Forms.ComboBox();
+            this.donusturButton = new System.Windows.Forms.Button();
+            this.kaydetButton = new System.Windows.Forms.Button();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.tabllobutton = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.Tcddtabllobutton = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.isimHaklariLabel = new System.Windows.Forms.Label();
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.LisopenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
+
+            this.dxf_button = new System.Windows.Forms.Button();
+            this.dxf_label = new System.Windows.Forms.Label();
             tabPage2 = new System.Windows.Forms.TabPage();
             tabPage2.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabPage2
@@ -107,6 +120,16 @@ namespace XmlToKtb
             this.label3.TabIndex = 9;
             this.label3.Text = "Gabariden Enkesit Oluştur:";
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(245, 16);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(93, 31);
+            this.button1.TabIndex = 8;
+            this.button1.Text = "Başlat";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.enkesitButton_Click);
+            // 
             // tipKesitButton
             // 
             this.tipKesitButton.Location = new System.Drawing.Point(245, 112);
@@ -157,84 +180,12 @@ namespace XmlToKtb
             this.label1.TabIndex = 4;
             this.label1.Text = "Noktalardan Enkesit Oluştur:";
             // 
-            // openFileDialog
-            // 
-            this.openFileDialog.DefaultExt = "xml";
-            this.openFileDialog.Filter = "XML veya KTB (*.xml;*ktb)|*.xml;*.ktb";
-            this.openFileDialog.FilterIndex = 0;
-            // 
-            // donusturButton
-            // 
-            this.donusturButton.Location = new System.Drawing.Point(6, 24);
-            this.donusturButton.Name = "donusturButton";
-            this.donusturButton.Size = new System.Drawing.Size(93, 31);
-            this.donusturButton.TabIndex = 0;
-            this.donusturButton.Text = "Dosya Seç";
-            this.donusturButton.UseVisualStyleBackColor = true;
-            this.donusturButton.Click += new System.EventHandler(this.xmlDonustur_Tikla);
-            // 
-            // isimHaklariLabel
-            // 
-            this.isimHaklariLabel.AutoSize = true;
-            this.isimHaklariLabel.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.isimHaklariLabel.Font = new System.Drawing.Font("Arial", 10F);
-            this.isimHaklariLabel.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.isimHaklariLabel.Location = new System.Drawing.Point(9, 248);
-            this.isimHaklariLabel.Name = "isimHaklariLabel";
-            this.isimHaklariLabel.Size = new System.Drawing.Size(107, 16);
-            this.isimHaklariLabel.TabIndex = 1;
-            this.isimHaklariLabel.Text = "© Burak Kalafat";
-            // 
-            // kaydetButton
-            // 
-            this.kaydetButton.Enabled = false;
-            this.kaydetButton.Location = new System.Drawing.Point(305, 78);
-            this.kaydetButton.Name = "kaydetButton";
-            this.kaydetButton.Size = new System.Drawing.Size(93, 31);
-            this.kaydetButton.TabIndex = 2;
-            this.kaydetButton.Text = "Çıktı Kaydet";
-            this.kaydetButton.UseVisualStyleBackColor = true;
-            this.kaydetButton.Click += new System.EventHandler(this.kaydet_Tikla);
-            // 
-            // bilgiLabel
-            // 
-            this.bilgiLabel.AutoSize = true;
-            this.bilgiLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.bilgiLabel.Location = new System.Drawing.Point(3, 3);
-            this.bilgiLabel.Name = "bilgiLabel";
-            this.bilgiLabel.Size = new System.Drawing.Size(151, 18);
-            this.bilgiLabel.TabIndex = 3;
-            this.bilgiLabel.Text = "Lütfen Dosya Seçiniz.";
-            // 
-            // dosyaTuruComboBox
-            // 
-            this.dosyaTuruComboBox.FormattingEnabled = true;
-            this.dosyaTuruComboBox.Items.AddRange(new object[] {
-            "KTB",
-            "ALN ve PRF"});
-            this.dosyaTuruComboBox.Location = new System.Drawing.Point(305, 49);
-            this.dosyaTuruComboBox.Margin = new System.Windows.Forms.Padding(2);
-            this.dosyaTuruComboBox.Name = "dosyaTuruComboBox";
-            this.dosyaTuruComboBox.Size = new System.Drawing.Size(92, 21);
-            this.dosyaTuruComboBox.TabIndex = 6;
-            this.dosyaTuruComboBox.SelectedIndexChanged += new System.EventHandler(this.dosyaTuruComboBox_SelectedIndexChanged);
-            // 
-            // kayitTuruLabel
-            // 
-            this.kayitTuruLabel.AutoSize = true;
-            this.kayitTuruLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.kayitTuruLabel.Location = new System.Drawing.Point(190, 52);
-            this.kayitTuruLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.kayitTuruLabel.Name = "kayitTuruLabel";
-            this.kayitTuruLabel.Size = new System.Drawing.Size(106, 13);
-            this.kayitTuruLabel.TabIndex = 7;
-            this.kayitTuruLabel.Text = "Kaydedilecek Tür";
-            this.kayitTuruLabel.Visible = false;
-            // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -256,29 +207,202 @@ namespace XmlToKtb
             this.tabPage1.Text = "Güzergah";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // bilgiLabel
+            // 
+            this.bilgiLabel.AutoSize = true;
+            this.bilgiLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.bilgiLabel.Location = new System.Drawing.Point(3, 3);
+            this.bilgiLabel.Name = "bilgiLabel";
+            this.bilgiLabel.Size = new System.Drawing.Size(151, 18);
+            this.bilgiLabel.TabIndex = 3;
+            this.bilgiLabel.Text = "Lütfen Dosya Seçiniz.";
+            // 
+            // kayitTuruLabel
+            // 
+            this.kayitTuruLabel.AutoSize = true;
+            this.kayitTuruLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.kayitTuruLabel.Location = new System.Drawing.Point(190, 52);
+            this.kayitTuruLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.kayitTuruLabel.Name = "kayitTuruLabel";
+            this.kayitTuruLabel.Size = new System.Drawing.Size(106, 13);
+            this.kayitTuruLabel.TabIndex = 7;
+            this.kayitTuruLabel.Text = "Kaydedilecek Tür";
+            this.kayitTuruLabel.Visible = false;
+            // 
+            // dosyaTuruComboBox
+            // 
+            this.dosyaTuruComboBox.FormattingEnabled = true;
+            this.dosyaTuruComboBox.Items.AddRange(new object[] {
+            "KTB",
+            "ALN ve PRF",
+            "TBL"});
+            this.dosyaTuruComboBox.Location = new System.Drawing.Point(305, 49);
+            this.dosyaTuruComboBox.Margin = new System.Windows.Forms.Padding(2);
+            this.dosyaTuruComboBox.Name = "dosyaTuruComboBox";
+            this.dosyaTuruComboBox.Size = new System.Drawing.Size(92, 21);
+            this.dosyaTuruComboBox.TabIndex = 6;
+            this.dosyaTuruComboBox.SelectedIndexChanged += new System.EventHandler(this.dosyaTuruComboBox_SelectedIndexChanged);
+            // 
+            // donusturButton
+            // 
+            this.donusturButton.Location = new System.Drawing.Point(6, 24);
+            this.donusturButton.Name = "donusturButton";
+            this.donusturButton.Size = new System.Drawing.Size(93, 31);
+            this.donusturButton.TabIndex = 0;
+            this.donusturButton.Text = "Dosya Seç";
+            this.donusturButton.UseVisualStyleBackColor = true;
+            this.donusturButton.Click += new System.EventHandler(this.xmlDonustur_Tikla);
+            // 
+            // kaydetButton
+            // 
+            this.kaydetButton.Enabled = false;
+            this.kaydetButton.Location = new System.Drawing.Point(305, 78);
+            this.kaydetButton.Name = "kaydetButton";
+            this.kaydetButton.Size = new System.Drawing.Size(93, 31);
+            this.kaydetButton.TabIndex = 2;
+            this.kaydetButton.Text = "Dönüştür";
+            this.kaydetButton.UseVisualStyleBackColor = true;
+            this.kaydetButton.Click += new System.EventHandler(this.kaydet_Tikla);
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.button2);
+            this.tabPage3.Controls.Add(this.tabllobutton);
+            this.tabPage3.Controls.Add(this.label7);
+            this.tabPage3.Controls.Add(this.label5);
+            this.tabPage3.Controls.Add(this.Tcddtabllobutton);
+            this.tabPage3.Controls.Add(this.label6);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(440, 207);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Tablolar";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // tabllobutton
+            // 
+            this.tabllobutton.Location = new System.Drawing.Point(245, 72);
+            this.tabllobutton.Name = "tabllobutton";
+            this.tabllobutton.Size = new System.Drawing.Size(93, 31);
+            this.tabllobutton.TabIndex = 10;
+            this.tabllobutton.Text = "Tablo Olustur";
+            this.tabllobutton.UseVisualStyleBackColor = true;
+            this.tabllobutton.Click += new System.EventHandler(this.guzerhah_tablo_click);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label5.Location = new System.Drawing.Point(50, 77);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(138, 18);
+            this.label5.TabIndex = 9;
+            this.label5.Text = "TCDD Hat El Kitabı:";
+            // 
+            // Tcddtabllobutton
+            // 
+            this.Tcddtabllobutton.Location = new System.Drawing.Point(245, 23);
+            this.Tcddtabllobutton.Name = "Tcddtabllobutton";
+            this.Tcddtabllobutton.Size = new System.Drawing.Size(93, 31);
+            this.Tcddtabllobutton.TabIndex = 10;
+            this.Tcddtabllobutton.Text = "Tablo Olustur";
+            this.Tcddtabllobutton.UseVisualStyleBackColor = true;
+            this.Tcddtabllobutton.Click += new System.EventHandler(this.tcddteknik_tablo_click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label6.Location = new System.Drawing.Point(50, 28);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(159, 18);
+            this.label6.TabIndex = 9;
+            this.label6.Text = "TCDD Teknik Tablosu:";
+            // 
+            // openFileDialog
+            // 
+            this.openFileDialog.DefaultExt = "xml";
+            this.openFileDialog.Filter = "XML veya KTB (*.xml;*ktb)|*.xml;*.ktb";
+            this.openFileDialog.FilterIndex = 0;
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.dxf_button);
+            this.tabPage4.Controls.Add(this.dxf_label);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(440, 207);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Dxf";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // isimHaklariLabel
+            // 
+            this.isimHaklariLabel.AutoSize = true;
+            this.isimHaklariLabel.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.isimHaklariLabel.Font = new System.Drawing.Font("Arial", 10F);
+            this.isimHaklariLabel.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.isimHaklariLabel.Location = new System.Drawing.Point(9, 248);
+            this.isimHaklariLabel.Name = "isimHaklariLabel";
+            this.isimHaklariLabel.Size = new System.Drawing.Size(195, 16);
+            this.isimHaklariLabel.TabIndex = 1;
+            this.isimHaklariLabel.Text = "© Burak Kalafat ve Ali Sarıkoç";
+            // 
             // ncnOpenFileDialog
             // 
             this.ncnOpenFileDialog.Filter = "NCN veya ASC (*.ncn;*asc)|*.ncn;*.asc";
             // 
             // LisopenFileDialog
             // 
-            this.LisopenFileDialog.Filter = "LIS (*.lis)|*.lis";
+            this.LisopenFileDialog.Filter = "TBL (*.tbl)|*.tbl";
             // 
-            // enkesitButton
+            // button2
             // 
-            this.button1.Location = new System.Drawing.Point(245, 16);
-            this.button1.Name = "enkesitButton";
-            this.button1.Size = new System.Drawing.Size(93, 31);
-            this.button1.TabIndex = 8;
-            this.button1.Text = "Başlat";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.enkesitButton_Click);
+            this.button2.Location = new System.Drawing.Point(245, 126);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(93, 31);
+            this.button2.TabIndex = 10;
+            this.button2.Text = "XML Olustur";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.elKitabiXML_click);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label7.Location = new System.Drawing.Point(50, 131);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(175, 18);
+            this.label7.TabIndex = 9;
+            this.label7.Text = "El Kitabı İçin XML oluştur:";
+            // 
+            // dxf_button
+            // 
+            this.dxf_button.Location = new System.Drawing.Point(245, 126);
+            this.dxf_button.Name = "dxf_button";
+            this.dxf_button.Size = new System.Drawing.Size(93, 31);
+            this.dxf_button.TabIndex = 10;
+            this.dxf_button.Text = "XML Olustur";
+            this.dxf_button.UseVisualStyleBackColor = true;
+            this.dxf_button.Click += new System.EventHandler(this.dxftoXML_click);
+            // 
+            // dxf_label
+            // 
+            this.dxf_label.AutoSize = true;
+            this.dxf_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.dxf_label.Location = new System.Drawing.Point(50, 131);
+            this.dxf_label.Name = "dxf_label";
+            this.dxf_label.Size = new System.Drawing.Size(175, 18);
+            this.dxf_label.TabIndex = 9;
+            this.dxf_label.Text = "Dxf den XML oluştur:";
             // 
             // XmlToKtbUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(472, 273);
+            this.ClientSize = new System.Drawing.Size(464, 261);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.isimHaklariLabel);
             this.MaximizeBox = false;
@@ -293,6 +417,10 @@ namespace XmlToKtb
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -315,11 +443,28 @@ namespace XmlToKtb
         private Button tipKesitButton;
         private Label label2;
         private Button gabariButton;
+
+        public Button tabllobutton;
+        public Button Tcddtabllobutton;
+
         private Label label3;
+
+        public Label label5;
+        public Label label6;
+
         private CheckBox enkestlistesiBox;
         private OpenFileDialog LisopenFileDialog;
         private Label label4;
         private Button button1;
+        private TabPage tabPage3;
+        public Button button2;
+        public Label label7;
+
+
+        private TabPage tabPage4;
+
+        public Button dxf_button;
+        public Label dxf_label;
     }
 }
 

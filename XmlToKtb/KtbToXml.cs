@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using Common;
 
 namespace XmlToKtb
 {
@@ -282,7 +281,7 @@ namespace XmlToKtb
                         double boy = Convert.ToDouble(tumsatirlar[l].GetValue(2));
                         string type = Convert.ToString(tumsatirlar[l].GetValue(3));
                         double radius = 0;
-                        if (tumsatirlar[l].Length > 4)
+                        if (tumsatirlar[l].Length > 6)
                         {
                             radius = Convert.ToDouble(tumsatirlar[l].GetValue(6));
                         }

@@ -6,6 +6,16 @@
 
         ALNPRF = 1,
 
-        XML = 2
+        TBL = 2,
+
+        KSE = 3,
+
+        KSP=4,
+
+        DXF=5,
+
+        XML
+
+        
     }
 }

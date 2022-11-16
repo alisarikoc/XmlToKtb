@@ -2,6 +2,7 @@
 // NOTE: Generated code may require at least .NET Framework 4.5 or .NET Core/Standard 2.0.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
@@ -19,6 +20,8 @@ public class LandXML
     private LandXMLAlignments alignmentsField;
     private DateTime timeField;
     private string languageField;
+    private LandXMLCgPoints CgPointsField;
+    private LandXMLSurfaces surfacesField;
 
     /// <remarks/>
     public LandXMLUnits Units { get; set; }
@@ -49,6 +52,17 @@ public class LandXML
         set
         {
             alignmentsField = value;
+        }
+    }
+    public LandXMLSurfaces Surfaces
+    {
+        get
+        {
+            return this.surfacesField;
+        }
+        set
+        {
+            this.surfacesField = value;
         }
     }
 
@@ -91,6 +105,18 @@ public class LandXML
     /// <remarks/>
     [XmlAttribute]
     public bool readOnly { get; set; }
+
+    public LandXMLCgPoints CgPoints
+    {
+        get
+        {
+            return this.CgPointsField;
+        }
+        set
+        {
+            this.CgPointsField = value;
+        }
+    }
 }
 
 /// <remarks/>
@@ -99,7 +125,6 @@ public class LandXML
 [XmlType(AnonymousType = true)]
 public class LandXMLUnits
 {
-
     /// <remarks/>
     public LandXMLUnitsMetric Metric { get; set; }
 }
@@ -299,6 +324,7 @@ public class LandXMLAlignmentsAlignment
 {
     private LandXMLAlignmentsAlignmentProfile profileField;
     private LandXMLAlignmentsAlignmentCant cantField;
+    private LandXMLAlignmentsAlignmentCrossSect[] crossSectsField;
     private decimal lengthField;
     private string descField;
 
@@ -328,6 +354,20 @@ public class LandXMLAlignmentsAlignment
         set
         {
             this.cantField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlArrayItemAttribute("CrossSect", IsNullable = false)]
+    public LandXMLAlignmentsAlignmentCrossSect[] CrossSects
+    {
+        get
+        {
+            return this.crossSectsField;
+        }
+        set
+        {
+            this.crossSectsField = value;
         }
     }
 
@@ -366,6 +406,8 @@ public class LandXMLAlignmentsAlignment
             descField = value;
         }
     }
+
+
 }
 
 /// <remarks/>
@@ -696,6 +738,7 @@ public class LandXMLAlignmentsAlignmentCoordGeomSpiral
 [XmlType(AnonymousType = true)]
 public class LandXMLAlignmentsAlignmentProfile
 {
+    private LandXMLAlignmentsAlignmentProfileProfSurf[] profSurfField;
     private string nameField;
 
     /// <remarks/>
@@ -712,6 +755,75 @@ public class LandXMLAlignmentsAlignmentProfile
         set
         {
             nameField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlElementAttribute("ProfSurf")]
+    public LandXMLAlignmentsAlignmentProfileProfSurf[] ProfSurf
+    {
+        get
+        {
+            return this.profSurfField;
+        }
+        set
+        {
+            this.profSurfField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.SerializableAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public partial class LandXMLAlignmentsAlignmentProfileProfSurf
+{
+
+    private string pntList2DField;
+
+    private string nameField;
+
+    private string stateField;
+
+    /// <remarks/>
+    public string PntList2D
+    {
+        get
+        {
+            return this.pntList2DField;
+        }
+        set
+        {
+            this.pntList2DField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string name
+    {
+        get
+        {
+            return this.nameField;
+        }
+        set
+        {
+            this.nameField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string state
+    {
+        get
+        {
+            return this.stateField;
+        }
+        set
+        {
+            this.stateField = value;
         }
     }
 }
@@ -1080,3 +1192,464 @@ public partial class LandXMLAlignmentsAlignmentCantCantStation
     }
 }
 
+/// <remarks/>
+[System.SerializableAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public partial class LandXMLAlignmentsAlignmentCrossSect
+{
+
+    private LandXMLAlignmentsAlignmentCrossSectDesignCrossSectSurf[] designCrossSectSurfField;
+
+    private decimal staField;
+
+    private string nameField;
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlElementAttribute("DesignCrossSectSurf")]
+    public LandXMLAlignmentsAlignmentCrossSectDesignCrossSectSurf[] DesignCrossSectSurf
+    {
+        get
+        {
+            return this.designCrossSectSurfField;
+        }
+        set
+        {
+            this.designCrossSectSurfField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal sta
+    {
+        get
+        {
+            return this.staField;
+        }
+        set
+        {
+            this.staField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string name
+    {
+        get
+        {
+            return this.nameField;
+        }
+        set
+        {
+            this.nameField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.SerializableAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public partial class LandXMLAlignmentsAlignmentCrossSectDesignCrossSectSurf
+{
+
+    private LandXMLAlignmentsAlignmentCrossSectDesignCrossSectSurfCrossSectPnt[] crossSectPntField;
+
+    private string nameField;
+
+    private string sideField;
+
+    private bool closedAreaField;
+
+    private decimal areaField;
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlElementAttribute("CrossSectPnt")]
+    public LandXMLAlignmentsAlignmentCrossSectDesignCrossSectSurfCrossSectPnt[] CrossSectPnt
+    {
+        get
+        {
+            return this.crossSectPntField;
+        }
+        set
+        {
+            this.crossSectPntField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string name
+    {
+        get
+        {
+            return this.nameField;
+        }
+        set
+        {
+            this.nameField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string side
+    {
+        get
+        {
+            return this.sideField;
+        }
+        set
+        {
+            this.sideField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public bool closedArea
+    {
+        get
+        {
+            return this.closedAreaField;
+        }
+        set
+        {
+            this.closedAreaField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal area
+    {
+        get
+        {
+            return this.areaField;
+        }
+        set
+        {
+            this.areaField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.SerializableAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public partial class LandXMLAlignmentsAlignmentCrossSectDesignCrossSectSurfCrossSectPnt
+{
+
+    private string codeField;
+
+    private string valueField;
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string code
+    {
+        get
+        {
+            return this.codeField;
+        }
+        set
+        {
+            this.codeField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlTextAttribute()]
+    public string Value
+    {
+        get
+        {
+            return this.valueField;
+        }
+        set
+        {
+            this.valueField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[System.SerializableAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public partial class LandXMLCgPoints
+{
+
+    private LandXMLCgPoint[] CgPointField;
+
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlElementAttribute("CgPoint")]
+    public LandXMLCgPoint[] CgPoint
+    {
+        get
+        {
+            return this.CgPointField;
+        }
+        set
+        {
+            this.CgPointField = value;
+        }
+    }
+
+
+}
+
+/// <remarks/>
+[System.SerializableAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true,
+    Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public partial class LandXMLCgPoint
+{
+    private string nameField;
+
+    private string codeField;
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string name
+    {
+        get
+        {
+            return this.nameField;
+        }
+        set
+        {
+            this.nameField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string code
+    {
+        get
+        {
+            return this.codeField;
+        }
+        set
+        {
+            this.codeField = value;
+        }
+    }
+
+    /// <remarks/>
+    [XmlText]
+    public string value
+    {
+        get;
+        set;
+    }
+}
+
+/// <remarks/>
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class LandXMLSurfaces
+{
+    private string nameField;
+
+    /// <remarks/>
+    public LandXMLSurfacesSurface Surface
+    {
+        get; set;
+    }
+
+    /// <remarks/>
+    [XmlAttribute]
+    public string name
+    {
+        get
+        {
+            return nameField;
+        }
+        set
+        {
+            nameField = value;
+        }
+    }
+}
+
+/// <remarks/>
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class LandXMLSurfacesSurface
+{
+    private LandXMLSurfacesSurfaceDefinition surfaceField;
+    private decimal lengthField;
+    private string descField;
+
+    /// <remarks/>
+    public LandXMLSurfacesSurfaceDefinition Definition
+    {
+        get
+        {
+            return surfaceField;
+        }
+        set
+        {
+            surfaceField = value;
+        }
+    }
+
+    /// <remarks/>
+    [XmlAttribute]
+    public string name
+    {
+        get; set;
+    }
+
+    /// <remarks/>
+    [XmlAttribute]
+    public decimal staStart
+    {
+        get; set;
+    }
+
+    /// <remarks/>
+    [XmlAttribute]
+    public string desc
+    {
+        get
+        {
+            return descField;
+        }
+        set
+        {
+            descField = value;
+        }
+    }
+
+
+}
+
+/// <remarks/>
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class LandXMLSurfacesSurfaceDefinition
+{
+    /// <remarks/>
+    public LandXMLSurfacesSurfaceDefinitionPnts Pnts
+    {
+        get; set;
+    }
+    /// <remarks/>
+    public LandXMLSurfacesSurfaceDefinitionFaces Faces
+    {
+        get; set;
+    }
+
+}
+
+/// <remarks/>
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class LandXMLSurfacesSurfaceDefinitionPnts
+{
+    private string nameField;
+
+    /// <remarks/>
+    [XmlElement("P", typeof(LandXMLSurfacesSurfaceDefinitionPntsP))]
+    public object[] Items
+    {
+        get; set;
+    }
+
+    /// <remarks/>
+    [XmlAttribute]
+    public string name
+    {
+        get
+        {
+            return nameField;
+        }
+        set
+        {
+            nameField = value;
+        }
+    }
+}
+/// <remarks/>
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class LandXMLSurfacesSurfaceDefinitionPntsP
+{
+
+    /// <remarks/>
+    [XmlAttribute]
+    public string id
+    {
+        get; set;
+    }
+
+    /// <remarks/>
+    [XmlText]
+    public string Value
+    {
+        get; set;
+    }
+}
+/// <remarks/>
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class LandXMLSurfacesSurfaceDefinitionFaces
+{
+    private string nameField;
+
+    /// <remarks/>
+    [XmlElement("F", typeof(LandXMLSurfacesSurfaceDefinitionFacesF))]
+    public object[] Items
+    {
+        get; set;
+    }
+
+    /// <remarks/>
+    [XmlAttribute]
+    public string name
+    {
+        get
+        {
+            return nameField;
+        }
+        set
+        {
+            nameField = value;
+        }
+    }
+}
+/// <remarks/>
+[Serializable]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+public class LandXMLSurfacesSurfaceDefinitionFacesF
+{
+
+    /// <remarks/>
+    [XmlAttribute]
+    public string id
+    {
+        get; set;
+    }
+
+    /// <remarks/>
+    [XmlText]
+    public string Value
+    {
+        get; set;
+    }
+}

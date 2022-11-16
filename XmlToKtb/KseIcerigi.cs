@@ -330,7 +330,7 @@ namespace XmlToKtb
                     Kes_KMSON = Kes_KM;
                 }
 
-                if (Math.Abs(Kes_KM - Kes_KMSON) > 2)
+                if (Math.Abs(Kes_KM - Kes_KMSON) > (decimal)0.20)
                 {
                     GetirEkNokta(shortdizi(aranoktaliste));
                     foreach (var ara in aranoktaliste)

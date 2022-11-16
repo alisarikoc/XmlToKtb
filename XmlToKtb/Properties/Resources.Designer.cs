@@ -88,7 +88,7 @@ namespace XmlToKtb.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to LIS|*.lis.
+        ///   Looks up a localized string similar to TBL|*.tbl.
         /// </summary>
         internal static string lisExtensionFilter {
             get {

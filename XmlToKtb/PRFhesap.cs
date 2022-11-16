@@ -32,11 +32,8 @@ namespace XmlToKtb
                 }
                 else//aradaki itemlar
                 {
-
                     oncekiItem = profAlignItems[profAlignItems.IndexOf(item) - 1];
-
                     sonrakiItem = profAlignItems[profAlignItems.IndexOf(item) + 1];
-
                 }
 
                 bool ilkItemIse = oncekiItem == null;
@@ -58,6 +55,14 @@ namespace XmlToKtb
                 decimal guncelKot = guncelProfilAlign.Kot;
                 decimal guncelLength = guncelProfilAlign.Length;
 
+                if (oncekiLength == 0)
+                {
+                    var g1 = (guncelKot - oncekiKot) / (guncelKm - oncekiKm);
+
+                    var Length = guncelKm - guncelLength / 2;
+                    object[] array = { oncekiKm, oncekiKot, "Line", g1, 0, Length, 0 };
+                    Profilsatir.Add(array);
+                }
 
 
 
@@ -65,15 +70,20 @@ namespace XmlToKtb
                 if (ilkItemIse)
                 {
 
-                    var g1 = (sonrakiKot - guncelKot) / (sonrakiKm - guncelKm);
+                    var g2 = (sonrakiKot - guncelKot) / (sonrakiKm - guncelKm);
                     
                     var Length = sonrakiKm - sonrakiLength / 2;
-                    object[] array = { guncelKm, guncelKot, "Line", g1,0,Length,0 };
+                    object[] array = { guncelKm, guncelKot, "Line", 0,g2,Length,0 };
                     Profilsatir.Add(array);
 
                 }
                 else if (sonItemIse)
                 {
+                    var g1 = (guncelKot - oncekiKot) / (guncelKm - oncekiKm);
+
+                    var Length = (guncelKm - oncekiKm)-(oncekiLength / 2);
+                    object[] array = { guncelKm, guncelKot, "Line", g1, 0, Length, 0 };
+                    Profilsatir.Add(array);
                     break;
                 }
                 else
