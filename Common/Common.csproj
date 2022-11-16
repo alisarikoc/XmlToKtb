@@ -46,9 +46,17 @@
     <Compile Include="Enum\DurumTip.cs" />
     <Compile Include="Enum\ProfileAlignTip.cs" />
     <Compile Include="LandXML.cs" />
+    <Compile Include="Modeller\Nokta.cs" />
+    <Compile Include="Modeller\Ucgen.cs" />
     <Compile Include="Packages\ProfilAlignPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Yardimci.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DXFLib\DXFLib.csproj">
+      <Project>{476FA4C4-FA1D-4A2A-985B-8CBF50F82251}</Project>
+      <Name>DXFLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

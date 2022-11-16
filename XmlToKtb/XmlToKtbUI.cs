@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Windows.Shapes;
 using Common;
 using Common.Enum;
+using Common.Modeller;
 using DXFLib;
 using XmlToKtb.Properties;
 using Path = System.IO.Path;
@@ -30,7 +31,7 @@ namespace XmlToKtb
         {
             InitializeComponent();
             durumTip = DurumTip.Basladi;
-            dosyaTuruComboBox.SelectedIndex = (int)DosyaTip.KTB;
+            dosyaTuruComboBox.SelectedIndex = (int) DosyaTip.KTB;
             GorunumuAyarla();
         }
 
@@ -59,7 +60,7 @@ namespace XmlToKtb
 
                 var serializer = new DosyaDeserializer();
                 var landXml = serializer.XmlDeserializer<LandXML>(openFileDialog.FileName);
-                dosyaTip = (DosyaTip)dosyaTuruComboBox.SelectedIndex;
+                dosyaTip = (DosyaTip) dosyaTuruComboBox.SelectedIndex;
 
                 switch (dosyaTip)
                 {
@@ -122,7 +123,7 @@ namespace XmlToKtb
             bilgiLabel.ForeColor = rastgeleRenk;
         }
 
-        private static void DosyaKaydetFiltreIle(string icerik, string filtre,string dosyaadi)
+        private static void DosyaKaydetFiltreIle(string icerik, string filtre, string dosyaadi)
         {
             var saveFileDialog = new SaveFileDialog
             {
@@ -192,7 +193,7 @@ namespace XmlToKtb
             {
                 case DosyaTip.KTB:
 
-                    DosyaKaydetFiltreIle(ktbIcerigi, Resources.ktbExtensionFilter,"ktb");
+                    DosyaKaydetFiltreIle(ktbIcerigi, Resources.ktbExtensionFilter, "ktb");
                     break;
 
                 case DosyaTip.ALNPRF:
@@ -202,11 +203,11 @@ namespace XmlToKtb
 
                 case DosyaTip.XML:
 
-                    DosyaKaydetFiltreIle(xmlIcerigi, Resources.xmlExtensionFilter,"xml");
+                    DosyaKaydetFiltreIle(xmlIcerigi, Resources.xmlExtensionFilter, "xml");
                     break;
                 case DosyaTip.TBL:
 
-                    DosyaKaydetFiltreIle(lisIcerigi, Resources.lisExtensionFilter,"tbl");
+                    DosyaKaydetFiltreIle(lisIcerigi, Resources.lisExtensionFilter, "tbl");
                     break;
             }
             durumTip = DurumTip.Kaydedildi;
@@ -215,7 +216,7 @@ namespace XmlToKtb
 
         private void dosyaTuruComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            dosyaTip = (DosyaTip)dosyaTuruComboBox.SelectedIndex;
+            dosyaTip = (DosyaTip) dosyaTuruComboBox.SelectedIndex;
         }
 
         private void enkesitButton_Click(object sender, EventArgs e)
@@ -223,17 +224,17 @@ namespace XmlToKtb
             bool aranokta = false;
             LandXML landXml = GetirLandXmlDosyaTipiIle();
             List<Array> ncnData = GetirNcnData();
-            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData,aranokta);
+            List<Array> kesitler = KSEIcerigi.KseGetir(landXml, ncnData, aranokta);
 
             string kseIcerigi = KSEIcerigi.NoktalardanEnkesitOlustur(kesitler);
             string listeIcerigi = KSEIcerigi.EnkesitListesiOlustur(kesitler);
             if (enkestlistesiBox.Checked == true) //Eğer checkbox seçiliyse
             {
-                DosyaKaydetFiltreIle(listeIcerigi, Resources.lisExtensionFilter,"KSE");
+                DosyaKaydetFiltreIle(listeIcerigi, Resources.lisExtensionFilter, "KSE");
             }
 
 
-            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter,"KSE");
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter, "KSE");
         }
 
 
@@ -247,7 +248,7 @@ namespace XmlToKtb
             string kseIcerigi = KSEIcerigi.NoktalardanEnkesitOlustur(kesitler);
 
 
-            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter,"KSE");
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter, "KSE");
 
         }
 
@@ -258,7 +259,7 @@ namespace XmlToKtb
 
             string kseIcerigi = KSEIcerigi.TipkesittenEnkesitOlustur(landXml, kmData);
 
-            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter,"KSE");
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter, "KSE");
         }
 
         private void gabariButton_Click(object sender, EventArgs e)
@@ -268,7 +269,7 @@ namespace XmlToKtb
 
             string kseIcerigi = KSEIcerigi.GabariKesitleriOlustur(kmData, landXml);
 
-            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter,"KSE");
+            DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter, "KSE");
         }
 
         private void guzerhah_tablo_click(object sender, EventArgs e)
@@ -279,7 +280,7 @@ namespace XmlToKtb
 
             string GzhIcerigi = GzgIcerigi.NoktalardanTabloOlustur(kesitler);
 
-            
+
             DosyaKaydetFiltreIle(GzhIcerigi, Resources.lisExtensionFilter, "TBL");
         }
 
@@ -289,10 +290,10 @@ namespace XmlToKtb
             List<Array> ncnData = GetirNcnData();
             List<Array> kesitler = TcddteknikIcerigi.GzgGetir(landXml, ncnData);
 
-            LandXML ekliLandXml = TcddteknikIcerigi.deverprofil(landXml,kesitler);///// yeni dosya olacak xml kaydeden
+            LandXML ekliLandXml = TcddteknikIcerigi.deverprofil(landXml, kesitler);///// yeni dosya olacak xml kaydeden
             xmlIcerigi = KTBtoXML.Serialize(landXml);
             DosyaKaydetFiltreIle(xmlIcerigi, Resources.xmlExtensionFilter, "xml");
-            
+
         }
         private void dxftoXML_click(object sender, EventArgs e)
         {
@@ -317,7 +318,7 @@ namespace XmlToKtb
                 // Parse DXF
                 DXFLib.DXFDocument doc;
                 DateTime start = DateTime.UtcNow;
-                
+
                 doc = new DXFLib.DXFDocument();
 
                 doc.Load(filename);
@@ -329,8 +330,8 @@ namespace XmlToKtb
                 {
                     // Create shapes
                     start = DateTime.UtcNow;
-                    List<Array> nokList = new List<Array>();
-                    List<Array> kenarList = new List<Array>();
+                    List<Nokta> nokList = new List<Nokta>();
+                    List<Ucgen> ucgenList = new List<Ucgen>();
                     int noktano = 2;
                     foreach (DXFLib.DXFEntity entity in doc.Entities)
                     {
@@ -352,18 +353,20 @@ namespace XmlToKtb
                         var z2 = vertex2.Location.Z;
 
 
-                        object[] array0 = { noktano, x0, y0,z0 };
-                        object[] array1 = { noktano+1, x1, y1, z1 };
-                        object[] array2 = { noktano+2, x2, y2, z2 }; 
-                        object[] kenar = { noktano, noktano+1, noktano+2 }; noktano = noktano + 3;
-                        kenarList.Add(kenar);
-                        nokList.Add(array0); nokList.Add(array1); nokList.Add(array2);
+                        Nokta nokta0 = new Nokta { Numara = noktano, X = x0, Y = y0, Z = z0 };
+                        Nokta nokta1 = new Nokta { Numara = noktano + 1, X = x1, Y = y1, Z = z1 };
+                        Nokta nokta2 = new Nokta { Numara = noktano + 2, X = x2, Y = y2, Z = z2 };
+                        Ucgen ucgen = new Ucgen { Numara0 = noktano, Numara1 = noktano + 1, Numara2 = noktano + 2 };
+                        
+                        noktano = noktano + 3;
+                        ucgenList.Add(ucgen);
+                        nokList.Add(nokta0); nokList.Add(nokta1); nokList.Add(nokta2);
 
                     }
 
                     System.Diagnostics.Debug.WriteLine("Created shapes in {0}ms", DateTime.UtcNow.Subtract(start).TotalMilliseconds);
 
-                    LandXML xmlyuzeydata = yuzeyXML.yuzeyXmlOlustur(nokList, kenarList,filename);
+                    LandXML xmlyuzeydata = yuzeyXML.yuzeyXmlOlustur(nokList, ucgenList, filename);
                     return null;
                 }
             }
@@ -421,7 +424,7 @@ namespace XmlToKtb
                 var veriSatir = ncnIcerigi.ReadLine();
                 if (veriSatir != null)
                 {
-                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions)1);
+                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions) 1);
                     tumsatirlar.Add(veriKelimeleri);
                 }
             }
@@ -442,7 +445,7 @@ namespace XmlToKtb
                 var veriSatir = lisIcerigi.ReadLine();
                 if (veriSatir != null)
                 {
-                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions)1);
+                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions) 1);
                     kmSatirlar.Add(veriKelimeleri);
                 }
             }

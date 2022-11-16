@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Common.Enum;
+using Common.Modeller;
 using Common.Packages;
+using DXFLib;
 
 namespace Common
 {
@@ -23,7 +27,7 @@ namespace Common
             {
                 case LandXMLAlignmentsAlignmentProfileProfAlignPVI _:
                     {
-                        var paraline = (LandXMLAlignmentsAlignmentProfileProfAlignPVI)item;
+                        var paraline = (LandXMLAlignmentsAlignmentProfileProfAlignPVI) item;
 
                         var ikiDeger = paraline.Value.Split();
 
@@ -41,7 +45,7 @@ namespace Common
                 case LandXMLAlignmentsAlignmentProfileProfAlignParaCurve _:
                     {
 
-                        var paraCurve = (LandXMLAlignmentsAlignmentProfileProfAlignParaCurve)item;
+                        var paraCurve = (LandXMLAlignmentsAlignmentProfileProfAlignParaCurve) item;
 
                         var ikiDeger = paraCurve.Value.Split();
 
@@ -59,7 +63,7 @@ namespace Common
 
                 case LandXMLAlignmentsAlignmentProfileProfAlignCircCurve _:
                     {
-                        var circCurve = (LandXMLAlignmentsAlignmentProfileProfAlignCircCurve)item;
+                        var circCurve = (LandXMLAlignmentsAlignmentProfileProfAlignCircCurve) item;
 
                         var ikiDeger = circCurve.Value.Split();
                         profilAlignPackage.KM = Convert.ToDecimal(ikiDeger[0]);
@@ -84,18 +88,18 @@ namespace Common
             switch (item)
             {
                 case LandXMLAlignmentsAlignmentCantCantStation _:
-                {
-                    var satir = (LandXMLAlignmentsAlignmentCantCantStation)item;
+                    {
+                        var satir = (LandXMLAlignmentsAlignmentCantCantStation) item;
 
-                    CantPackage.KM = satir.station;
+                        CantPackage.KM = satir.station;
 
-                    CantPackage.Cant = satir.appliedCant;
+                        CantPackage.Cant = satir.appliedCant;
 
-                    CantPackage.Yon = satir.curvature;
+                        CantPackage.Yon = satir.curvature;
 
 
-                    break;
-                }
+                        break;
+                    }
             }
 
             return CantPackage;
@@ -104,10 +108,19 @@ namespace Common
 
     public class CantPackage
     {
-        public decimal KM { get; set; }
+        public decimal KM
+        {
+            get; set;
+        }
 
-        public decimal Cant { get; set; }
+        public decimal Cant
+        {
+            get; set;
+        }
 
-        public string Yon { get; set; }
+        public string Yon
+        {
+            get; set;
+        }
     }
 }

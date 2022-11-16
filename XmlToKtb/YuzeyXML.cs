@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Shapes;
+using Common.Modeller;
+using DXFLib;
 
 namespace XmlToKtb
 {
@@ -11,8 +14,9 @@ namespace XmlToKtb
     public class yuzeyXML
     {
 
-        internal static LandXML yuzeyXmlOlustur(List<Array> noktaList, List<Array> kenarList,string shortFileName)
+        internal static LandXML yuzeyXmlOlustur(List<Nokta> noktaList, List<Ucgen> ucgenList, string shortFileName)
         {
+            UcgenListeleriniSadelestir(ref noktaList, ref ucgenList);
 
             LandXML landXml = new LandXML
             {
@@ -30,50 +34,57 @@ namespace XmlToKtb
                         directionUnit = "grads"
                     }
                 },
-                Project = new LandXMLProject {
+                Project = new LandXMLProject
+                {
                     name = shortFileName
                 },
 
-                Surfaces = new LandXMLSurfaces {
-                    Surface = new LandXMLSurfacesSurface {
-                        name = "yuzey",desc = "Description",
-                        Definition = new LandXMLSurfacesSurfaceDefinition {
-                            Pnts = new LandXMLSurfacesSurfaceDefinitionPnts {
+                Surfaces = new LandXMLSurfaces
+                {
+                    Surface = new LandXMLSurfacesSurface
+                    {
+                        name = "yuzey",
+                        desc = "Description",
+                        Definition = new LandXMLSurfacesSurfaceDefinition
+                        {
+                            Pnts = new LandXMLSurfacesSurfaceDefinitionPnts
+                            {
 
                             },
-                            Faces =new LandXMLSurfacesSurfaceDefinitionFaces {
+                            Faces = new LandXMLSurfacesSurfaceDefinitionFaces
+                            {
 
                             }
                         }
                     }
                 }
             };
-            landXml.Surfaces.Surface.Definition.Pnts.Items=new object[noktaList.Count];
+            landXml.Surfaces.Surface.Definition.Pnts.Items = new object[noktaList.Count];
             List<object> koorsItems = new List<object>();
-            foreach (var noktalar in noktaList)
+            foreach (var nokta in noktaList)
             {
                 LandXMLSurfacesSurfaceDefinitionPntsP Pnt = new LandXMLSurfacesSurfaceDefinitionPntsP
                 {
-                    id = noktalar.GetValue(0).ToString()
+                    id = nokta.Numara.ToString()
                 };
-                string[] koors = {Convert.ToString((double) noktalar.GetValue(1)), " ", Convert.ToString((double) noktalar.GetValue(2)), " " ,Convert.ToString((double) noktalar.GetValue(3))};
+                string[] koors = { Convert.ToString((double) nokta.X), " ", Convert.ToString((double) nokta.Y), " ", Convert.ToString((double) nokta.Z) };
                 Pnt.Value = string.Concat(koors);
                 koorsItems.Add(Pnt);
-            } 
-            landXml.Surfaces.Surface.Definition.Pnts.Items=koorsItems.ToArray();
-
-            landXml.Surfaces.Surface.Definition.Faces.Items = new object[kenarList.Count];
-            List<object> kenarItems = new List<object>();
-            foreach (var kenarlar in kenarList)
-            {
-                LandXMLSurfacesSurfaceDefinitionFacesF Knr = new LandXMLSurfacesSurfaceDefinitionFacesF();
-                string[] kenars = { Convert.ToString(kenarlar.GetValue(0)), " ", Convert.ToString( kenarlar.GetValue(1)), " ", Convert.ToString(kenarlar.GetValue(2)) };
-                Knr.Value = string.Concat(kenars);
-                kenarItems.Add(Knr);
             }
-            landXml.Surfaces.Surface.Definition.Faces.Items = kenarItems.ToArray();
+            landXml.Surfaces.Surface.Definition.Pnts.Items = koorsItems.ToArray();
 
-            var saveFileDialog = new SaveFileDialog() {FileName = "yuzey"};
+            landXml.Surfaces.Surface.Definition.Faces.Items = new object[ucgenList.Count];
+            List<object> ucgenItems = new List<object>();
+            foreach (var ucgen in ucgenList)
+            {
+                LandXMLSurfacesSurfaceDefinitionFacesF yuzeyUcgeni = new LandXMLSurfacesSurfaceDefinitionFacesF();
+                string[] ucgenNoktalari = { Convert.ToString(ucgen.Numara0), " ", Convert.ToString(ucgen.Numara1), " ", Convert.ToString(ucgen.Numara2) };
+                yuzeyUcgeni.Value = string.Concat(ucgenNoktalari);
+                ucgenItems.Add(yuzeyUcgeni);
+            }
+            landXml.Surfaces.Surface.Definition.Faces.Items = ucgenItems.ToArray();
+
+            var saveFileDialog = new SaveFileDialog() { FileName = "yuzey" };
             var icerik = KTBtoXML.Serialize(landXml);
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -84,6 +95,41 @@ namespace XmlToKtb
             return landXml;
         }
 
-        
+        private static void UcgenListeleriniSadelestir(ref List<Nokta> noktaList, ref List<Ucgen> ucgenList)
+        {
+            Dictionary<DXFPoint, List<int>> numaralarSozlugu = new Dictionary<DXFPoint, List<int>>();
+            List<Nokta> yeniNoktaList = new List<Nokta>();
+
+            foreach (var nokta in noktaList)
+            {
+                var dxfPoint = numaralarSozlugu.Keys.FirstOrDefault(x => x.X == nokta.X && x.Y == nokta.Y && x.Z == nokta.Z);
+
+                if (dxfPoint != null && numaralarSozlugu.TryGetValue(dxfPoint, out List<int> numaralar))
+                {
+                    numaralar.Add(nokta.Numara);
+                    numaralarSozlugu[dxfPoint] = numaralar;
+                }
+                else
+                {
+                    //nokta koordinatıyla ilk kez karşılaştık.
+                    numaralarSozlugu.Add(new DXFPoint { X = nokta.X, Y = nokta.Y, Z = nokta.Z }, new List<int> { nokta.Numara });
+                    yeniNoktaList.Add(nokta);
+                }
+            }
+
+            foreach (var ucgen in ucgenList)
+            {
+                var numaralar = numaralarSozlugu.Values.FirstOrDefault(p => p.Contains(ucgen.Numara0));
+                ucgen.Numara0 = numaralar.Min();
+
+                var numaralar1 = numaralarSozlugu.Values.FirstOrDefault(p => p.Contains(ucgen.Numara1));
+                ucgen.Numara1 = numaralar1.Min();
+
+                var numaralar2 = numaralarSozlugu.Values.FirstOrDefault(p => p.Contains(ucgen.Numara2));
+                ucgen.Numara2 = numaralar2.Min();
+            }
+
+            noktaList = yeniNoktaList;
+        }
     }
 }
