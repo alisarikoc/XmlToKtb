@@ -289,7 +289,7 @@ namespace XmlToKtb
                         XMLDATA.Add(array);
                     }
                 }
-                if (Convert.ToString(tumsatirlar[jj].GetValue(0)) == "$DEVER")
+                if (Convert.ToString(tumsatirlar[jj].GetValue(0)) == "$DEVER" && Convert.ToString(tumsatirlar[jj+1].GetValue(0)) != "$SON")
                 {
                     for (int l = jj + 1; l < tumsatirlar.Count - 1; l++)
 

@@ -1510,12 +1510,6 @@ public class LandXMLSurfacesSurface
         get; set;
     }
 
-    /// <remarks/>
-    [XmlAttribute]
-    public decimal staStart
-    {
-        get; set;
-    }
 
     /// <remarks/>
     [XmlAttribute]
@@ -1540,6 +1534,16 @@ public class LandXMLSurfacesSurface
 [XmlType(AnonymousType = true)]
 public class LandXMLSurfacesSurfaceDefinition
 {
+    private string surfTypeField;
+
+    private decimal area2DSurfField;
+
+    private decimal area3DSurfField;
+
+    private decimal elevMaxField;
+
+    private decimal elevMinField;
+
     /// <remarks/>
     public LandXMLSurfacesSurfaceDefinitionPnts Pnts
     {
@@ -1549,6 +1553,19 @@ public class LandXMLSurfacesSurfaceDefinition
     public LandXMLSurfacesSurfaceDefinitionFaces Faces
     {
         get; set;
+    }
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string surfType
+    {
+        get
+        {
+            return this.surfTypeField;
+        }
+        set
+        {
+            this.surfTypeField = value;
+        }
     }
 
 }

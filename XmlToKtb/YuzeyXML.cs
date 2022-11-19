@@ -16,7 +16,7 @@ namespace XmlToKtb
 
         internal static LandXML yuzeyXmlOlustur(List<Nokta> noktaList, List<Ucgen> ucgenList, string shortFileName)
         {
-            UcgenListeleriniSadelestir(ref noktaList, ref ucgenList);
+            //UcgenListeleriniSadelestir(ref noktaList, ref ucgenList); // ÇOK KASTIĞI İÇİN İPTAL EDİLDİ
 
             LandXML landXml = new LandXML
             {
@@ -47,6 +47,7 @@ namespace XmlToKtb
                         desc = "Description",
                         Definition = new LandXMLSurfacesSurfaceDefinition
                         {
+                            surfType = "TIN",
                             Pnts = new LandXMLSurfacesSurfaceDefinitionPnts
                             {
 
@@ -67,8 +68,9 @@ namespace XmlToKtb
                 {
                     id = nokta.Numara.ToString()
                 };
-                string[] koors = { Convert.ToString((double) nokta.X), " ", Convert.ToString((double) nokta.Y), " ", Convert.ToString((double) nokta.Z) };
-                Pnt.Value = string.Concat(koors);
+                //var noktaxx = Convert.ToString((decimal) nokta.X);
+                //var noktayy = string.Format("{0:F12}",  nokta.Y);
+                Pnt.Value = nokta.X + " " + nokta.Y + " " + nokta.Z;
                 koorsItems.Add(Pnt);
             }
             landXml.Surfaces.Surface.Definition.Pnts.Items = koorsItems.ToArray();
@@ -78,16 +80,16 @@ namespace XmlToKtb
             foreach (var ucgen in ucgenList)
             {
                 LandXMLSurfacesSurfaceDefinitionFacesF yuzeyUcgeni = new LandXMLSurfacesSurfaceDefinitionFacesF();
-                string[] ucgenNoktalari = { Convert.ToString(ucgen.Numara0), " ", Convert.ToString(ucgen.Numara1), " ", Convert.ToString(ucgen.Numara2) };
-                yuzeyUcgeni.Value = string.Concat(ucgenNoktalari);
+                yuzeyUcgeni.Value = ucgen.Numara0+ " "+ ucgen.Numara1+ " "+ucgen.Numara2;
                 ucgenItems.Add(yuzeyUcgeni);
             }
             landXml.Surfaces.Surface.Definition.Faces.Items = ucgenItems.ToArray();
 
-            var saveFileDialog = new SaveFileDialog() { FileName = "yuzey" };
+            var saveFileDialog = new SaveFileDialog() { FileName = "yuzey" ,Filter = Properties.Resources.xmlExtensionFilter };
             var icerik = KTBtoXML.Serialize(landXml);
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
+                saveFileDialog.Title = "Sonuç Enkesit Dosyasını Seçin";
                 using (var sw = new StreamWriter(saveFileDialog.FileName))
                     sw.WriteLine(icerik);
             }

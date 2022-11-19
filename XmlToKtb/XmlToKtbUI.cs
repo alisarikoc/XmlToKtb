@@ -38,7 +38,7 @@ namespace XmlToKtb
         private void xmlDonustur_Tikla(object sender, EventArgs e)
         {
             var dialogResult = openFileDialog.ShowDialog();
-
+            
             var dosyaUzantisi = Path.GetExtension(openFileDialog.FileName);
             if (dosyaUzantisi != null && dosyaUzantisi.ToLower().Equals(".ktb"))
             {
@@ -130,6 +130,7 @@ namespace XmlToKtb
                 FileName = "output",
                 Filter = filtre
             };
+            saveFileDialog.Title = "Kaydedilecek Dosya Adı Girin";
             if (dosyaadi != null)
             {
                 saveFileDialog.FileName = dosyaadi;
@@ -192,7 +193,6 @@ namespace XmlToKtb
             switch (dosyaTip)
             {
                 case DosyaTip.KTB:
-
                     DosyaKaydetFiltreIle(ktbIcerigi, Resources.ktbExtensionFilter, "ktb");
                     break;
 
@@ -298,81 +298,63 @@ namespace XmlToKtb
         private void dxftoXML_click(object sender, EventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Title = "DXF Dosyası Seçin";
             dlg.Filter = "DXF (*.dxf)|*.dxf";
 
             if (DialogResult.OK == dlg.ShowDialog())
             {
-                List<Array> background = LoadDxf(dlg.FileName);
-                //DxfDocument dxf = DxfDocument.Load(dlg.FileName);
-            }
-
-
-        }
-
-
-        private List<Array> LoadDxf(string filename)
-        {
-            // Process open file dialog box results 
-            if (!string.IsNullOrEmpty(filename))
-            {
-                // Parse DXF
-                DXFLib.DXFDocument doc;
-                DateTime start = DateTime.UtcNow;
-
-                doc = new DXFLib.DXFDocument();
-
-                doc.Load(filename);
-
-                System.Diagnostics.Debug.WriteLine("Loaded {0} in {1}ms", System.IO.Path.GetFileName(filename), DateTime.UtcNow.Subtract(start).TotalMilliseconds);
-
-                // Process entities
-                if (doc.Entities.Count > 0)
+                var filename = dlg.FileName;
+                if (!string.IsNullOrEmpty(filename))
                 {
-                    // Create shapes
-                    start = DateTime.UtcNow;
-                    List<Nokta> nokList = new List<Nokta>();
-                    List<Ucgen> ucgenList = new List<Ucgen>();
-                    int noktano = 2;
-                    foreach (DXFLib.DXFEntity entity in doc.Entities)
+                    // Parse DXF
+                    DXFLib.DXFDocument doc;
+                    DateTime start = DateTime.UtcNow;
+
+                    doc = new DXFLib.DXFDocument();
+
+                    doc.Load(filename);
+
+                    System.Diagnostics.Debug.WriteLine("Loaded {0} in {1}ms", System.IO.Path.GetFileName(filename), DateTime.UtcNow.Subtract(start).TotalMilliseconds);
+
+                    // Process entities
+                    if (doc.Entities.Count > 0)
                     {
-                        DXFLib.DXFPolyLine polyLine = (DXFLib.DXFPolyLine) entity;
-                        bool isClosed = polyLine.Flags == DXFLib.DXFPolyLine.FlagsEnum.closed;
+                        // Create shapes
+                        start = DateTime.UtcNow;
+                        List<Nokta> nokList = new List<Nokta>();
+                        List<Ucgen> ucgenList = new List<Ucgen>();
+                        int noktano = 2;
+                        foreach (DXFLib.DXFEntity entity in doc.Entities)
+                        {
+                            DXFLib.DXFPolyLine polyLine = (DXFLib.DXFPolyLine) entity;
+                            bool isClosed = polyLine.Flags == DXFLib.DXFPolyLine.FlagsEnum.closed;
 
-                        DXFLib.DXFVertex vertex0 = (DXFLib.DXFVertex) polyLine.Children[0];
-                        DXFLib.DXFVertex vertex1 = (DXFLib.DXFVertex) polyLine.Children[1];
-                        DXFLib.DXFVertex vertex2 = (DXFLib.DXFVertex) polyLine.Children[2];
-
-                        var x0 = vertex0.Location.Y;
-                        var y0 = vertex0.Location.X;
-                        var z0 = vertex0.Location.Z;
-                        var x1 = vertex1.Location.Y;
-                        var y1 = vertex1.Location.X;
-                        var z1 = vertex1.Location.Z;
-                        var x2 = vertex2.Location.Y;
-                        var y2 = vertex2.Location.X;
-                        var z2 = vertex2.Location.Z;
+                            DXFLib.DXFVertex vertex0 = (DXFLib.DXFVertex) polyLine.Children[0];
+                            DXFLib.DXFVertex vertex1 = (DXFLib.DXFVertex) polyLine.Children[1];
+                            DXFLib.DXFVertex vertex2 = (DXFLib.DXFVertex) polyLine.Children[2];
 
 
-                        Nokta nokta0 = new Nokta { Numara = noktano, X = x0, Y = y0, Z = z0 };
-                        Nokta nokta1 = new Nokta { Numara = noktano + 1, X = x1, Y = y1, Z = z1 };
-                        Nokta nokta2 = new Nokta { Numara = noktano + 2, X = x2, Y = y2, Z = z2 };
-                        Ucgen ucgen = new Ucgen { Numara0 = noktano, Numara1 = noktano + 1, Numara2 = noktano + 2 };
-                        
-                        noktano = noktano + 3;
-                        ucgenList.Add(ucgen);
-                        nokList.Add(nokta0); nokList.Add(nokta1); nokList.Add(nokta2);
+                            //Nokta nokta0 = new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z };
+                            //Nokta nokta1 = new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z };
+                            //Nokta nokta2 = new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z };
 
+                            noktano = noktano + 3;
+                            ucgenList.Add(new Ucgen { Numara2 = noktano, Numara1 = noktano + 1, Numara0 = noktano + 2 });
+                            nokList.Add(new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z });
+
+                        }
+
+                        System.Diagnostics.Debug.WriteLine("Created shapes in {0}ms", DateTime.UtcNow.Subtract(start).TotalMilliseconds);
+
+                        yuzeyXML.yuzeyXmlOlustur(nokList, ucgenList, filename);
                     }
-
-                    System.Diagnostics.Debug.WriteLine("Created shapes in {0}ms", DateTime.UtcNow.Subtract(start).TotalMilliseconds);
-
-                    LandXML xmlyuzeydata = yuzeyXML.yuzeyXmlOlustur(nokList, ucgenList, filename);
-                    return null;
                 }
             }
 
-            return null;
+
         }
+
+
 
         private void tcddteknik_tablo_click(object sender, EventArgs e)
         {
@@ -390,6 +372,7 @@ namespace XmlToKtb
 
         private LandXML GetirLandXmlDosyaTipiIle()
         {
+            openFileDialog.Title = "Güzergah Dosyasını Seçin";
             openFileDialog.ShowDialog();
 
             var dosyaUzantisi = Path.GetExtension(openFileDialog.FileName);
@@ -413,6 +396,7 @@ namespace XmlToKtb
 
         private List<Array> GetirNcnData()
         {
+            ncnOpenFileDialog.Title = "NCN Türü Nokta Dosyası Seçin";
             ncnOpenFileDialog.ShowDialog();
             StreamReader ncnIcerigi = new StreamReader(ncnOpenFileDialog.FileName);
 
@@ -434,6 +418,7 @@ namespace XmlToKtb
 
         private List<Array> GetirKmListeDosyasi()
         {
+            LisopenFileDialog.Title = "Kilometre Liste Dosyası Seçin";
             LisopenFileDialog.ShowDialog();
             StreamReader lisIcerigi = new StreamReader(LisopenFileDialog.FileName);
 
