@@ -19,6 +19,7 @@ namespace DXFLib
         private DXFTables tables = new DXFTables();
         public DXFTables Tables { get { return tables; } }
         private List<DXFEntity> entities = new List<DXFEntity>();
+        public string Filename;
         public List<DXFEntity> Entities { get { return entities; } }
 
         public DXFDocument()

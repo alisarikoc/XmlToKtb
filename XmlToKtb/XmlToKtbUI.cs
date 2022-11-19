@@ -89,7 +89,6 @@ namespace XmlToKtb
             durumTip = DurumTip.Donusturuldu;
             GorunumuAyarla();
         }
-
         private void GorunumuAyarla()
         {
             switch (durumTip)
@@ -122,7 +121,6 @@ namespace XmlToKtb
             var rastgeleRenk = Color.FromArgb(_rastgele.Next(256), _rastgele.Next(256), _rastgele.Next(256));
             bilgiLabel.ForeColor = rastgeleRenk;
         }
-
         private static void DosyaKaydetFiltreIle(string icerik, string filtre, string dosyaadi)
         {
             var saveFileDialog = new SaveFileDialog
@@ -142,7 +140,6 @@ namespace XmlToKtb
                     sw.WriteLine(icerik);
             }
         }
-
         private static void AlnPrfDosyasiniKaydet(string alnIcerigi, string prfIcerigi)
         {
             var saveAlnPrfFile = new FolderBrowserDialog
@@ -187,7 +184,6 @@ namespace XmlToKtb
                 }
             }
         }
-
         private void kaydet_Tikla(object sender, EventArgs e)
         {
             switch (dosyaTip)
@@ -213,12 +209,10 @@ namespace XmlToKtb
             durumTip = DurumTip.Kaydedildi;
             GorunumuAyarla();
         }
-
         private void dosyaTuruComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             dosyaTip = (DosyaTip) dosyaTuruComboBox.SelectedIndex;
         }
-
         private void enkesitButton_Click(object sender, EventArgs e)
         {
             bool aranokta = false;
@@ -236,8 +230,6 @@ namespace XmlToKtb
 
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter, "KSE");
         }
-
-
         private void daire_enkesitButton_Click(object sender, EventArgs e)
         {
             bool aranokta = true;
@@ -251,17 +243,16 @@ namespace XmlToKtb
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter, "KSE");
 
         }
-
         private void tipKesitButton_Click(object sender, EventArgs e)
         {
-            LandXML landXml = GetirLandXmlDosyaTipiIle();
+            LandXML guzergah = GetirLandXmlDosyaTipiIle();
             List<Array> kmData = GetirKmListeDosyasi();
+            DXFDocument dxfdosya = this.getirDxfDocument();
 
-            string kseIcerigi = KSEIcerigi.TipkesittenEnkesitOlustur(landXml, kmData);
+            string kseIcerigi = KSEIcerigi.TipkesittenEnkesitOlustur(dxfdosya, kmData, guzergah);
 
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter, "KSE");
         }
-
         private void gabariButton_Click(object sender, EventArgs e)
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();
@@ -271,7 +262,6 @@ namespace XmlToKtb
 
             DosyaKaydetFiltreIle(kseIcerigi, Resources.kseExtensionFilter, "KSE");
         }
-
         private void guzerhah_tablo_click(object sender, EventArgs e)
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();
@@ -283,7 +273,6 @@ namespace XmlToKtb
 
             DosyaKaydetFiltreIle(GzhIcerigi, Resources.lisExtensionFilter, "TBL");
         }
-
         private void elKitabiXML_click(object sender, EventArgs e)
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();
@@ -297,35 +286,20 @@ namespace XmlToKtb
         }
         private void dxftoXML_click(object sender, EventArgs e)
         {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Title = "DXF Dosyası Seçin";
-            dlg.Filter = "DXF (*.dxf)|*.dxf";
+            DXFDocument doc = getirDxfDocument();
+            DateTime start = DateTime.UtcNow;
+            // Parse DXF
 
-            if (DialogResult.OK == dlg.ShowDialog())
+            // Process entities
+            if (doc.Entities.Count > 0)
             {
-                var filename = dlg.FileName;
-                if (!string.IsNullOrEmpty(filename))
-                {
-                    // Parse DXF
-                    DXFLib.DXFDocument doc;
-                    DateTime start = DateTime.UtcNow;
-
-                    doc = new DXFLib.DXFDocument();
-
-                    doc.Load(filename);
-
-                    System.Diagnostics.Debug.WriteLine("Loaded {0} in {1}ms", System.IO.Path.GetFileName(filename), DateTime.UtcNow.Subtract(start).TotalMilliseconds);
-
-                    // Process entities
-                    if (doc.Entities.Count > 0)
+                    // Create shapes
+                    start = DateTime.UtcNow;
+                    List<Nokta> nokList = new List<Nokta>();
+                    List<Ucgen> ucgenList = new List<Ucgen>();
+                    int noktano = 2;
+                    foreach (DXFLib.DXFEntity entity in doc.Entities)
                     {
-                        // Create shapes
-                        start = DateTime.UtcNow;
-                        List<Nokta> nokList = new List<Nokta>();
-                        List<Ucgen> ucgenList = new List<Ucgen>();
-                        int noktano = 2;
-                        foreach (DXFLib.DXFEntity entity in doc.Entities)
-                        {
                             DXFLib.DXFPolyLine polyLine = (DXFLib.DXFPolyLine) entity;
                             bool isClosed = polyLine.Flags == DXFLib.DXFPolyLine.FlagsEnum.closed;
 
@@ -333,29 +307,42 @@ namespace XmlToKtb
                             DXFLib.DXFVertex vertex1 = (DXFLib.DXFVertex) polyLine.Children[1];
                             DXFLib.DXFVertex vertex2 = (DXFLib.DXFVertex) polyLine.Children[2];
 
-
-                            //Nokta nokta0 = new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z };
-                            //Nokta nokta1 = new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z };
-                            //Nokta nokta2 = new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z };
-
                             noktano = noktano + 3;
                             ucgenList.Add(new Ucgen { Numara2 = noktano, Numara1 = noktano + 1, Numara0 = noktano + 2 });
                             nokList.Add(new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z });
 
-                        }
-
-                        System.Diagnostics.Debug.WriteLine("Created shapes in {0}ms", DateTime.UtcNow.Subtract(start).TotalMilliseconds);
-
-                        yuzeyXML.yuzeyXmlOlustur(nokList, ucgenList, filename);
                     }
+                    System.Diagnostics.Debug.WriteLine("Created shapes in {0}ms", DateTime.UtcNow.Subtract(start).TotalMilliseconds);
+                    yuzeyXML.yuzeyXmlOlustur(nokList, ucgenList, doc.Filename);
+            }
+        }
+        private DXFDocument getirDxfDocument()
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Title = "DXF Dosyası Seçin";
+            dlg.Filter = "DXF (*.dxf)|*.dxf";
+            DXFLib.DXFDocument doc = null;
+
+            if (DialogResult.OK == dlg.ShowDialog())
+            {
+                var filename = dlg.FileName;
+                if (!string.IsNullOrEmpty(filename))
+                {
+                    // Parse DXF
+                    DateTime start = DateTime.UtcNow;
+                    doc = new DXFLib.DXFDocument();
+
+                    doc.Load(filename);
+                    doc.Filename = filename;
+
+                    System.Diagnostics.Debug.WriteLine("Loaded {0} in {1}ms", System.IO.Path.GetFileName(filename), DateTime.UtcNow.Subtract(start).TotalMilliseconds);
+
+                    // Process entities
                 }
             }
 
-
+            return doc;
         }
-
-
-
         private void tcddteknik_tablo_click(object sender, EventArgs e)
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();

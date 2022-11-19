@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.landxml.org/schema/LandXML-1.2 http://www.landxml.org/schema/LandXML-1.2/LandXML-1.2.xsd" date="2021-12-08" time="10:55:17" version="1.2" language="English" readOnly="false">
+	<Units>
+		<Metric areaUnit="squareMeter" linearUnit="meter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="milliBars" diameterUnit="millimeter" angularUnit="decimal degrees" directionUnit="decimal degrees"></Metric>
+	</Units>
+	<Project name="C:\Users\User\AppData\Local\Temp\Drawing2_1_14773_7e273a1c.sv$"></Project>
+	<Application name="Autodesk Civil 3D" desc="Civil 3D" manufacturer="Autodesk, Inc." version="2022" manufacturerURL="www.autodesk.com/civil" timeStamp="2021-12-08T10:55:17"></Application>
+	<Alignments name="">
+		<Alignment name="SOL_R4_proje" length="3623.640405862559" staStart="0." desc="">
+			<CoordGeom>
+				<Line dir="229.206185949632" length="140.542608898918">
+					<Start>4423297.084999999963 486667.651000000013</Start>
+					<End>4423190.685025760904 486575.829050565022</End>
+				</Line>
+				<Curve rot="ccw" chord="81.606958619919" crvType="arc" delta="1.87037676938" dirEnd="231.076562718998" dirStart="229.206185949617" external="0.333051326682" length="81.610582237718" midOrd="0.333006963318" radius="2500.000001270234" tangent="40.808915171123">
+					<Start>4423190.685025760904 486575.829050565022</Start>
+					<Center>4421557.337847259827 488468.493046322023</Center>
+					<End>4423128.04122673627 486523.52751962177</End>
+					<PI>4423159.789999998175 486549.166999999434</PI>
+				</Curve>
+				<Line dir="231.076562718914" length="176.724914411364">
+					<Start>4423128.04122673627 486523.52751962177</Start>
+					<End>4422990.551680310629 486412.494551556534</End>
+				</Line>
+				<Spiral length="80." radiusEnd="324.999999998483" radiusStart="INF" rot="ccw" spiType="clothoid" theta="7.051788247797" totalY="3.278501830362" totalX="79.878901523437" tanLong="53.375712816413" tanShort="26.70519773175">
+					<Start>4422990.551680310629 486412.494551556534</Start>
+					<PI>4422949.026111776009 486378.959586572892</PI>
+					<End>4422926.347174871713 486364.858756567875</End>
+				</Spiral>
+				<Curve rot="ccw" chord="413.235518885886" crvType="arc" delta="78.950813102525" dirEnd="317.079164069498" dirStart="238.128350966973" external="96.040336309668" length="447.834281621017" midOrd="74.133299375003" radius="324.999999997932" tangent="267.675110533948">
+					<Start>4422926.347174871713 486364.858756567701</Start>
+					<Center>4422754.741265133955 486640.859502475534</Center>
+					<End>4422516.745291853324 486419.538656866818</End>
+					<PI>4422699.028620505705 486223.521430851833</PI>
+				</Curve>
+				<Spiral length="80." radiusEnd="INF" radiusStart="324.999999998483" rot="ccw" spiType="clothoid" theta="7.051788247797" totalY="3.278501830362" totalX="79.878901523437" tanLong="53.375712816413" tanShort="26.70519773175">
+					<Start>4422516.745291853324 486419.538656866585</Start>
+					<PI>4422498.559393561445 486439.094747717143</PI>
+					<End>4422467.284712854773 486482.348199199012</End>
+				</Spiral>
+				<Line dir="324.130952317059" length="332.411332973458">
+					<Start>4422467.284712854773 486482.348199199012</Start>
+					<End>4422272.513387956657 486751.720479299664</End>
+				</Line>
+				<Spiral length="70." radiusEnd="349.999999960241" radiusStart="INF" rot="ccw" spiType="clothoid" theta="5.729577951959" totalY="2.331667197142" totalX="69.930032399914" tanLong="46.691134535279" tanShort="23.355578474556">
+					<Start>4422272.513387956657 486751.720479299664</Start>
+					<PI>4422245.155433421023 486789.557027344359</PI>
+					<End>4422233.428443303332 486809.755065580888</End>
+				</Spiral>
+				<Curve rot="ccw" chord="62.952283496398" crvType="arc" delta="10.319371079995" dirEnd="340.179901349301" dirStart="329.860530269306" external="1.423997098989" length="63.037450721053" midOrd="1.418226953083" radius="349.999999959487" tangent="31.604204418319">
+					<Start>4422233.4284433024 486809.755065580597</Start>
+					<Center>4422536.110450947657 486985.492375847127</Center>
+					<End>4422206.843790886924 486866.81859380455</End>
+					<PI>4422217.55976365041 486837.08656285028</PI>
+				</Curve>
+				<Spiral length="70." radiusEnd="INF" radiusStart="349.999999960241" rot="ccw" spiType="clothoid" theta="5.729577951959" totalY="2.331667197142" totalX="69.930032399914" tanLong="46.691134535279" tanShort="23.355578474556">
+					<Start>4422206.843790887855 486866.818593804783</Start>
+					<PI>4422198.9246628033 486888.790631857177</PI>
+					<End>4422187.557493750937 486934.076937867852</End>
+				</Spiral>
+				<Line dir="345.909479301107" length="50.652258554617">
+					<Start>4422187.557493750937 486934.076937867852</Start>
+					<End>4422175.225971041247 486983.205186812265</End>
+				</Line>
+				<Spiral length="70." radiusEnd="365.999999964962" radiusStart="INF" rot="cw" spiType="clothoid" theta="5.47910459877" totalY="2.229872611015" totalX="69.936013539004" tanLong="46.689040194405" tanShort="23.353674262219">
+					<Start>4422175.225971041247 486983.205186812265</Start>
+					<PI>4422163.859311865643 487028.48946149589</PI>
+					<End>4422156.03694959078 487050.494114410714</End>
+				</Spiral>
+				<Curve rot="cw" chord="93.336415164375" crvType="arc" delta="14.651313836647" dirEnd="325.779060865345" dirStart="340.430374701992" external="3.012081817793" length="93.591201817809" midOrd="2.987495530989" radius="365.999999966196" tangent="47.052274411532">
+					<Start>4422156.03694959078 487050.494114410714</Start>
+					<Center>4421811.178882449865 486927.901645216567</Center>
+					<End>4422113.815169692039 487133.734775736288</End>
+					<PI>4422140.27669138927 487094.828421540849</PI>
+				</Curve>
+				<Spiral length="70." radiusEnd="INF" radiusStart="365.999999964962" rot="cw" spiType="clothoid" theta="5.47910459877" totalY="2.229872611015" totalX="69.936013539004" tanLong="46.689040194405" tanShort="23.353674262219">
+					<Start>4422113.815169692039 487133.734775736288</Start>
+					<PI>4422100.681399517693 487153.045347523061</PI>
+					<End>4422070.857915794477 487188.967851507419</End>
+				</Spiral>
+				<Line dir="320.299956266979" length="330.263525406151">
+					<Start>4422070.857915794477 487188.967851507419</Start>
+					<End>4421859.896010511555 487443.072299979103</End>
+				</Line>
+				<Spiral length="80." radiusEnd="375.000000000132" radiusStart="INF" rot="cw" spiType="clothoid" theta="6.111549814727" totalY="2.842133605666" totalX="79.909025711053" tanLong="53.365153531447" tanShort="26.695596523017">
+					<Start>4421859.896010511555 487443.072299979103</Start>
+					<PI>4421825.808036517352 487484.131399344478</PI>
+					<End>4421806.665914684534 487502.738764695299</End>
+				</Spiral>
+				<Curve rot="cw" chord="383.0163540076" crvType="arc" delta="61.419398808192" dirEnd="252.76900764407" dirStart="314.188406452262" external="61.165274749259" length="401.989025175354" midOrd="52.587813287442" radius="375.000000000879" tangent="222.744577705506">
+					<Start>4421806.665914684534 487502.738764694892</Start>
+					<Center>4421545.28340534959 487233.844391725492</Center>
+					<End>4421434.199129858054 487592.013742367271</End>
+					<PI>4421646.94654520601 487657.99619579158</PI>
+				</Curve>
+				<Spiral length="80." radiusEnd="INF" radiusStart="375.000000000132" rot="cw" spiType="clothoid" theta="6.111549814727" totalY="2.842133605666" totalX="79.909025711053" tanLong="53.365153531447" tanShort="26.695596523017">
+					<Start>4421434.199129858054 487592.013742367097</Start>
+					<PI>4421408.701677934267 487584.10584637092</PI>
+					<End>4421359.704332259484 487562.961113496916</End>
+				</Spiral>
+				<Line dir="246.657457829186" length="170.771077123257">
+					<Start>4421359.704332259484 487562.961113496916</Start>
+					<End>4421202.910451922566 487495.296943726426</End>
+				</Line>
+				<Spiral length="80." radiusEnd="349.999999995956" radiusStart="INF" rot="ccw" spiType="clothoid" theta="6.548089087285" totalY="3.044776969247" totalX="79.895573368588" tanLong="53.369867516779" tanShort="26.699882728753">
+					<Start>4421202.910451922566 487495.296943726426</Start>
+					<PI>4421153.908778090961 487474.150343042566</PI>
+					<End>4421128.347712784074 487466.435702539922</End>
+				</Spiral>
+				<Curve rot="ccw" chord="87.163690963455" crvType="arc" delta="14.306023494508" dirEnd="267.511570411242" dirStart="253.205546916734" external="2.745363041418" length="87.390524496368" midOrd="2.723996302068" radius="349.999999999913" tangent="43.92369687562">
+					<Start>4421128.347712784074 487466.435702539689</Start>
+					<Center>4421027.219022319652 487801.507318712829</Center>
+					<End>4421042.415195237845 487451.837365287356</End>
+					<PI>4421086.297472497448 487453.74442841002</PI>
+				</Curve>
+				<Spiral length="80." radiusEnd="INF" radiusStart="349.999999995956" rot="ccw" spiType="clothoid" theta="6.548089087285" totalY="3.044776969247" totalX="79.895573368588" tanLong="53.369867516779" tanShort="26.699882728753">
+					<Start>4421042.415195237845 487451.837365287356</Start>
+					<PI>4421015.740490237251 487450.67811947345</PI>
+					<End>4420962.504534376785 487454.456447461795</End>
+				</Spiral>
+				<Line dir="274.059659498324" length="486.821622425473">
+					<Start>4420962.504534376785 487454.456447461795</Start>
+					<End>4420476.904408141039 487488.921059178712</End>
+				</Line>
+			</CoordGeom>
+			<Cant name="SOL_R4_proje" gauge="1.5" rotationPoint="insideRail">
+				<CantStation station="0." appliedCant="0." cantDeficiency="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="0." appliedCant="0." curvature="ccw"></CantStation>
+				<CantStation station="112.042608897719" appliedCant="0." cantDeficiency="0." cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="169.042608897719" equilibriumCant="0." appliedCant="0." cantDeficiency="0." cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="193.653191163205" equilibriumCant="0." appliedCant="0." cantDeficiency="0." cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="250.653191163205" appliedCant="0." cantDeficiency="0." cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="398.878105547768" equilibriumCant="-0.000000001056" appliedCant="0." cantDeficiency="-0.000000001056" cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="478.878105547768" equilibriumCant="363.076923078594" appliedCant="130." cantDeficiency="233.076923078594" cantGradient="0.001625" speed="100." curvature="ccw"></CantStation>
+				<CantStation station="926.712387169952" equilibriumCant="363.076923078594" appliedCant="130." cantDeficiency="233.076923078594" cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="1006.712387169952" equilibriumCant="-0.000000004241" appliedCant="0." cantDeficiency="-0.000000004241" cantGradient="-0.001625" speed="100." curvature="ccw"></CantStation>
+				<CantStation station="1339.123720141612" equilibriumCant="-0.000000004161" appliedCant="0." cantDeficiency="-0.000000004161" cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="1409.123720141612" equilibriumCant="337.142857186638" appliedCant="130." cantDeficiency="207.142857186638" cantGradient="0.001857142857" speed="100." curvature="ccw"></CantStation>
+				<CantStation station="1472.161170852689" equilibriumCant="337.142857186638" appliedCant="130." cantDeficiency="207.142857186638" cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="1542.161170852689" equilibriumCant="0.000000052209" appliedCant="0." cantDeficiency="0.000000052209" cantGradient="-0.001857142857" speed="100." curvature="ccw"></CantStation>
+				<CantStation station="1592.813429414648" equilibriumCant="-0.000000016114" appliedCant="0." cantDeficiency="-0.000000016114" cantGradient="0." speed="100." curvature="cw"></CantStation>
+				<CantStation station="1662.813429414648" equilibriumCant="322.4043715853" appliedCant="130." cantDeficiency="192.4043715853" cantGradient="0.001857142857" speed="100." curvature="cw"></CantStation>
+				<CantStation station="1756.404631243081" equilibriumCant="322.4043715853" appliedCant="130." cantDeficiency="192.4043715853" cantGradient="0." speed="100." curvature="cw"></CantStation>
+				<CantStation station="1826.404631243081" equilibriumCant="-0.000000032818" appliedCant="0." cantDeficiency="-0.000000032818" cantGradient="-0.001857142857" speed="100." curvature="cw"></CantStation>
+				<CantStation station="2156.6681566416" equilibriumCant="-0.000000001993" appliedCant="0." cantDeficiency="-0.000000001993" cantGradient="0." speed="100." curvature="cw"></CantStation>
+				<CantStation station="2236.6681566416" equilibriumCant="314.666666666661" appliedCant="150." cantDeficiency="164.666666666661" cantGradient="0.001875" speed="100." curvature="cw"></CantStation>
+				<CantStation station="2638.657181816409" equilibriumCant="314.666666666661" appliedCant="150." cantDeficiency="164.666666666661" cantGradient="0." speed="100." curvature="cw"></CantStation>
+				<CantStation station="2718.657181816409" equilibriumCant="0.000000004135" appliedCant="0." cantDeficiency="0.000000004135" cantGradient="-0.001875" speed="100." curvature="cw"></CantStation>
+				<CantStation station="2889.428258940706" equilibriumCant="-0.00000000005" appliedCant="0." cantDeficiency="-0.00000000005" cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="2969.428258940706" equilibriumCant="337.142857147043" appliedCant="150." cantDeficiency="187.142857147043" cantGradient="0.001875" speed="100." curvature="ccw"></CantStation>
+				<CantStation station="3056.818783437047" equilibriumCant="337.142857147043" appliedCant="150." cantDeficiency="187.142857147043" cantGradient="0." speed="100." curvature="ccw"></CantStation>
+				<CantStation station="3136.818783437047" equilibriumCant="0.000000000165" appliedCant="0." cantDeficiency="0.000000000165" cantGradient="-0.001875" speed="100." curvature="ccw"></CantStation>
+				<CantStation station="3623.640405862559" appliedCant="0." curvature="ccw"></CantStation>
+				<CantStation station="3778.557781953931" equilibriumCant="0." appliedCant="0." cantDeficiency="0." cantGradient="0." speed="100." curvature="ccw"></CantStation>
+			</Cant>
+			<Profile name="SOL_R4_proje">
+				<ProfAlign name="SOL_R4">
+					<PVI>0. 823.865</PVI>
+					<CircCurve length="59.187212348533" radius="12000.">35.000000000097 823.864999999994</CircCurve>
+					<CircCurve length="59.215488691238" radius="9000.">359.99999999995 825.468000000002</CircCurve>
+					<CircCurve length="92.094131512987" radius="8000.">938.687389453315 832.130008356177</CircCurve>
+					<CircCurve length="95.971215555019" radius="3200.">1390.122773256156 832.130008356274</CircCurve>
+					<CircCurve length="86.371244353177" radius="3200.">1524.106793144338 828.110487759113</CircCurve>
+					<CircCurve length="104.999685012599" radius="35000.">1760.933268395985 827.400008333272</CircCurve>
+					<CircCurve length="78.739002914418" radius="3500.">2043.130999999953 827.400008333287</CircCurve>
+					<CircCurve length="68.237583668941" radius="3500.">2208.77100000003 823.673000000001</CircCurve>
+					<CircCurve length="75.00604247749" radius="15000.">2738.540000000015 822.083473409538</CircCurve>
+					<CircCurve length="69.999906662198" radius="35000.">3196.93734199178 823.00026809352</CircCurve>
+					<CircCurve length="74.729845446324" radius="30000.">3440.138694099176 823.000268093481</CircCurve>
+					<PVI>3778.556871618784 823.843267773837</PVI>
+				</ProfAlign>
+			</Profile>
+		</Alignment>
+	</Alignments>
+</LandXML>

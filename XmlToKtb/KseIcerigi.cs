@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Common;
+using DXFLib;
 
 namespace XmlToKtb
 {
@@ -670,10 +671,10 @@ namespace XmlToKtb
             return kseSb.ToString();
         }
 
-        public static string TipkesittenEnkesitOlustur(LandXML landXml, List<Array> kmList)
+        public static string TipkesittenEnkesitOlustur(DXFDocument dxfdata, List<Array> kmList,LandXML guzergahXml)
         {
+            var alignment = guzergahXml.Alignments.Alignment;
             var daireSb = new StringBuilder();
-            var alignment = landXml.Alignments.Alignment;
             int kesitNo = 1;
             foreach (var kesit in kmList)
             {
@@ -684,24 +685,56 @@ namespace XmlToKtb
                 }
                 if (satir == "$SON") break;
 
-                    decimal kilometre = Convert.ToDecimal(kesit.GetValue(0));
-                    var kirmizikotD = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, kilometre));
-                    double sapma = EKSENkaydir.eksenkaydirGetir(landXml, kilometre);
+                decimal kilometre = Convert.ToDecimal(kesit.GetValue(0));
+                var kirmizikotD = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, kilometre));
 
-                    daireSb.AppendLine("1" + " " + kesitNo + " " + Math.Round(kilometre,3) + " " + Math.Round(sapma,3));
+                daireSb.AppendLine("1" + " " + kesitNo + " " + Math.Round(kilometre,3));
 
-                    for (int j = 0; j < 21; j++)
+                    foreach (DXFLib.DXFEntity entity in dxfdata.Entities)
                     {
-                        double mesafe = sapma + Math.Sin(j * (2 * Math.PI) / 21) * 2.62;
-                        double kot = kirmizikotD + 1.72 + Math.Cos(j * (2 * Math.PI) / 21) * 2.62;
-                        daireSb.AppendLine("0" + " " + Math.Round(mesafe,3) + " " + Math.Round(kot,3) + " " + j);
-                        if (j == 20)
+                        var enttype = entity.EntityType;
+                        if (entity.EntityType == "LWPOLYLINE")
                         {
-                            var sonMesafe = sapma + Math.Sin(0 * (2 * Math.PI) / 21) * 2.62;
-                            var sonKot = kirmizikotD + 1.72 + Math.Cos(0 * (2 * Math.PI) / 21) * 2.62;
-                            daireSb.AppendLine("0" + " " + Math.Round(sonMesafe,3) + " " + Math.Round(sonKot,3) + " " + "21");
+                            DXFLib.DXFLWPolyLine polyLine = (DXFLib.DXFLWPolyLine) entity;
+
+                            for (int j = 0; j < polyLine.Elements.Count ; j++)
+                            {
+                                double kot = kirmizikotD + (double)polyLine.Elements[j].Vertex.Y;
+                                daireSb.AppendLine("0" + " " + polyLine.Elements[j].Vertex.X + " " + kot + " " + j);
+
+                            }
+
                         }
+                        
+
+                        //noktano = noktano + 3;
+                        //ucgenList.Add(new Ucgen { Numara2 = noktano, Numara1 = noktano + 1, Numara0 = noktano + 2 });
+                        //nokList.Add(new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z });
+
                     }
+
+
+
+
+
+                    //var kirmizikotD = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, kilometre));
+                    //double sapma = EKSENkaydir.eksenkaydirGetir(landXml, kilometre);
+
+                    //daireSb.AppendLine("1" + " " + kesitNo + " " + Math.Round(kilometre,3) + " " + Math.Round(sapma,3));
+
+
+                    //for (int j = 0; j < 21; j++)
+                    //{
+                       // double mesafe = sapma + Math.Sin(j * (2 * Math.PI) / 21) * 2.62;
+                       // double kot = kirmizikotD + 1.72 + Math.Cos(j * (2 * Math.PI) / 21) * 2.62;
+                       // daireSb.AppendLine("0" + " " + Math.Round(mesafe,3) + " " + Math.Round(kot,3) + " " + j);
+                       // if (j == 20)
+                      //  {
+                            //var sonMesafe = sapma + Math.Sin(0 * (2 * Math.PI) / 21) * 2.62;
+                            //var sonKot = kirmizikotD + 1.72 + Math.Cos(0 * (2 * Math.PI) / 21) * 2.62;
+                           // daireSb.AppendLine("0" + " " + Math.Round(sonMesafe,3) + " " + Math.Round(sonKot,3) + " " + "21");
+                        //}
+                    //}
 
                     kesitNo++;
                 
