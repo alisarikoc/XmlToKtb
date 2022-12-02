@@ -97,6 +97,15 @@ namespace XmlToKtb.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NCN|*.ncn.
+        /// </summary>
+        internal static string ncnExtensionFilter {
+            get {
+                return ResourceManager.GetString("ncnExtensionFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to XML|*.xml.
         /// </summary>
         internal static string xmlExtensionFilter {

@@ -918,9 +918,9 @@ public class LandXMLAlignmentsAlignmentProfileProfAlignPVI
 {
     private string valueField;
 
-    /// <remarks/>
-    [XmlAttribute]
-    public decimal length { get; set; }
+    
+
+
 
     /// <remarks/>
     [XmlText]

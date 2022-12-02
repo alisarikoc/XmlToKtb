@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="KmdenKoorHesapla.cs" />
     <Compile Include="XMLdataEkle.cs" />
     <Compile Include="Tcddtekniktablo.cs" />
     <Compile Include="GZH_tabloicerigi.cs" />

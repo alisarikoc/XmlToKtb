@@ -309,7 +309,7 @@ namespace XmlToKtb
 
             kesitliste = kesitliste.OrderBy(x => x.GetValue(0)).ToList();
  
-        var k = 0;
+            var k = 0;
             var c = 0;
             decimal toplam = 0;
             decimal Kes_KMSON = 0;

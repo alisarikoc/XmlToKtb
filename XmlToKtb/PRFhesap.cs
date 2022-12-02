@@ -153,9 +153,18 @@ namespace XmlToKtb
                     }
                     if (Tip == "curve")
                     {
-                        var y = (x * x / 2 / Radius);
-                        kirmizikot = Kot + r - y;
-                    if((g2-g1)>0) kirmizikot = Kot + r + y;
+                        if (Radius == 0)
+                        {
+                            var y = (g1 - g2 / 2 / L * x * x);
+                            kirmizikot = Kot + r - y;
+                            break;
+                        }
+                        if (Radius != 0)
+                        {
+                            var y = (x * x / 2 / Radius);
+                            kirmizikot = Kot + r - y;
+                            if ((g2 - g1) > 0) kirmizikot = Kot + r + y;
+                        }
 
                         break;
                     }

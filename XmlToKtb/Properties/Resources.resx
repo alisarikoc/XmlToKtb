@@ -133,6 +133,10 @@
     <value>KSE|*.kse</value>
     <comment>KSE|*.kse</comment>
   </data>
+  <data name="ncnExtensionFilter" xml:space="preserve">
+    <value>NCN|*.ncn</value>
+    <comment>NCN|*.ncn</comment>
+  </data>
   <data name="lisExtensionFilter" xml:space="preserve">
     <value>TBL|*.tbl</value>
     <comment>TBL|*.tbl</comment>

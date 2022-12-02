@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using Common;
+using DXFLib;
 
 namespace XmlToKtb
 {
@@ -279,9 +282,13 @@ namespace XmlToKtb
                         var km = Convert.ToDouble(tumsatirlar[l].GetValue(0));
                         double kot = Convert.ToDouble(tumsatirlar[l].GetValue(1));
                         double boy = Convert.ToDouble(tumsatirlar[l].GetValue(2));
-                        string type = Convert.ToString(tumsatirlar[l].GetValue(3));
+                        string type = "0";
+                        if(tumsatirlar[l].Length>3)//Son sütünda değer yok ise parabolik kurp ata
+                        {
+                            type = Convert.ToString(tumsatirlar[l].GetValue(3));
+                        }
                         double radius = 0;
-                        if (tumsatirlar[l].Length > 6)
+                        if (tumsatirlar[l].Length > 4)
                         {
                             radius = Convert.ToDouble(tumsatirlar[l].GetValue(6));
                         }
@@ -289,7 +296,7 @@ namespace XmlToKtb
                         XMLDATA.Add(array);
                     }
                 }
-                if (Convert.ToString(tumsatirlar[jj].GetValue(0)) == "$DEVER" && Convert.ToString(tumsatirlar[jj+1].GetValue(0)) != "$SON")
+                if (Convert.ToString(tumsatirlar[jj].GetValue(0)) == "$DEVER")
                 {
                     for (int l = jj + 1; l < tumsatirlar.Count - 1; l++)
 
@@ -323,13 +330,15 @@ namespace XmlToKtb
                     }
                 }
 
-                if (Convert.ToString(tumsatirlar[jj].GetValue(0)) == "$ELEMENTS")
+                if (Convert.ToString(tumsatirlar[jj].GetValue(0)) == "$ELEMENTS") //    ELEMANLAR YÖNTEMİ İLE ALINAN KTB HESAPLARI
                 {
                     int eleman_sayisi = 0;
                     for (int l = jj + 1; l < tumsatirlar.Count - 1; l++)
-
-
                     {
+                        if (l == jj + 1)
+                        {
+                            _km0= Convert.ToDecimal(tumsatirlar[l].GetValue(1));
+                        }
 
                         if (Convert.ToString(tumsatirlar[l].GetValue(0)) == "$SON") break;
 
@@ -366,11 +375,14 @@ namespace XmlToKtb
 
                             double Yon = Convert.ToDouble(tumsatirlar[l].GetValue(4));
                             double Spi_type2 = Convert.ToDouble(tumsatirlar[l].GetValue(5));
+                            if(Convert.ToString(tumsatirlar[l-1].GetValue(0))=="LN")Spi_type2=1;
+                            if (Convert.ToString(tumsatirlar[l - 1].GetValue(0)) == "SP") Spi_type2 = -1;
+                            if (Convert.ToString(tumsatirlar[l - 1].GetValue(0)) == "AR") Spi_type2 = -1;
                             double Spi_Sta_Y = Convert.ToDouble(tumsatirlar[l].GetValue(6));
                             double Spi_Sta_X = Convert.ToDouble(tumsatirlar[l].GetValue(7));
                             double Spi_PI_Y = Convert.ToDouble(tumsatirlar[l].GetValue(8));
                             double Spi_PI_X = Convert.ToDouble(tumsatirlar[l].GetValue(9));
-
+                            double koordinatlardanMesafe = Math.Sqrt(Math.Pow((Spi_PI_Y - Spi_Sta_Y), 2) + Math.Pow((Spi_PI_X - Spi_Sta_X), 2));
                             string Yonstring = "cw";
                             if (Yon == -1) { Yonstring = "ccw"; }
                             double tetha = L1 / (2 * R1);
@@ -379,24 +391,31 @@ namespace XmlToKtb
                             //....................................
                             double Tu = Y - X / Math.Tan(tetha);
                             double Tk = X / Math.Sin(tetha);
-
+                            
                             double Xm_Gir = X + R1 * Math.Cos(tetha);
                             double Ym_Gir = Y - R1 * Math.Sin(tetha);
                             double semt_ilk = Math.Atan2((Spi_PI_Y - Spi_Sta_Y), (Spi_PI_X - Spi_Sta_X)); if (semt_ilk < 0) { semt_ilk += 2 * Math.PI; }
 
-                            double Spi_End_Y = Spi_PI_Y + Tk * Math.Sin(semt_ilk + tetha);
-                            double Spi_End_X = Spi_PI_X + Tk * Math.Cos(semt_ilk + tetha);
-
-                            if (Yonstring == "ccw")
-                            {
-                                Spi_End_Y = Spi_PI_Y + Tk * Math.Sin(semt_ilk - tetha);
-                                Spi_End_X = Spi_PI_X + Tk * Math.Cos(semt_ilk - tetha);
-                            }
+                            double Tk_Semt = semt_ilk + tetha;
+                            if (Yonstring == "ccw") { Tk_Semt = semt_ilk - tetha; }
+                            double Spi_End_Y = Spi_PI_Y + Tk * Math.Sin(Tk_Semt);
+                            double Spi_End_X = Spi_PI_X + Tk * Math.Cos(Tk_Semt);
 
                             if (Spi_type2 == 1)
                             {
                                 if (L2 == 0)
                                 {
+                                    if (XMLDATA.Last().GetValue(0) == "LN")
+                                    {
+                                        Spi_Sta_Y = Convert.ToDouble(XMLDATA.Last().GetValue(6));
+                                        Spi_Sta_X = Convert.ToDouble(XMLDATA.Last().GetValue(5));
+                                        double semt_clotoid = Math.Atan2((Spi_PI_Y - Spi_Sta_Y), (Spi_PI_X - Spi_Sta_X));
+                                        if (semt_clotoid < 0) { semt_clotoid += 2 * Math.PI; }
+                                        Spi_PI_Y = Spi_Sta_Y + Tu * Math.Sin(semt_clotoid);
+                                        Spi_PI_X = Spi_Sta_X + Tu * Math.Cos(semt_clotoid);
+                                        Spi_End_Y = Spi_PI_Y + Tk * Math.Sin(Tk_Semt);
+                                        Spi_End_X = Spi_PI_X + Tk * Math.Cos(Tk_Semt);
+                                    }
                                     object[] array1 =
                                     {
                                         "SP", L1, R1, "INF", Yonstring, Math.Atan(Ym_Gir / Xm_Gir) * 180 / Math.PI, Y,X,Tu, Tk,
@@ -405,62 +424,6 @@ namespace XmlToKtb
                                     XMLDATA.Add(array1);
                                 }
 
-                                if (L2 != 0)
-                                {
-                                    Spi_Sta_Y = 0;
-                                    Spi_Sta_X = 0;
-                                    string type_Onceki = Convert.ToString(XMLDATA[eleman_sayisi - 1].GetValue(0));
-                                    if (type_Onceki == "LN")
-                                    {
-                                        Spi_Sta_Y = Convert.ToDouble(XMLDATA[eleman_sayisi - 1].GetValue(6));
-                                        Spi_Sta_X = Convert.ToDouble(XMLDATA[eleman_sayisi - 1].GetValue(5));
-                                    }
-                                    if (type_Onceki == "AR")
-                                    {
-                                        Spi_Sta_Y = Convert.ToDouble(XMLDATA[eleman_sayisi - 1].GetValue(17));
-                                        Spi_Sta_X = Convert.ToDouble(XMLDATA[eleman_sayisi - 1].GetValue(16));
-                                    }
-
-                                    double tetha1 = L1 / (2 * R1);
-                                    double X1 = Spiral_X_Hesapla(L1, Math.Sqrt(Akare));
-                                    double Y1 = Spiral_Y_Hesapla(L1, Math.Sqrt(Akare));
-                                    double tetha2 = L2 / (2 * R2);
-                                    double X2 = Spiral_X_Hesapla(L2, Math.Sqrt(Akare));
-                                    double Y2 = Spiral_Y_Hesapla(L2, Math.Sqrt(Akare));
-
-                                    //....................................
-                                    double theta_tum = (Math.Atan2((X1 - X2), (Y1 - Y2)));
-                                    double tetha2_donuk = theta_tum - tetha2;
-                                    double SL = (Math.Sqrt(Math.Pow((Y1 - Y2), 2) + Math.Pow((X1 - X2), 2)));
-
-                                    double Spi_Sta_Y_0 = Convert.ToDouble(tumsatirlar[l].GetValue(6));
-                                    double Spi_Sta_X_0 = Convert.ToDouble(tumsatirlar[l].GetValue(7));
-                                    double Spi_PI_Y_0 = Convert.ToDouble(tumsatirlar[l].GetValue(8));
-                                    double Spi_PI_X_0 = Convert.ToDouble(tumsatirlar[l].GetValue(9));
-                                    double semtilk_0 = Math.Atan2((Spi_PI_Y_0 - Spi_Sta_Y_0), (Spi_PI_X_0 - Spi_Sta_X_0));
-                                    if (semtilk_0 < 0)
-                                    {
-                                        semtilk_0 += 2 * Math.PI;
-                                    }
-
-                                    double X_0 = SL * Math.Sin(tetha2_donuk);
-                                    double Y_0 = SL * Math.Cos(tetha2_donuk);
-                                    Tu = Y_0 - X_0 / Math.Tan(tetha1 - tetha2);
-                                    Tk = X_0 / Math.Sin(tetha1 - tetha2);
-
-                                    Spi_PI_Y = Spi_Sta_Y + Tu * Math.Sin(semtilk_0 + Yon * (tetha2));
-                                    Spi_PI_X = Spi_Sta_X + Tu * Math.Cos(semtilk_0 + Yon * (tetha2));
-                                    Spi_End_Y = Spi_Sta_Y + SL * Math.Sin(semtilk_0 + Yon * (theta_tum));
-                                    Spi_End_X = Spi_Sta_X + SL * Math.Cos(semtilk_0 + Yon * (theta_tum));
-
-
-                                    object[] array =
-                                    {
-                                        "SP", Math.Abs((L1-L2)), R1, R2,Yonstring, Math.Atan(tetha1-tetha2) * 180 / Math.PI,Y_0, X_0, Tu, Tk,
-                                        Spi_Sta_X, Spi_Sta_Y, Spi_PI_X, Spi_PI_Y, Spi_End_X, Spi_End_Y
-                                    };
-                                    XMLDATA.Add(array);
-                                }
                             }
                             if (Spi_type2 == -1)
                             {
@@ -468,6 +431,15 @@ namespace XmlToKtb
                                 if (Yon == -1) { Yonstring = "cw"; }
                                 if (L2 == 0)
                                 {
+                                    if (XMLDATA.Last().GetValue(0) == "AR")
+                                    {
+                                        Spi_End_X = Convert.ToDouble(XMLDATA.Last().GetValue(16));
+                                        Spi_End_Y = Convert.ToDouble(XMLDATA.Last().GetValue(17));
+                                        double semt_clotoid = Math.Atan2((Spi_PI_Y - Spi_Sta_Y), (Spi_PI_X - Spi_Sta_X)); 
+                                        if (semt_clotoid < 0) { semt_clotoid += 2 * Math.PI; }
+                                        Spi_PI_Y = Spi_Sta_Y + Tu * Math.Sin(semt_clotoid);
+                                        Spi_PI_X = Spi_Sta_X + Tu * Math.Cos(semt_clotoid);
+                                    }
                                     object[] array1 =
                                     {
                                         "SP", L1, "INF", R1, Yonstring, Math.Atan(Ym_Gir / Xm_Gir) * 180 / Math.PI, Y,X, Tu, Tk,
@@ -476,61 +448,106 @@ namespace XmlToKtb
                                     XMLDATA.Add(array1);
                                 }
 
-                                if (L2 != 0)
+                            }
+
+                            if (L1 != 0 && L2 != 0)
+                            {
+                                Spi_Sta_Y = 0;
+                                Spi_Sta_X = 0;
+                                double Geri_Y = 0;
+                                double Geri_X = 0;
+                                double Geri_R = 0;
+                                double Ileri_R = 0;
+                                if (XMLDATA.Last().GetValue(0) == "LN")
                                 {
-                                    Spi_Sta_Y = 0;
-                                    Spi_Sta_X = 0;
-                                    string type_Onceki = Convert.ToString(XMLDATA[eleman_sayisi - 1].GetValue(0));
-                                    if (type_Onceki == "LN")
-                                    {
-                                        Spi_Sta_Y = Convert.ToDouble(XMLDATA[eleman_sayisi - 1].GetValue(6));
-                                        Spi_Sta_X = Convert.ToDouble(XMLDATA[eleman_sayisi - 1].GetValue(5));
-                                    }
-                                    if (type_Onceki == "AR")
-                                    {
-                                        Spi_Sta_Y = Convert.ToDouble(XMLDATA[eleman_sayisi - 1].GetValue(17));
-                                        Spi_Sta_X = Convert.ToDouble(XMLDATA[eleman_sayisi - 1].GetValue(16));
-                                    }
+                                    Geri_Y = Convert.ToDouble(XMLDATA.Last().GetValue(4));
+                                    Geri_X = Convert.ToDouble(XMLDATA.Last().GetValue(3));
+                                    Spi_Sta_Y = Convert.ToDouble(XMLDATA.Last().GetValue(6));
+                                    Spi_Sta_X = Convert.ToDouble(XMLDATA.Last().GetValue(5));
+                                }
+                                if (XMLDATA.Last().GetValue(0) == "AR")
+                                {
+                                    Spi_Sta_Y = Convert.ToDouble(XMLDATA.Last().GetValue(17));
+                                    Spi_Sta_X = Convert.ToDouble(XMLDATA.Last().GetValue(16));
+                                    Geri_Y = Convert.ToDouble(XMLDATA.Last().GetValue(19));
+                                    Geri_X = Convert.ToDouble(XMLDATA.Last().GetValue(18));
+                                    Geri_R = Convert.ToDouble(XMLDATA.Last().GetValue(10));
+                                    Yonstring= Convert.ToString(XMLDATA.Last().GetValue(1));
+                                }
+                                if (XMLDATA.Last().GetValue(0) == "SP")
+                                {
+                                    Spi_Sta_Y = Convert.ToDouble(XMLDATA.Last().GetValue(15));
+                                    Spi_Sta_X = Convert.ToDouble(XMLDATA.Last().GetValue(14));
+                                    Geri_Y = Convert.ToDouble(XMLDATA.Last().GetValue(13));
+                                    Geri_X = Convert.ToDouble(XMLDATA.Last().GetValue(12));
+                                    Geri_R = Convert.ToDouble(XMLDATA.Last().GetValue(2));
+                                    Yonstring = Convert.ToString(XMLDATA.Last().GetValue(4));
+                                }
 
-                                    double tetha1 = L1 / (2 * R1);
-                                    double X1 = Spiral_X_Hesapla(L1, Math.Sqrt(Akare));
-                                    double Y1 = Spiral_Y_Hesapla(L1, Math.Sqrt(Akare));
-                                    double tetha2 = L2 / (2 * R2);
-                                    double X2 = Spiral_X_Hesapla(L2, Math.Sqrt(Akare));
-                                    double Y2 = Spiral_Y_Hesapla(L2, Math.Sqrt(Akare));
-                                    //....................................
-                                    double theta_tum = (Math.Atan2((X1 - X2), (Y1 - Y2)));
-                                    double tetha2_donuk = theta_tum - tetha2;
-                                    double SL = (Math.Sqrt(Math.Pow((Y1 - Y2), 2) + Math.Pow((X1 - X2), 2)));
+                                if (Convert.ToString(tumsatirlar[l + 1].GetValue(0)) == "SP" && tumsatirlar.Count>=(l+1))
+                                {
+                                    Spi_End_Y = Convert.ToDouble(tumsatirlar[l+1].GetValue(6));
+                                    Spi_End_X = Convert.ToDouble(tumsatirlar[l+1].GetValue(7));
+                                    Geri_Y = Convert.ToDouble(tumsatirlar[l+1].GetValue(8));
+                                    Geri_X = Convert.ToDouble(tumsatirlar[l+1].GetValue(9));
+                                }
 
-                                    double Spi_Sta_Y_0 = Convert.ToDouble(tumsatirlar[l].GetValue(6));
-                                    double Spi_Sta_X_0 = Convert.ToDouble(tumsatirlar[l].GetValue(7));
-                                    double Spi_PI_Y_0 = Convert.ToDouble(tumsatirlar[l].GetValue(8));
-                                    double Spi_PI_X_0 = Convert.ToDouble(tumsatirlar[l].GetValue(9));
-                                    double semtilk_0 = Math.Atan2((Spi_Sta_Y_0 - Spi_PI_Y_0), (Spi_Sta_X_0 - Spi_PI_X_0));
-                                    if (semtilk_0 < 0)
-                                    {
-                                        semtilk_0 += 2 * Math.PI;
-                                    }
+                                if (Convert.ToString(tumsatirlar[l + 1].GetValue(0)) == "AR" && tumsatirlar.Count >= (l + 1))
+                                {
 
-                                    double X_0 = SL * Math.Sin(tetha2_donuk);
-                                    double Y_0 = SL * Math.Cos(tetha2_donuk);
-                                    Tu = Y_0 - X_0 / Math.Tan(tetha1 - tetha2);
-                                    Tk = X_0 / Math.Sin(tetha1 - tetha2);
+                                    Spi_End_Y = Convert.ToDouble(tumsatirlar[l+1].GetValue(8));
+                                    Spi_End_X = Convert.ToDouble(tumsatirlar[l+1].GetValue(9));
+                                    Ileri_R = Convert.ToDouble(tumsatirlar[l+1].GetValue(2));
+                                    Yon = Convert.ToDouble(tumsatirlar[l+1].GetValue(3));
+                                }
 
-                                    Spi_PI_Y = Spi_Sta_Y + Tk * Math.Sin((semtilk_0 + Yon * (tetha1)));
-                                    Spi_PI_X = Spi_Sta_X + Tk * Math.Cos((semtilk_0 + Yon * (tetha1)));
-                                    Spi_End_Y = Spi_Sta_Y + SL * Math.Sin(semtilk_0 + Yon * (theta_tum));
-                                    Spi_End_X = Spi_Sta_X + SL * Math.Cos(semtilk_0 + Yon * (theta_tum));
+                                double tetha1 = L1 / (2 * R1);
+                                double X1 = Spiral_X_Hesapla(L1, Math.Sqrt(Akare));
+                                double Y1 = Spiral_Y_Hesapla(L1, Math.Sqrt(Akare));
+                                double tetha2 = L2 / (2 * R2);
+                                double X2 = Spiral_X_Hesapla(L2, Math.Sqrt(Akare));
+                                double Y2 = Spiral_Y_Hesapla(L2, Math.Sqrt(Akare));
+
+                                //....................................
+                                double theta_tum = (Math.Atan2((X1 - X2), (Y1 - Y2)));
+                                double tetha2_donuk = theta_tum - tetha2;
+                                double SL = (Math.Sqrt(Math.Pow((Y1 - Y2), 2) + Math.Pow((X1 - X2), 2)));
+
+                                double Spi_Sta_Y_0 = Convert.ToDouble(tumsatirlar[l].GetValue(6));
+                                double Spi_Sta_X_0 = Convert.ToDouble(tumsatirlar[l].GetValue(7));
+                                double Spi_PI_Y_0 = Convert.ToDouble(tumsatirlar[l].GetValue(8));
+                                double Spi_PI_X_0 = Convert.ToDouble(tumsatirlar[l].GetValue(9));
+                                double X_0 = SL * Math.Sin(tetha2_donuk);
+                                double Y_0 = SL * Math.Cos(tetha2_donuk);
+                                Tu = Y_0 - X_0 / Math.Tan(tetha1 - tetha2);
+                                Tk = X_0 / Math.Sin(tetha1 - tetha2);
+                                double semtilk_0 = Math.Atan2((Spi_Sta_Y - Geri_Y), (Spi_Sta_X - Geri_X)); if (semtilk_0 < 0) { semtilk_0 += 2 * Math.PI; }
+
+                                Spi_PI_Y = Spi_Sta_Y + Tu * Math.Sin(semtilk_0 );
+                                Spi_PI_X = Spi_Sta_X + Tu * Math.Cos(semtilk_0 );
+
+                                //double semtilk_0 = Math.Atan2((Spi_PI_Y_0 - Spi_Sta_Y_0), (Spi_PI_X_0 - Spi_Sta_X_0));
+                                //if(Spi_type2==-1) { semtilk_0 = Math.Atan2((Spi_Sta_Y_0 - Spi_PI_Y_0), (Spi_Sta_X_0 - Spi_PI_X_0)); }
+                                //if (semtilk_0 < 0) { semtilk_0 += 2 * Math.PI; }
+                                //Spi_PI_Y_0 = Spi_Sta_Y + Tu * Math.Sin(semtilk_0);
+                                //Spi_PI_X_0 = Spi_Sta_X + Tu * Math.Cos(semtilk_0);
+
+                                //double s1 = semtilk_0 + Yon * (tetha2);
+
+                                //Spi_PI_Y = Spi_Sta_Y + Tu * Math.Sin(semtilk_0 + Yon * (tetha2));
+                                // Spi_PI_X = Spi_Sta_X + Tu * Math.Cos(semtilk_0 + Yon * (tetha2));
+                                //var R_yedek = R1;
+                                //if (Spi_type2 == -1){Spi_PI_Y = Spi_Sta_Y + Tk * Math.Sin((semtilk_0 + Yon * (tetha1)));Spi_PI_X = Spi_Sta_X + Tk * Math.Cos((semtilk_0 + Yon * (tetha1)));R1 = R2;R2 = R_yedek;}
+                                //Spi_End_Y = Spi_Sta_Y + SL * Math.Sin(semtilk_0 + Yon * (theta_tum));
+                                //Spi_End_X = Spi_Sta_X + SL * Math.Cos(semtilk_0 + Yon * (theta_tum));
 
 
-                                    object[] array =
-                                    {
-                                        "SP", Math.Abs((L1-L2)), R2, R1,Yonstring, Math.Atan(tetha1-tetha2) * 180 / Math.PI,Y_0, X_0, Tu, Tk,
+                                object[] array =
+                                {
+                                        "SP", Math.Abs((L1-L2)), R1, R2,Yonstring, Math.Atan(tetha1-tetha2) * 180 / Math.PI,Y_0, X_0, Tu, Tk,
                                         Spi_Sta_X, Spi_Sta_Y, Spi_PI_X, Spi_PI_Y, Spi_End_X, Spi_End_Y
                                     };
-                                    XMLDATA.Add(array);
-                                }
+                                XMLDATA.Add(array);
                             }
 
                             eleman_sayisi += 1;
@@ -587,62 +604,88 @@ namespace XmlToKtb
                 jj += 1;
             }
 
-            double Line_Start_Y = 0;
-            double Line_Start_X = 0;
+            //double Line_Start_Y = 0;
+            //double Line_Start_X = 0;
+            DXFLib.DXFPoint Line_Start=new DXFPoint();
+            DXFLib.DXFPoint Geri_Some= new DXFPoint();
+            DXFLib.DXFPoint Some = new DXFPoint();
+            DXFLib.DXFPoint Ileri_Some = new DXFPoint();
             //...................SOMELER YÖNTEMİ YATAY GÜZERGAH HESAPLARI......................
             for (int i = 1; i < yataydizi.Count - 1; i++)
             {
                 if (i == 0 || Convert.ToDouble(yataydizi[i - 1].GetValue(3)) == 0)
                 {
-                    Line_Start_Y = Convert.ToDouble(yataydizi[i - 1].GetValue(1));
-                    Line_Start_X = Convert.ToDouble(yataydizi[i - 1].GetValue(2));
+                    Line_Start.Y = Convert.ToDouble(yataydizi[i - 1].GetValue(1));
+                    Line_Start.X = Convert.ToDouble(yataydizi[i - 1].GetValue(2));
+                    //Line_Start_Y = Convert.ToDouble(yataydizi[i - 1].GetValue(1));
+                    //Line_Start_X = Convert.ToDouble(yataydizi[i - 1].GetValue(2));
                 }
 
-                double Somelerarası_mes = Math.Sqrt(Math.Pow(Convert.ToDouble(yataydizi[i].GetValue(1)) - Line_Start_Y, 2) +
-                                                    Math.Pow(Convert.ToDouble(yataydizi[i].GetValue(2)) - Line_Start_X, 2));
+                Geri_Some.Y = Convert.ToDouble(yataydizi[i-1].GetValue(1));
+                Geri_Some.X = Convert.ToDouble(yataydizi[i-1].GetValue(2));
+                Some.Y = Convert.ToDouble(yataydizi[i].GetValue(1));
+                Some.X = Convert.ToDouble(yataydizi[i].GetValue(2));
+                Ileri_Some.Y = Convert.ToDouble(yataydizi[i+1].GetValue(1));
+                Ileri_Some.X = Convert.ToDouble(yataydizi[i+1].GetValue(2));
+                double Somelerarası_mes = Math.Sqrt(Math.Pow(Convert.ToDouble(Some.Y) - Convert.ToDouble(Geri_Some.Y), 2) +
+                                                    Math.Pow(Convert.ToDouble(Some.X) - Convert.ToDouble(Geri_Some.X), 2));
                 //.....................SOME AÇISI.................
                 double semt_ilk =
-                    Math.Atan2(Convert.ToDouble(yataydizi[i].GetValue(1)) - Convert.ToDouble(yataydizi[i - 1].GetValue(1)),
-                        Convert.ToDouble(yataydizi[i].GetValue(2)) - Convert.ToDouble(yataydizi[i - 1].GetValue(2)));
+                    Math.Atan2(Convert.ToDouble(Some.Y) - Convert.ToDouble(Geri_Some.Y),
+                        Convert.ToDouble(Some.X) - Convert.ToDouble(Geri_Some.X));
                 if (semt_ilk < 0)
                 {
                     semt_ilk += 2 * Math.PI;
                 }
 
                 double semt_ikinci =
-                    Math.Atan2(Convert.ToDouble(yataydizi[i + 1].GetValue(1)) - Convert.ToDouble(yataydizi[i].GetValue(1)),
-                        Convert.ToDouble(yataydizi[i + 1].GetValue(2)) - Convert.ToDouble(yataydizi[i].GetValue(2)));
+                    Math.Atan2(Convert.ToDouble(Ileri_Some.Y) - Convert.ToDouble(Some.Y),
+                        Convert.ToDouble(Ileri_Some.X) - Convert.ToDouble(Some.X));
                 if (semt_ikinci < 0)
                 {
                     semt_ikinci += 2 * Math.PI;
                 }
+                
+                
+                
+                var dikayak = -(Some.Y - Geri_Some.Y) /Math.Sqrt(Math.Pow(Convert.ToDouble(Some.X - Geri_Some.X), 2) + Math.Pow(Convert.ToDouble(Some.Y - Geri_Some.Y), 2)) *(Ileri_Some.X - Geri_Some.X) +(Some.X - Geri_Some.X) / 
+                              Math.Sqrt(Math.Pow(Convert.ToDouble(Some.X - Geri_Some.X), 2) + Math.Pow(Convert.ToDouble(Some.Y - Geri_Some.Y), 2)) * (Ileri_Some.Y - Geri_Some.Y);
+                var some_yon = dikayak < 0 ? "ccw" : "cw";
 
                 double some_acisi = Math.PI - (semt_ilk + Math.PI - semt_ikinci);
-                var some_yon = semt_ilk - semt_ikinci > 0 ? "ccw" : "cw";
+                if (some_yon == "cw")
+                {
+                    some_acisi = semt_ikinci - semt_ilk;
+                }
+                else
+                {
+                    some_acisi = semt_ilk - semt_ikinci;
+                }
 
-                some_acisi = Math.Abs(some_acisi);
+                if (some_acisi < 0) { some_acisi = Math.PI * 2 + some_acisi; }
                 //....................SPİRAL HESAPLARI....................//////////////////////////////////////////////////////////////////////////////////////////////
                 double L_Giris = Convert.ToDouble(gecisdizi[i].GetValue(1));
                 double L_Cikis = Convert.ToDouble(gecisdizi[i].GetValue(2));
                 double R = Convert.ToDouble(yataydizi[i].GetValue(3));
                 if (R == 0)
                 {
-                    double Line_End_Y = Convert.ToDouble(yataydizi[i].GetValue(1));
-                    double Line_End_X = Convert.ToDouble(yataydizi[i].GetValue(2));
+                    DXFLib.DXFPoint Line_End = new DXFPoint();
+                    Line_End.Y = Geri_Some.Y;
+                    Line_End.X = Convert.ToDouble(yataydizi[i].GetValue(2));
                     object[] array =
-                        {"LN", semt_ilk * 180 / Math.PI, Somelerarası_mes, Line_Start_X, Line_Start_Y, Line_End_X, Line_End_Y};
+                        {"LN", semt_ilk * 180 / Math.PI, Somelerarası_mes, Line_Start.X, Line_Start.Y, Line_End.X, Line_End.Y};
                     XMLDATA.Add(array);
                     if (i == yataydizi.Count - 2)
                     {
-                        Line_End_Y = Convert.ToDouble(yataydizi[i + 1].GetValue(1));
-                        Line_End_X = Convert.ToDouble(yataydizi[i + 1].GetValue(2));
+                        Line_End.Y = Convert.ToDouble(yataydizi[i + 1].GetValue(1));
+                        Line_End.X = Convert.ToDouble(yataydizi[i + 1].GetValue(2));
 
-                        double line_mes = Math.Sqrt(Math.Pow((Line_Start_Y - Line_End_Y), 2) + Math.Pow((Line_Start_X - Line_End_X), 2));
+                        double line_mes = Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Line_End.Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Line_End.X)), 2));
                         object[] array1 =
                         {
 
-                            "LN", semt_ikinci * 180 / Math.PI, line_mes, Line_Start_X, Line_Start_Y,
-                            Line_End_X, Line_End_Y
+                            "LN", semt_ikinci * 180 / Math.PI, line_mes, Line_Start.X, Line_Start.Y,
+                            Line_End.X, Line_End.Y
                         };
 
                         XMLDATA.Add(array1);
@@ -672,14 +715,12 @@ namespace XmlToKtb
                 double Delte_R_Gir = Xm_Gir - R;
                 double Delte_R_Cik = Xm_Cik - R;
                 //.........................................................//////////////////////////////////////////////////////////////////////////////////////////
-                double Ana_teget_Gir = Ym_Gir + R * Math.Tan(some_acisi / 2) +
-                                       (Delte_R_Cik - Math.Cos(some_acisi) * Delte_R_Gir) / Math.Sin(some_acisi);
+                double Ana_teget_Gir = Ym_Gir + R * Math.Tan(some_acisi / 2) + (Delte_R_Cik - Math.Cos(some_acisi) * Delte_R_Gir) / Math.Sin(some_acisi);
 
-                double Spi_Gir_Start_Y = Line_Start_Y + Math.Sin(semt_ilk) * (Somelerarası_mes - Ana_teget_Gir);
-                double Spi_Gir_Start_X = Line_Start_X + Math.Cos(semt_ilk) * (Somelerarası_mes - Ana_teget_Gir);
+                double Spi_Gir_Start_Y = Convert.ToDouble(Geri_Some.Y) + Math.Sin(semt_ilk) * (Somelerarası_mes - Ana_teget_Gir);
+                double Spi_Gir_Start_X = Convert.ToDouble(Geri_Some.X) + Math.Cos(semt_ilk) * (Somelerarası_mes - Ana_teget_Gir);
                 double Spi_Gir_PI_Y = Spi_Gir_Start_Y + Tu_Gir * Math.Sin(semt_ilk);
                 double Spi_Gir_PI_X = Spi_Gir_Start_X + Tu_Gir * Math.Cos(semt_ilk);
-
                 double Spi_Gir_End_Y = Spi_Gir_PI_Y + Tk_Gir * Math.Sin(semt_ilk + tethaGiris);
                 double Spi_Gir_End_X = Spi_Gir_PI_X + Tk_Gir * Math.Cos(semt_ilk + tethaGiris);
 
@@ -693,17 +734,14 @@ namespace XmlToKtb
                 {
                     object[] array1 =
                     {
-                        "LN", semt_ilk * 180 / Math.PI, Somelerarası_mes - Ana_teget_Gir, Line_Start_X, Line_Start_Y,
+                        "LN", semt_ilk * 180 / Math.PI, Somelerarası_mes - Ana_teget_Gir, Line_Start.X, Line_Start.Y,
                         Spi_Gir_Start_X, Spi_Gir_Start_Y
-                    };
-                    XMLDATA.Add(array1);
+                    }; XMLDATA.Add(array1);
                     object[] array =
                     {
                         "SP", L_Giris, R, "INF",some_yon, Math.Atan2(Xm_Gir , Ym_Gir) * 180 / Math.PI, X_Gir, Y_Gir, Tu_Gir, Tk_Gir,
                         Spi_Gir_Start_X, Spi_Gir_Start_Y, Spi_Gir_PI_X, Spi_Gir_PI_Y, Spi_Gir_End_X, Spi_Gir_End_Y
-                    };
-
-                    XMLDATA.Add(array);
+                    }; XMLDATA.Add(array);
                 }
 
                 //....................KURP HESAPLARI...................////////////////////////////////////////////////////////////////////////////////////////////
@@ -720,10 +758,10 @@ namespace XmlToKtb
                 double Curve_Start_X = Spi_Gir_End_X;
                 if (L_Giris == 0)
                 {
-                    Curve_Start_Y = Line_Start_Y + (Somelerarası_mes - kurp_t) * Math.Sin(semt_ilk);
-                    Curve_Start_X = Line_Start_X + (Somelerarası_mes - kurp_t) * Math.Cos(semt_ilk);
+                    Curve_Start_Y = Convert.ToDouble(Line_Start.Y) + (Somelerarası_mes - kurp_t) * Math.Sin(semt_ilk);
+                    Curve_Start_X = Convert.ToDouble(Line_Start.X) + (Somelerarası_mes - kurp_t) * Math.Cos(semt_ilk);
                     object[] array =
-                        {"LN", semt_ilk * 180 / Math.PI, Somelerarası_mes - kurp_t, Line_Start_X, Line_Start_Y, Curve_Start_X, Curve_Start_Y};
+                        {"LN", semt_ilk * 180 / Math.PI, Somelerarası_mes - kurp_t, Line_Start.X, Line_Start.Y, Curve_Start_X, Curve_Start_Y};
                     XMLDATA.Add(array);
                 }
 
@@ -754,8 +792,8 @@ namespace XmlToKtb
                     Curve_Cen_X, Curve_Cen_Y, Curve_End_x, Curve_End_Y, Curve_PI_X, Curve_PI_Y
                 };
                 XMLDATA.Add(array2);
-                Line_Start_Y = Curve_End_Y;
-                Line_Start_X = Curve_End_x;
+                Line_Start.Y = Curve_End_Y;
+                Line_Start.X = Curve_End_x;
                 double dir_spi_cik_End = 0;
                 //............................SPİRAL ÇIKIŞ...............................
                 if (L_Cikis > 0)
@@ -778,30 +816,28 @@ namespace XmlToKtb
                         Spi_Cik_Start_X, Spi_Cik_Start_Y, Spi_Cik_PI_X, Spi_Cik_PI_Y, Spi_Cik_End_X, Spi_Cik_End_Y
                     };
                     XMLDATA.Add(array);
-                    Line_Start_Y = Spi_Cik_End_Y;
-                    Line_Start_X = Spi_Cik_End_X;
+                    Line_Start.Y = Spi_Cik_End_Y;
+                    Line_Start.X = Spi_Cik_End_X;
 
 
                 }
                 if (i == yataydizi.Count - 2)
                 {
-                    double Line_End_Y = Convert.ToDouble(yataydizi[i + 1].GetValue(1));
-                    double Line_End_X = Convert.ToDouble(yataydizi[i + 1].GetValue(2));
 
-                    double line_mes = Math.Sqrt(Math.Pow((Line_Start_Y - Line_End_Y), 2) + Math.Pow((Line_Start_X - Line_End_X), 2));
+                    DXFPoint Line_End = new DXFPoint();
+                    Line_End.Y = Convert.ToDouble(yataydizi[i + 1].GetValue(1));
+                    Line_End.X = Convert.ToDouble(yataydizi[i + 1].GetValue(2));
+                    double line_mes = Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Line_End.Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Line_End.X)), 2));
                     object[] array1 =
                     {
 
-                        "LN", dir_spi_cik_End * 180 / Math.PI, line_mes, Line_Start_X, Line_Start_Y,
-                        Line_End_X, Line_End_Y
+                        "LN", dir_spi_cik_End * 180 / Math.PI, line_mes, Line_Start.X, Line_Start.Y,
+                        Line_End.X, Line_End.Y
                     };
 
                     XMLDATA.Add(array1);
                 }
             }
-
-
-
             return XMLDATA;
         }
 

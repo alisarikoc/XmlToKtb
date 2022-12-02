@@ -316,6 +316,17 @@ namespace XmlToKtb
                     yuzeyXML.yuzeyXmlOlustur(nokList, ucgenList, doc.Filename);
             }
         }
+
+
+        private void KoordinatHesapla(object sender, EventArgs e)
+        {
+            LandXML landXml = GetirLandXmlDosyaTipiIle();
+            List<Array> kmData = GetirKmListeDosyasi();
+
+            var ncnIcerigi = KmdenKoorHesapla.KoordinatHesabi(kmData, landXml);
+
+            DosyaKaydetFiltreIle(ncnIcerigi, Resources.ncnExtensionFilter, "Koorliste");
+        }
         private DXFDocument getirDxfDocument()
         {
             OpenFileDialog dlg = new OpenFileDialog();
@@ -354,8 +365,6 @@ namespace XmlToKtb
 
             DosyaKaydetFiltreIle(TcddIcerigi, Resources.lisExtensionFilter, "TBL");
         }
-
-
 
         private LandXML GetirLandXmlDosyaTipiIle()
         {

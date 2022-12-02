@@ -49,26 +49,29 @@ namespace XmlToKtb
             this.donusturButton = new System.Windows.Forms.Button();
             this.kaydetButton = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.button2 = new System.Windows.Forms.Button();
             this.tabllobutton = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.Tcddtabllobutton = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.dxf_button = new System.Windows.Forms.Button();
+            this.dxf_label = new System.Windows.Forms.Label();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.KoorHesap_button = new System.Windows.Forms.Button();
+            this.KoorHesap_label = new System.Windows.Forms.Label();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.isimHaklariLabel = new System.Windows.Forms.Label();
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.LisopenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.button2 = new System.Windows.Forms.Button();
-            this.label7 = new System.Windows.Forms.Label();
-
-            this.dxf_button = new System.Windows.Forms.Button();
-            this.dxf_label = new System.Windows.Forms.Label();
             tabPage2 = new System.Windows.Forms.TabPage();
             tabPage2.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
+            this.tabPage5.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabPage2
@@ -186,6 +189,7 @@ namespace XmlToKtb
             this.tabControl1.Controls.Add(tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage4);
+            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -280,6 +284,16 @@ namespace XmlToKtb
             this.tabPage3.Text = "Tablolar";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(245, 126);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(93, 31);
+            this.button2.TabIndex = 10;
+            this.button2.Text = "XML Olustur";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.elKitabiXML_click);
+            // 
             // tabllobutton
             // 
             this.tabllobutton.Location = new System.Drawing.Point(245, 72);
@@ -289,6 +303,16 @@ namespace XmlToKtb
             this.tabllobutton.Text = "Tablo Olustur";
             this.tabllobutton.UseVisualStyleBackColor = true;
             this.tabllobutton.Click += new System.EventHandler(this.guzerhah_tablo_click);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label7.Location = new System.Drawing.Point(50, 131);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(175, 18);
+            this.label7.TabIndex = 9;
+            this.label7.Text = "El Kitabı İçin XML oluştur:";
             // 
             // label5
             // 
@@ -320,12 +344,6 @@ namespace XmlToKtb
             this.label6.TabIndex = 9;
             this.label6.Text = "TCDD Teknik Tablosu:";
             // 
-            // openFileDialog
-            // 
-            this.openFileDialog.DefaultExt = "xml";
-            this.openFileDialog.Filter = "XML veya KTB (*.xml;*ktb)|*.xml;*.ktb";
-            this.openFileDialog.FilterIndex = 0;
-            // 
             // tabPage4
             // 
             this.tabPage4.Controls.Add(this.dxf_button);
@@ -337,6 +355,64 @@ namespace XmlToKtb
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Dxf";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // dxf_button
+            // 
+            this.dxf_button.Location = new System.Drawing.Point(260, 49);
+            this.dxf_button.Name = "dxf_button";
+            this.dxf_button.Size = new System.Drawing.Size(93, 31);
+            this.dxf_button.TabIndex = 10;
+            this.dxf_button.Text = "XML Olustur";
+            this.dxf_button.UseVisualStyleBackColor = true;
+            this.dxf_button.Click += new System.EventHandler(this.dxftoXML_click);
+            // 
+            // dxf_label
+            // 
+            this.dxf_label.AutoSize = true;
+            this.dxf_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.dxf_label.Location = new System.Drawing.Point(51, 54);
+            this.dxf_label.Name = "dxf_label";
+            this.dxf_label.Size = new System.Drawing.Size(146, 18);
+            this.dxf_label.TabIndex = 9;
+            this.dxf_label.Text = "Dxf den XML oluştur:";
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.KoorHesap_button);
+            this.tabPage5.Controls.Add(this.KoorHesap_label);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(440, 207);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "Koordinat";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // KoorHesap_button
+            // 
+            this.KoorHesap_button.Location = new System.Drawing.Point(305, 23);
+            this.KoorHesap_button.Name = "KoorHesap_button";
+            this.KoorHesap_button.Size = new System.Drawing.Size(93, 31);
+            this.KoorHesap_button.TabIndex = 10;
+            this.KoorHesap_button.Text = "Hesapla";
+            this.KoorHesap_button.UseVisualStyleBackColor = true;
+            this.KoorHesap_button.Click += new System.EventHandler(this.KoordinatHesapla);
+            // 
+            // KoorHesap_label
+            // 
+            this.KoorHesap_label.AutoSize = true;
+            this.KoorHesap_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.KoorHesap_label.Location = new System.Drawing.Point(32, 28);
+            this.KoorHesap_label.Name = "KoorHesap_label";
+            this.KoorHesap_label.Size = new System.Drawing.Size(239, 18);
+            this.KoorHesap_label.TabIndex = 9;
+            this.KoorHesap_label.Text = "Km Listesinden Koordinat Hesapla:";
+            // 
+            // openFileDialog
+            // 
+            this.openFileDialog.DefaultExt = "xml";
+            this.openFileDialog.Filter = "XML veya KTB (*.xml;*ktb)|*.xml;*.ktb";
+            this.openFileDialog.FilterIndex = 0;
             // 
             // isimHaklariLabel
             // 
@@ -357,46 +433,6 @@ namespace XmlToKtb
             // LisopenFileDialog
             // 
             this.LisopenFileDialog.Filter = "TBL (*.tbl)|*.tbl";
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(245, 126);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(93, 31);
-            this.button2.TabIndex = 10;
-            this.button2.Text = "XML Olustur";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.elKitabiXML_click);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.label7.Location = new System.Drawing.Point(50, 131);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(175, 18);
-            this.label7.TabIndex = 9;
-            this.label7.Text = "El Kitabı İçin XML oluştur:";
-            // 
-            // dxf_button
-            // 
-            this.dxf_button.Location = new System.Drawing.Point(245, 126);
-            this.dxf_button.Name = "dxf_button";
-            this.dxf_button.Size = new System.Drawing.Size(93, 31);
-            this.dxf_button.TabIndex = 10;
-            this.dxf_button.Text = "XML Olustur";
-            this.dxf_button.UseVisualStyleBackColor = true;
-            this.dxf_button.Click += new System.EventHandler(this.dxftoXML_click);
-            // 
-            // dxf_label
-            // 
-            this.dxf_label.AutoSize = true;
-            this.dxf_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.dxf_label.Location = new System.Drawing.Point(50, 131);
-            this.dxf_label.Name = "dxf_label";
-            this.dxf_label.Size = new System.Drawing.Size(175, 18);
-            this.dxf_label.TabIndex = 9;
-            this.dxf_label.Text = "Dxf den XML oluştur:";
             // 
             // XmlToKtbUI
             // 
@@ -421,6 +457,8 @@ namespace XmlToKtb
             this.tabPage3.PerformLayout();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
+            this.tabPage5.ResumeLayout(false);
+            this.tabPage5.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -465,6 +503,11 @@ namespace XmlToKtb
 
         public Button dxf_button;
         public Label dxf_label;
+
+        private TabPage tabPage5;
+
+        public Button KoorHesap_button;
+        public Label KoorHesap_label;
     }
 }
 
