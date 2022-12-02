@@ -59,7 +59,9 @@ namespace XmlToKtb
             this.dxf_button = new System.Windows.Forms.Button();
             this.dxf_label = new System.Windows.Forms.Label();
             this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.OfsetKotHesButton = new System.Windows.Forms.Button();
             this.KoorHesap_button = new System.Windows.Forms.Button();
+            this.label8 = new System.Windows.Forms.Label();
             this.KoorHesap_label = new System.Windows.Forms.Label();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.isimHaklariLabel = new System.Windows.Forms.Label();
@@ -378,7 +380,9 @@ namespace XmlToKtb
             // 
             // tabPage5
             // 
+            this.tabPage5.Controls.Add(this.OfsetKotHesButton);
             this.tabPage5.Controls.Add(this.KoorHesap_button);
+            this.tabPage5.Controls.Add(this.label8);
             this.tabPage5.Controls.Add(this.KoorHesap_label);
             this.tabPage5.Location = new System.Drawing.Point(4, 22);
             this.tabPage5.Name = "tabPage5";
@@ -387,6 +391,16 @@ namespace XmlToKtb
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Koordinat";
             this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // OfsetKotHesButton
+            // 
+            this.OfsetKotHesButton.Location = new System.Drawing.Point(305, 97);
+            this.OfsetKotHesButton.Name = "OfsetKotHesButton";
+            this.OfsetKotHesButton.Size = new System.Drawing.Size(93, 31);
+            this.OfsetKotHesButton.TabIndex = 10;
+            this.OfsetKotHesButton.Text = "Hesapla";
+            this.OfsetKotHesButton.UseVisualStyleBackColor = true;
+            this.OfsetKotHesButton.Click += new System.EventHandler(this.OfsetKotHesapla);
             // 
             // KoorHesap_button
             // 
@@ -397,6 +411,16 @@ namespace XmlToKtb
             this.KoorHesap_button.Text = "Hesapla";
             this.KoorHesap_button.UseVisualStyleBackColor = true;
             this.KoorHesap_button.Click += new System.EventHandler(this.KoordinatHesapla);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label8.Location = new System.Drawing.Point(32, 102);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(217, 18);
+            this.label8.TabIndex = 9;
+            this.label8.Text = "Noktalardan Ofset Kot Hesapla:";
             // 
             // KoorHesap_label
             // 
@@ -508,6 +532,8 @@ namespace XmlToKtb
 
         public Button KoorHesap_button;
         public Label KoorHesap_label;
+        public Button OfsetKotHesButton;
+        public Label label8;
     }
 }
 

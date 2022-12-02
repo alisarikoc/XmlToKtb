@@ -39,6 +39,7 @@ namespace XmlToKtb
                         var endx = (Convert.ToDouble(line.End.Split()[0]));
                         foreach (var ncn in ncndata)
                         {
+                            if(ncn.Length==0)continue;
                             NoktaNo = (Convert.ToString(ncn.GetValue(0)));
                             NoktaY = (Convert.ToDouble(ncn.GetValue(1)));
                             NoktaX = (Convert.ToDouble(ncn.GetValue(2)));
@@ -83,6 +84,7 @@ namespace XmlToKtb
 
                         foreach (var ncnArray in ncndata)
                         {
+                            if(ncnArray.Length==0)continue;
                             NoktaNo = (Convert.ToString(ncnArray.GetValue(0)));
                             NoktaY = (Convert.ToDouble(ncnArray.GetValue(1)));
                             NoktaX = (Convert.ToDouble(ncnArray.GetValue(2)));
@@ -175,6 +177,7 @@ namespace XmlToKtb
 
                             foreach (var ncnArray in ncndata)
                             {
+                                if(ncnArray.Length==0)continue;
                                 NoktaNo = (Convert.ToString(ncnArray.GetValue(0)));
                                 NoktaY = (Convert.ToDouble(ncnArray.GetValue(1)));
                                 NoktaX = (Convert.ToDouble(ncnArray.GetValue(2)));
@@ -239,6 +242,7 @@ namespace XmlToKtb
                         {
                             foreach (var ncn in ncndata)
                             {
+                                if(ncn.Length==0)continue;
                                 NoktaNo = (Convert.ToString(ncn.GetValue(0)));
                                 NoktaY = (Convert.ToDouble(ncn.GetValue(1)));
                                 NoktaX = (Convert.ToDouble(ncn.GetValue(2)));

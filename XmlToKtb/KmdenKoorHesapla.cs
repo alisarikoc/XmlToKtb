@@ -11,7 +11,6 @@ namespace XmlToKtb
         {
             var koorStringBuilder = new StringBuilder();
 
-            List<Array> koordinatliste = new List<Array>();
             var alignment = landXml.Alignments.Alignment;
             foreach (var kesit in kmList)
             {
@@ -26,17 +25,12 @@ namespace XmlToKtb
                 double kilometre = Convert.ToDouble(kesit.GetValue(0));
                 string nokta_no = Convert.ToString(kesit.GetValue(1));
                 var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, Convert.ToDecimal(kilometre)));
-                if (kilometre != null)
+                if (Convert.ToString(kilometre) != null)
                 {
                     var baslangicKM = alignment.staStart;
                     var guncelKM = baslangicKM;
                     foreach (var item in alignment.CoordGeom.Items)
                     {
-                        decimal KesitKM;
-                        string NoktaNo;
-                        double NoktaY;
-                        double NoktaX;
-                        double NoktaKot;
                         if (kilometre < (double)guncelKM)
                         {
                             break;
@@ -59,7 +53,7 @@ namespace XmlToKtb
                                         var kmnoktaX = startx + uzunluk * Math.Cos(semt);
                                         koorStringBuilder.AppendLine(Convert.ToString(nokta_no) + " " + Convert.ToString(kmnoktaY) + " " + Convert.ToString(kmnoktaX) + " " + Convert.ToString(kirmizikot) + " " + Convert.ToString(kilometre));
                                     }
-                                    guncelKM = guncelKM + line.length;
+                                    guncelKM += line.length;
                                     break;
                                 }
                             case LandXMLAlignmentsAlignmentCoordGeomCurve _:
@@ -78,7 +72,7 @@ namespace XmlToKtb
                                         var noktaAci = noktaYayBoyu / radius ;
                                         var noktaSemt = 0.00;
                                         var semtilk = Math.Atan2((starty - My), (startx - Mx));
-                                        if (semtilk < 0) { semtilk = semtilk + (2 * Math.PI); }
+                                        if (semtilk < 0) { semtilk += (2 * Math.PI); }
 
                                         if (curve.rot == "cw") { noktaSemt = semtilk + noktaAci ; }
                                         if (curve.rot == "ccw") { noktaSemt = semtilk - noktaAci ; }
@@ -89,7 +83,7 @@ namespace XmlToKtb
                                         koorStringBuilder.AppendLine(Convert.ToString(nokta_no) +  " " + Convert.ToString(kmnoktaY) + " " + Convert.ToString(kmnoktaX) + " " + Convert.ToString(kirmizikot) + " " + Convert.ToString(kilometre));
                                     }
 
-                                    guncelKM = guncelKM + curve.length;
+                                    guncelKM += curve.length;
                                     break;
                                     
 
@@ -123,7 +117,7 @@ namespace XmlToKtb
                                             double spiralX = Spiral_X_Hesapla(noktapSpirlaBoyu, S_katsayi);
                                             var spiAci = Math.Atan(spiralX / spiralY);
                                             var spiS = Math.Sqrt((spiralY * spiralY) + (spiralX * spiralX));
-                                            var uzunTeget_dir = Math.Atan2((PIy - starty), (PIx - startx)); if (uzunTeget_dir < 0) { uzunTeget_dir = uzunTeget_dir + (2 * Math.PI); }
+                                            var uzunTeget_dir = Math.Atan2((PIy - starty), (PIx - startx)); if (uzunTeget_dir < 0) { uzunTeget_dir += (2 * Math.PI); }
                                             noktaDir = uzunTeget_dir + spiAci * yon;
                                             kmnoktaY = starty + spiS * Math.Sin(noktaDir);
                                             kmnoktaX = startx + spiS * Math.Cos(noktaDir);
@@ -136,7 +130,7 @@ namespace XmlToKtb
                                             double spiralX = Spiral_X_Hesapla(noktapSpirlaBoyu, S_katsayi);
                                             var spiAci = Math.Atan(spiralX / spiralY);
                                             var spiS = Math.Sqrt((spiralY * spiralY) + (spiralX * spiralX));
-                                            var uzunTeget_dir = Math.Atan2((PIy - endy), (PIx - endx)); if (uzunTeget_dir < 0) { uzunTeget_dir = uzunTeget_dir + (2 * Math.PI); }
+                                            var uzunTeget_dir = Math.Atan2((PIy - endy), (PIx - endx)); if (uzunTeget_dir < 0) { uzunTeget_dir += (2 * Math.PI); }
                                             noktaDir = uzunTeget_dir - spiAci * yon;
                                             kmnoktaY = endy + spiS * Math.Sin(noktaDir);
                                             kmnoktaX = endx + spiS * Math.Cos(noktaDir);

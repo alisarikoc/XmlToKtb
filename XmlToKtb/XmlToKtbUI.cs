@@ -317,7 +317,6 @@ namespace XmlToKtb
             }
         }
 
-
         private void KoordinatHesapla(object sender, EventArgs e)
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();
@@ -327,6 +326,18 @@ namespace XmlToKtb
 
             DosyaKaydetFiltreIle(ncnIcerigi, Resources.ncnExtensionFilter, "Koorliste");
         }
+
+        private void OfsetKotHesapla(object sender, EventArgs e)
+        {
+            bool aranokta = false;
+            LandXML landXml = GetirLandXmlDosyaTipiIle();
+            List<Array> ncnData = GetirNcnData();
+            string kesitler = OfsetVeKoticerigi.OfsetVeKotGetir(landXml, ncnData);
+
+            //string listeIcerigi = KSEIcerigi.EnkesitListesiOlustur(kesitler);
+            DosyaKaydetFiltreIle(kesitler, Resources.ofkExtensionFilter, "OfsetKotliste");
+        }
+
         private DXFDocument getirDxfDocument()
         {
             OpenFileDialog dlg = new OpenFileDialog();

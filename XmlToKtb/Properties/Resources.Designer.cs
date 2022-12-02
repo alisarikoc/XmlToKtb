@@ -106,6 +106,15 @@ namespace XmlToKtb.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to OFK|*.ofk.
+        /// </summary>
+        internal static string ofkExtensionFilter {
+            get {
+                return ResourceManager.GetString("ofkExtensionFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to XML|*.xml.
         /// </summary>
         internal static string xmlExtensionFilter {

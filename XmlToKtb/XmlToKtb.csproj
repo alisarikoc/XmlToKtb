@@ -51,6 +51,8 @@
   <ItemGroup>
     <Compile Include="Class1.cs" />
     <Compile Include="KmdenKoorHesapla.cs" />
+    <Compile Include="KTBIcerigi.cs" />
+    <Compile Include="OfsetVeKoticerigi.cs" />
     <Compile Include="XMLdataEkle.cs" />
     <Compile Include="Tcddtekniktablo.cs" />
     <Compile Include="GZH_tabloicerigi.cs" />
@@ -65,7 +67,6 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="KSEIcerigi.cs" />
-    <Compile Include="KTBIcerigi.cs" />
     <Compile Include="KTBtoXML.cs" />
     <Compile Include="PRFhesap.cs" />
     <Compile Include="PRFIcerigi.cs" />

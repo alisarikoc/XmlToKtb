@@ -405,7 +405,7 @@ namespace XmlToKtb
                             {
                                 if (L2 == 0)
                                 {
-                                    if (XMLDATA.Last().GetValue(0) == "LN")
+                                    if (Convert.ToString(XMLDATA.Last().GetValue(0)) == "LN")
                                     {
                                         Spi_Sta_Y = Convert.ToDouble(XMLDATA.Last().GetValue(6));
                                         Spi_Sta_X = Convert.ToDouble(XMLDATA.Last().GetValue(5));
@@ -431,7 +431,7 @@ namespace XmlToKtb
                                 if (Yon == -1) { Yonstring = "cw"; }
                                 if (L2 == 0)
                                 {
-                                    if (XMLDATA.Last().GetValue(0) == "AR")
+                                    if (Convert.ToString(XMLDATA.Last().GetValue(0)) == "AR")
                                     {
                                         Spi_End_X = Convert.ToDouble(XMLDATA.Last().GetValue(16));
                                         Spi_End_Y = Convert.ToDouble(XMLDATA.Last().GetValue(17));
@@ -458,14 +458,14 @@ namespace XmlToKtb
                                 double Geri_X = 0;
                                 double Geri_R = 0;
                                 double Ileri_R = 0;
-                                if (XMLDATA.Last().GetValue(0) == "LN")
+                                if (Convert.ToString(XMLDATA.Last().GetValue(0)) == "LN")
                                 {
                                     Geri_Y = Convert.ToDouble(XMLDATA.Last().GetValue(4));
                                     Geri_X = Convert.ToDouble(XMLDATA.Last().GetValue(3));
                                     Spi_Sta_Y = Convert.ToDouble(XMLDATA.Last().GetValue(6));
                                     Spi_Sta_X = Convert.ToDouble(XMLDATA.Last().GetValue(5));
                                 }
-                                if (XMLDATA.Last().GetValue(0) == "AR")
+                                if (Convert.ToString(XMLDATA.Last().GetValue(0)) == "AR")
                                 {
                                     Spi_Sta_Y = Convert.ToDouble(XMLDATA.Last().GetValue(17));
                                     Spi_Sta_X = Convert.ToDouble(XMLDATA.Last().GetValue(16));
@@ -474,7 +474,7 @@ namespace XmlToKtb
                                     Geri_R = Convert.ToDouble(XMLDATA.Last().GetValue(10));
                                     Yonstring= Convert.ToString(XMLDATA.Last().GetValue(1));
                                 }
-                                if (XMLDATA.Last().GetValue(0) == "SP")
+                                if (Convert.ToString(XMLDATA.Last().GetValue(0)) == "SP")
                                 {
                                     Spi_Sta_Y = Convert.ToDouble(XMLDATA.Last().GetValue(15));
                                     Spi_Sta_X = Convert.ToDouble(XMLDATA.Last().GetValue(14));

@@ -137,6 +137,10 @@
     <value>NCN|*.ncn</value>
     <comment>NCN|*.ncn</comment>
   </data>
+  <data name="ofkExtensionFilter" xml:space="preserve">
+    <value>OFK|*.ofk</value>
+    <comment>OFK|*.ofk</comment>
+  </data>
   <data name="lisExtensionFilter" xml:space="preserve">
     <value>TBL|*.tbl</value>
     <comment>TBL|*.tbl</comment>
