@@ -286,13 +286,18 @@ namespace XmlToKtb
         }
         private void dxftoXML_click(object sender, EventArgs e)
         {
-            DXFDocument doc = getirDxfDocument();
-            DateTime start = DateTime.UtcNow;
-            // Parse DXF
+            DialogResult secenek = MessageBox.Show("NETCAD'de DXF Kaydeilmiş Ücgen Model Dosyasındaki 3DPolyline ları XML kaydeder." +
+                                                   "\t\n \t\n Seçilecek DXF Dosyası 3DPolyline lardan mı oluşuyor?", "Bilgilendirme Penceresi", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
 
-            // Process entities
-            if (doc.Entities.Count > 0)
+            if (secenek == DialogResult.Yes)
             {
+                DXFDocument doc = getirDxfDocument();
+                DateTime start = DateTime.UtcNow;
+                // Parse DXF
+
+                // Process entities
+                if (doc.Entities.Count > 0)
+                {
                     // Create shapes
                     start = DateTime.UtcNow;
                     List<Nokta> nokList = new List<Nokta>();
@@ -300,21 +305,27 @@ namespace XmlToKtb
                     int noktano = 2;
                     foreach (DXFLib.DXFEntity entity in doc.Entities)
                     {
-                            DXFLib.DXFPolyLine polyLine = (DXFLib.DXFPolyLine) entity;
-                            bool isClosed = polyLine.Flags == DXFLib.DXFPolyLine.FlagsEnum.closed;
+                        DXFLib.DXFPolyLine polyLine = (DXFLib.DXFPolyLine) entity;
+                        bool isClosed = polyLine.Flags == DXFLib.DXFPolyLine.FlagsEnum.closed;
 
-                            DXFLib.DXFVertex vertex0 = (DXFLib.DXFVertex) polyLine.Children[0];
-                            DXFLib.DXFVertex vertex1 = (DXFLib.DXFVertex) polyLine.Children[1];
-                            DXFLib.DXFVertex vertex2 = (DXFLib.DXFVertex) polyLine.Children[2];
+                        DXFLib.DXFVertex vertex0 = (DXFLib.DXFVertex) polyLine.Children[0];
+                        DXFLib.DXFVertex vertex1 = (DXFLib.DXFVertex) polyLine.Children[1];
+                        DXFLib.DXFVertex vertex2 = (DXFLib.DXFVertex) polyLine.Children[2];
 
-                            noktano = noktano + 3;
-                            ucgenList.Add(new Ucgen { Numara2 = noktano, Numara1 = noktano + 1, Numara0 = noktano + 2 });
-                            nokList.Add(new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z });
+                        noktano = noktano + 3;
+                        ucgenList.Add(new Ucgen { Numara2 = noktano, Numara1 = noktano + 1, Numara0 = noktano + 2 });
+                        nokList.Add(new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z });
 
                     }
                     System.Diagnostics.Debug.WriteLine("Created shapes in {0}ms", DateTime.UtcNow.Subtract(start).TotalMilliseconds);
                     yuzeyXML.yuzeyXmlOlustur(nokList, ucgenList, doc.Filename);
+                }
             }
+            else if (secenek == DialogResult.No)
+            {
+                //Hayır seçeneğine tıklandığında çalıştırılacak kodlar
+            }
+            
         }
 
         private void KoordinatHesapla(object sender, EventArgs e)
@@ -329,7 +340,6 @@ namespace XmlToKtb
 
         private void OfsetKotHesapla(object sender, EventArgs e)
         {
-            bool aranokta = false;
             LandXML landXml = GetirLandXmlDosyaTipiIle();
             List<Array> ncnData = GetirNcnData();
             string kesitler = OfsetVeKoticerigi.OfsetVeKotGetir(landXml, ncnData);
@@ -406,9 +416,7 @@ namespace XmlToKtb
             ncnOpenFileDialog.Title = "NCN Türü Nokta Dosyası Seçin";
             ncnOpenFileDialog.ShowDialog();
             StreamReader ncnIcerigi = new StreamReader(ncnOpenFileDialog.FileName);
-
             List<Array> tumsatirlar = new List<Array>();
-
             while (!ncnIcerigi.EndOfStream)
             {
                 char[] separator = { ' ', '\t' };
@@ -419,10 +427,8 @@ namespace XmlToKtb
                     tumsatirlar.Add(veriKelimeleri);
                 }
             }
-
             return tumsatirlar;
         }
-
         private List<Array> GetirKmListeDosyasi()
         {
             LisopenFileDialog.Title = "Kilometre Liste Dosyası Seçin";
@@ -444,7 +450,30 @@ namespace XmlToKtb
 
             return kmSatirlar;
         }
-
+        private void MDT_button_Click(object sender, EventArgs e)
+        {
+            List<Array> mdtData = GetirMdtData();
+            string liste = MDT_icerigi.Excellistesi(mdtData);
+            DosyaKaydetFiltreIle(liste, Resources.TXTExtensionFilter, "Nivelmanliste");
+        }
+        private List<Array> GetirMdtData()
+        {
+            mdtOpenFileDialog.Title = "MDT Türü Nokta Nivelman Dosyası Seçin";
+            mdtOpenFileDialog.ShowDialog();
+            StreamReader MdtIcerigi = new StreamReader(mdtOpenFileDialog.FileName);
+            List<Array> tumsatirlar = new List<Array>();
+            while (!MdtIcerigi.EndOfStream)
+            {
+                char[] separator = { '\t' };
+                var veriSatir = MdtIcerigi.ReadLine();
+                if (veriSatir != null)
+                {
+                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions) 1);
+                    tumsatirlar.Add(veriKelimeleri);
+                }
+            }
+            return tumsatirlar;
+        }
     }
 
 }

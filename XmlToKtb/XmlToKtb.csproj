@@ -52,6 +52,7 @@
     <Compile Include="Class1.cs" />
     <Compile Include="KmdenKoorHesapla.cs" />
     <Compile Include="KTBIcerigi.cs" />
+    <Compile Include="MDT_icerigi.cs" />
     <Compile Include="OfsetVeKoticerigi.cs" />
     <Compile Include="XMLdataEkle.cs" />
     <Compile Include="Tcddtekniktablo.cs" />

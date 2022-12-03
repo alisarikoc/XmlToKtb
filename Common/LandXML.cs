@@ -1560,11 +1560,11 @@ public class LandXMLSurfacesSurfaceDefinition
     {
         get
         {
-            return this.surfTypeField;
+            return surfTypeField;
         }
         set
         {
-            this.surfTypeField = value;
+            surfTypeField = value;
         }
     }
 

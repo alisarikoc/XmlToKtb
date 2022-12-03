@@ -46,6 +46,7 @@
     <Compile Include="Enum\DurumTip.cs" />
     <Compile Include="Enum\ProfileAlignTip.cs" />
     <Compile Include="LandXML.cs" />
+    <Compile Include="Modeller\NivelmanNokta.cs" />
     <Compile Include="Modeller\Nokta.cs" />
     <Compile Include="Modeller\Ucgen.cs" />
     <Compile Include="Packages\ProfilAlignPackage.cs" />

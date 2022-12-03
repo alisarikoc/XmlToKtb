@@ -115,6 +115,15 @@ namespace XmlToKtb.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to TXT|*.txt.
+        /// </summary>
+        internal static string TXTExtensionFilter {
+            get {
+                return ResourceManager.GetString("TXTExtensionFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to XML|*.xml.
         /// </summary>
         internal static string xmlExtensionFilter {

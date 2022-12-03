@@ -41,7 +41,7 @@ namespace XmlToKtb
             this.label2 = new System.Windows.Forms.Label();
             this.daire_enkesitButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.nivelmantabkontrol = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.bilgiLabel = new System.Windows.Forms.Label();
             this.kayitTuruLabel = new System.Windows.Forms.Label();
@@ -63,17 +63,22 @@ namespace XmlToKtb
             this.KoorHesap_button = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.KoorHesap_label = new System.Windows.Forms.Label();
+            this.NivelmPage = new System.Windows.Forms.TabPage();
+            this.MDT_button = new System.Windows.Forms.Button();
+            this.MDTokuLabel = new System.Windows.Forms.Label();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.isimHaklariLabel = new System.Windows.Forms.Label();
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.LisopenFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.mdtOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             tabPage2 = new System.Windows.Forms.TabPage();
             tabPage2.SuspendLayout();
-            this.tabControl1.SuspendLayout();
+            this.nivelmantabkontrol.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.tabPage5.SuspendLayout();
+            this.NivelmPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabPage2
@@ -185,18 +190,19 @@ namespace XmlToKtb
             this.label1.TabIndex = 4;
             this.label1.Text = "Noktalardan Enkesit Oluştur:";
             // 
-            // tabControl1
+            // nivelmantabkontrol
             // 
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(tabPage2);
-            this.tabControl1.Controls.Add(this.tabPage3);
-            this.tabControl1.Controls.Add(this.tabPage4);
-            this.tabControl1.Controls.Add(this.tabPage5);
-            this.tabControl1.Location = new System.Drawing.Point(12, 12);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(448, 233);
-            this.tabControl1.TabIndex = 8;
+            this.nivelmantabkontrol.Controls.Add(this.tabPage1);
+            this.nivelmantabkontrol.Controls.Add(tabPage2);
+            this.nivelmantabkontrol.Controls.Add(this.tabPage3);
+            this.nivelmantabkontrol.Controls.Add(this.tabPage4);
+            this.nivelmantabkontrol.Controls.Add(this.tabPage5);
+            this.nivelmantabkontrol.Controls.Add(this.NivelmPage);
+            this.nivelmantabkontrol.Location = new System.Drawing.Point(12, 12);
+            this.nivelmantabkontrol.Name = "nivelmantabkontrol";
+            this.nivelmantabkontrol.SelectedIndex = 0;
+            this.nivelmantabkontrol.Size = new System.Drawing.Size(448, 233);
+            this.nivelmantabkontrol.TabIndex = 8;
             // 
             // tabPage1
             // 
@@ -432,6 +438,38 @@ namespace XmlToKtb
             this.KoorHesap_label.TabIndex = 9;
             this.KoorHesap_label.Text = "Km Listesinden Koordinat Hesapla:";
             // 
+            // NivelmPage
+            // 
+            this.NivelmPage.Controls.Add(this.MDT_button);
+            this.NivelmPage.Controls.Add(this.MDTokuLabel);
+            this.NivelmPage.Location = new System.Drawing.Point(4, 22);
+            this.NivelmPage.Name = "NivelmPage";
+            this.NivelmPage.Padding = new System.Windows.Forms.Padding(3);
+            this.NivelmPage.Size = new System.Drawing.Size(440, 207);
+            this.NivelmPage.TabIndex = 5;
+            this.NivelmPage.Text = "Nivelman";
+            this.NivelmPage.UseVisualStyleBackColor = true;
+            // 
+            // MDT_button
+            // 
+            this.MDT_button.Location = new System.Drawing.Point(176, 80);
+            this.MDT_button.Name = "MDT_button";
+            this.MDT_button.Size = new System.Drawing.Size(93, 31);
+            this.MDT_button.TabIndex = 11;
+            this.MDT_button.Text = "Oku Kaydet";
+            this.MDT_button.UseVisualStyleBackColor = true;
+            this.MDT_button.Click += new System.EventHandler(this.MDT_button_Click);
+            // 
+            // MDTokuLabel
+            // 
+            this.MDTokuLabel.AutoSize = true;
+            this.MDTokuLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.MDTokuLabel.Location = new System.Drawing.Point(6, 26);
+            this.MDTokuLabel.Name = "MDTokuLabel";
+            this.MDTokuLabel.Size = new System.Drawing.Size(422, 16);
+            this.MDTokuLabel.TabIndex = 10;
+            this.MDTokuLabel.Text = "Nivelman MDT dosyasından okur ve Virgülle ayrılmış metin kaydeder.";
+            // 
             // openFileDialog
             // 
             this.openFileDialog.DefaultExt = "xml";
@@ -458,12 +496,16 @@ namespace XmlToKtb
             // 
             this.LisopenFileDialog.Filter = "TBL (*.tbl)|*.tbl";
             // 
+            // mdtOpenFileDialog
+            // 
+            this.mdtOpenFileDialog.Filter = "MDT veya MDT (*.mdt;*asc)|*.mdt;*.asc";
+            // 
             // XmlToKtbUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(464, 261);
-            this.Controls.Add(this.tabControl1);
+            this.Controls.Add(this.nivelmantabkontrol);
             this.Controls.Add(this.isimHaklariLabel);
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(480, 300);
@@ -474,7 +516,7 @@ namespace XmlToKtb
             this.Text = "XML to KTB";
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
-            this.tabControl1.ResumeLayout(false);
+            this.nivelmantabkontrol.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             this.tabPage3.ResumeLayout(false);
@@ -483,6 +525,8 @@ namespace XmlToKtb
             this.tabPage4.PerformLayout();
             this.tabPage5.ResumeLayout(false);
             this.tabPage5.PerformLayout();
+            this.NivelmPage.ResumeLayout(false);
+            this.NivelmPage.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -497,11 +541,12 @@ namespace XmlToKtb
         private Label bilgiLabel;
         private ComboBox dosyaTuruComboBox;
         private Label kayitTuruLabel;
-        private TabControl tabControl1;
+        private TabControl nivelmantabkontrol;
         private TabPage tabPage1;
         private Label label1;
         private Button daire_enkesitButton;
         private OpenFileDialog ncnOpenFileDialog;
+        private OpenFileDialog mdtOpenFileDialog;
         private Button tipKesitButton;
         private Label label2;
         private Button gabariButton;
@@ -534,6 +579,9 @@ namespace XmlToKtb
         public Label KoorHesap_label;
         public Button OfsetKotHesButton;
         public Label label8;
+        private TabPage NivelmPage;
+        public Button MDT_button;
+        public Label MDTokuLabel;
     }
 }
 
