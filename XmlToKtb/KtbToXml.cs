@@ -149,6 +149,7 @@ namespace XmlToKtb
                     var duseykurptipi = satir.GetValue(1).ToString();
                     if ((double)satir.GetValue(4) == 0)
                     {
+                        //object[] array = { "PR", type, km, kot, boy, radius };
                         var pvi = new LandXMLAlignmentsAlignmentProfileProfAlignPVI();
                         {
                             string[] kmkot = { Convert.ToString((double)satir.GetValue(2)), " ", Convert.ToString((double)satir.GetValue(3)) };
@@ -156,7 +157,7 @@ namespace XmlToKtb
                         }
                         profAlignItems.Add(pvi);
                     }
-                    else if (duseykurptipi == "0")
+                    else if (duseykurptipi == "0"|| Convert.ToDouble(satir.GetValue(5)) == 0)
                     {
                         LandXMLAlignmentsAlignmentProfileProfAlignParaCurve paraCurve = new LandXMLAlignmentsAlignmentProfileProfAlignParaCurve
                         {
@@ -167,7 +168,7 @@ namespace XmlToKtb
                         paraCurve.Value = string.Concat(kmkot);
                         profAlignItems.Add(paraCurve);
                     }
-                    else if (duseykurptipi == "1" && satir.Length > 5)
+                    else if (duseykurptipi == "1" && Convert.ToDouble(satir.GetValue(5))!=0)
                     {
                         LandXMLAlignmentsAlignmentProfileProfAlignCircCurve circCurve = new LandXMLAlignmentsAlignmentProfileProfAlignCircCurve
                         {
@@ -200,8 +201,6 @@ namespace XmlToKtb
 
                 landXml.Alignments.Alignment.CoordGeom.Items = coordGeomItems.ToArray();
                 landXml.Alignments.Alignment.Profile.ProfAlign.Items = profAlignItems.ToArray();
-
-                
             }
 
             return landXml;
@@ -673,7 +672,7 @@ namespace XmlToKtb
                     Line_End.Y = Geri_Some.Y;
                     Line_End.X = Convert.ToDouble(yataydizi[i].GetValue(2));
                     object[] array =
-                        {"LN", semt_ilk * 180 / Math.PI, Somelerarası_mes, Line_Start.X, Line_Start.Y, Line_End.X, Line_End.Y};
+                        {"LN", semt_ilk * 180 / Math.PI, Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Line_End.Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Line_End.X)), 2)), Line_Start.X, Line_Start.Y, Line_End.X, Line_End.Y};
                     XMLDATA.Add(array);
                     if (i == yataydizi.Count - 2)
                     {
@@ -684,7 +683,7 @@ namespace XmlToKtb
                         object[] array1 =
                         {
 
-                            "LN", semt_ikinci * 180 / Math.PI, line_mes, Line_Start.X, Line_Start.Y,
+                            "LN", semt_ikinci * 180 / Math.PI, Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Line_End.Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Line_End.X)), 2)), Line_Start.X, Line_Start.Y,
                             Line_End.X, Line_End.Y
                         };
 
@@ -734,7 +733,7 @@ namespace XmlToKtb
                 {
                     object[] array1 =
                     {
-                        "LN", semt_ilk * 180 / Math.PI, Somelerarası_mes - Ana_teget_Gir, Line_Start.X, Line_Start.Y,
+                        "LN", semt_ilk * 180 / Math.PI, Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Spi_Gir_Start_Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Spi_Gir_Start_X)), 2)), Line_Start.X, Line_Start.Y,
                         Spi_Gir_Start_X, Spi_Gir_Start_Y
                     }; XMLDATA.Add(array1);
                     object[] array =
@@ -758,10 +757,11 @@ namespace XmlToKtb
                 double Curve_Start_X = Spi_Gir_End_X;
                 if (L_Giris == 0)
                 {
-                    Curve_Start_Y = Convert.ToDouble(Line_Start.Y) + (Somelerarası_mes - kurp_t) * Math.Sin(semt_ilk);
-                    Curve_Start_X = Convert.ToDouble(Line_Start.X) + (Somelerarası_mes - kurp_t) * Math.Cos(semt_ilk);
+                    Curve_Start_Y = Convert.ToDouble(Some.Y) + kurp_t * Math.Sin(semt_ilk+Math.PI);
+                    Curve_Start_X = Convert.ToDouble(Some.X) + kurp_t * Math.Cos(semt_ilk+Math.PI);
+
                     object[] array =
-                        {"LN", semt_ilk * 180 / Math.PI, Somelerarası_mes - kurp_t, Line_Start.X, Line_Start.Y, Curve_Start_X, Curve_Start_Y};
+                        {"LN", semt_ilk * 180 / Math.PI, Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Curve_Start_Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Curve_Start_X)), 2)), Line_Start.X, Line_Start.Y, Curve_Start_X, Curve_Start_Y};
                     XMLDATA.Add(array);
                 }
 
@@ -827,11 +827,10 @@ namespace XmlToKtb
                     DXFPoint Line_End = new DXFPoint();
                     Line_End.Y = Convert.ToDouble(yataydizi[i + 1].GetValue(1));
                     Line_End.X = Convert.ToDouble(yataydizi[i + 1].GetValue(2));
-                    double line_mes = Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Line_End.Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Line_End.X)), 2));
                     object[] array1 =
                     {
 
-                        "LN", dir_spi_cik_End * 180 / Math.PI, line_mes, Line_Start.X, Line_Start.Y,
+                        "LN", dir_spi_cik_End * 180 / Math.PI, Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Line_End.Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Line_End.X)), 2)), Line_Start.X, Line_Start.Y,
                         Line_End.X, Line_End.Y
                     };
 

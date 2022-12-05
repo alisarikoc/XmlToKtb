@@ -66,6 +66,10 @@ namespace XmlToKtb
                                     var My = (Convert.ToDouble(curve.Center.Split()[1]));
                                     var Mx = (Convert.ToDouble(curve.Center.Split()[0]));
                                     var radius = (Convert.ToDouble(curve.radius));
+                                    if (radius == 35997.75)
+                                    {
+                                        var dene = radius;
+                                    }
                                     if (kilometre > (double) guncelKM && kilometre < (double) (guncelKM + curve.length))
                                     {
                                         var noktaYayBoyu = kilometre - (double) guncelKM;
