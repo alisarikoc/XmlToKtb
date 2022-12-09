@@ -669,7 +669,7 @@ namespace XmlToKtb
                 if (R == 0)
                 {
                     DXFLib.DXFPoint Line_End = new DXFPoint();
-                    Line_End.Y = Geri_Some.Y;
+                    Line_End.Y = Some.Y;
                     Line_End.X = Convert.ToDouble(yataydizi[i].GetValue(2));
                     object[] array =
                         {"LN", semt_ilk * 180 / Math.PI, Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Line_End.Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Line_End.X)), 2)), Line_Start.X, Line_Start.Y, Line_End.X, Line_End.Y};
@@ -683,8 +683,7 @@ namespace XmlToKtb
                         object[] array1 =
                         {
 
-                            "LN", semt_ikinci * 180 / Math.PI, Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Line_End.Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Line_End.X)), 2)), Line_Start.X, Line_Start.Y,
-                            Line_End.X, Line_End.Y
+                            "LN", semt_ikinci * 180 / Math.PI, Math.Sqrt(Math.Pow((Convert.ToDouble(Line_Start.Y - Line_End.Y)), 2) + Math.Pow((Convert.ToDouble(Line_Start.X - Line_End.X)), 2)), Line_Start.X, Line_Start.Y, Line_End.X, Line_End.Y
                         };
 
                         XMLDATA.Add(array1);

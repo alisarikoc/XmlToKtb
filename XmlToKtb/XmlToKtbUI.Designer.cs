@@ -71,6 +71,9 @@ namespace XmlToKtb
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.LisopenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.mdtOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.deverTabpage = new System.Windows.Forms.TabPage();
+            this.deverekleme = new System.Windows.Forms.Button();
+            this.label9 = new System.Windows.Forms.Label();
             tabPage2 = new System.Windows.Forms.TabPage();
             tabPage2.SuspendLayout();
             this.nivelmantabkontrol.SuspendLayout();
@@ -79,6 +82,7 @@ namespace XmlToKtb
             this.tabPage4.SuspendLayout();
             this.tabPage5.SuspendLayout();
             this.NivelmPage.SuspendLayout();
+            this.deverTabpage.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabPage2
@@ -198,6 +202,7 @@ namespace XmlToKtb
             this.nivelmantabkontrol.Controls.Add(this.tabPage4);
             this.nivelmantabkontrol.Controls.Add(this.tabPage5);
             this.nivelmantabkontrol.Controls.Add(this.NivelmPage);
+            this.nivelmantabkontrol.Controls.Add(this.deverTabpage);
             this.nivelmantabkontrol.Location = new System.Drawing.Point(12, 12);
             this.nivelmantabkontrol.Name = "nivelmantabkontrol";
             this.nivelmantabkontrol.SelectedIndex = 0;
@@ -500,6 +505,37 @@ namespace XmlToKtb
             // 
             this.mdtOpenFileDialog.Filter = "MDT veya MDT (*.mdt;*asc)|*.mdt;*.asc";
             // 
+            // deverTabpage
+            // 
+            this.deverTabpage.Controls.Add(this.label9);
+            this.deverTabpage.Controls.Add(this.deverekleme);
+            this.deverTabpage.Location = new System.Drawing.Point(4, 22);
+            this.deverTabpage.Name = "deverTabpage";
+            this.deverTabpage.Padding = new System.Windows.Forms.Padding(3);
+            this.deverTabpage.Size = new System.Drawing.Size(440, 207);
+            this.deverTabpage.TabIndex = 6;
+            this.deverTabpage.Text = "Dever";
+            this.deverTabpage.UseVisualStyleBackColor = true;
+            // 
+            // deverekleme
+            // 
+            this.deverekleme.Location = new System.Drawing.Point(280, 42);
+            this.deverekleme.Name = "deverekleme";
+            this.deverekleme.Size = new System.Drawing.Size(88, 33);
+            this.deverekleme.TabIndex = 13;
+            this.deverekleme.Text = "Dever Ekle";
+            this.deverekleme.UseVisualStyleBackColor = true;
+            this.deverekleme.Click += new System.EventHandler(this.deverdenemesil_Click_1);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(34, 52);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(198, 13);
+            this.label9.TabIndex = 14;
+            this.label9.Text = "XML Güzergah dosyasına Dever Ekleme";
+            // 
             // XmlToKtbUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -514,6 +550,7 @@ namespace XmlToKtb
             this.Name = "XmlToKtbUI";
             this.ShowIcon = false;
             this.Text = "XML to KTB";
+            this.Load += new System.EventHandler(this.XmlToKtbUI_Load);
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
             this.nivelmantabkontrol.ResumeLayout(false);
@@ -527,6 +564,8 @@ namespace XmlToKtb
             this.tabPage5.PerformLayout();
             this.NivelmPage.ResumeLayout(false);
             this.NivelmPage.PerformLayout();
+            this.deverTabpage.ResumeLayout(false);
+            this.deverTabpage.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -582,6 +621,9 @@ namespace XmlToKtb
         private TabPage NivelmPage;
         public Button MDT_button;
         public Label MDTokuLabel;
+        private TabPage deverTabpage;
+        private Label label9;
+        private Button deverekleme;
     }
 }
 

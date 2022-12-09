@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using System.Data;
 using System.Windows.Shapes;
 using Common;
 using Common.Enum;
@@ -51,6 +52,7 @@ namespace XmlToKtb
                 var xmlData = KTBtoXML.GetirXmlData(ktbStreamReader);
                 LandXML landXml = KTBtoXML.LandXmlOlustur(shortName, xmlData);
 
+
                 xmlIcerigi = KTBtoXML.Serialize(landXml);
             }
             else if (dialogResult == DialogResult.OK)
@@ -89,6 +91,7 @@ namespace XmlToKtb
             durumTip = DurumTip.Donusturuldu;
             GorunumuAyarla();
         }
+
         private void GorunumuAyarla()
         {
             switch (durumTip)
@@ -473,6 +476,17 @@ namespace XmlToKtb
                 }
             }
             return tumsatirlar;
+        }
+
+        private void XmlToKtbUI_Load(object sender, EventArgs e)
+        {
+
+        }
+
+
+        private void deverdenemesil_Click_1(object sender, EventArgs e)
+        {
+            Dever.Devergoster();
         }
     }
 
