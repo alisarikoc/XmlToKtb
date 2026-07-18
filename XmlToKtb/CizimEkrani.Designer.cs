@@ -1,0 +1,155 @@
+namespace XmlToKtb
+{
+    partial class CizimEkrani
+    {
+        private System.ComponentModel.IContainer components = null;
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Tasarımcısı Tarafından Oluşturulan Kod
+
+        private void InitializeComponent()
+        {
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.secAraciButton = new System.Windows.Forms.ToolStripButton();
+            this.cizgiAraciButton = new System.Windows.Forms.ToolStripButton();
+            this.durumStrip = new System.Windows.Forms.StatusStrip();
+            this.konumDurumLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.ozelliklerPaneli = new System.Windows.Forms.Panel();
+            this.ozellikGrid = new System.Windows.Forms.PropertyGrid();
+            this.ozelliklerBaslikLabel = new System.Windows.Forms.Label();
+            this.cizimPaneli1 = new XmlToKtb.Cizim.CizimPaneli();
+            this.toolStrip1.SuspendLayout();
+            this.durumStrip.SuspendLayout();
+            this.ozelliklerPaneli.SuspendLayout();
+            this.SuspendLayout();
+            //
+            // toolStrip1
+            //
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.secAraciButton,
+            this.cizgiAraciButton});
+            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Size = new System.Drawing.Size(1200, 25);
+            this.toolStrip1.TabIndex = 0;
+            //
+            // secAraciButton
+            //
+            this.secAraciButton.Checked = true;
+            this.secAraciButton.CheckOnClick = true;
+            this.secAraciButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.secAraciButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.secAraciButton.Name = "secAraciButton";
+            this.secAraciButton.Size = new System.Drawing.Size(36, 22);
+            this.secAraciButton.Text = "Seç";
+            this.secAraciButton.Click += new System.EventHandler(this.secAraciButton_Click);
+            //
+            // cizgiAraciButton
+            //
+            this.cizgiAraciButton.CheckOnClick = true;
+            this.cizgiAraciButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.cizgiAraciButton.Name = "cizgiAraciButton";
+            this.cizgiAraciButton.Size = new System.Drawing.Size(43, 22);
+            this.cizgiAraciButton.Text = "Çizgi";
+            this.cizgiAraciButton.Click += new System.EventHandler(this.cizgiAraciButton_Click);
+            //
+            // durumStrip
+            //
+            this.durumStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.konumDurumLabel});
+            this.durumStrip.Location = new System.Drawing.Point(0, 728);
+            this.durumStrip.Name = "durumStrip";
+            this.durumStrip.Size = new System.Drawing.Size(1200, 22);
+            this.durumStrip.TabIndex = 1;
+            //
+            // konumDurumLabel
+            //
+            this.konumDurumLabel.Name = "konumDurumLabel";
+            this.konumDurumLabel.Size = new System.Drawing.Size(120, 17);
+            this.konumDurumLabel.Text = "X: 0.000   Y: 0.000";
+            //
+            // ozelliklerPaneli
+            //
+            this.ozelliklerPaneli.Controls.Add(this.ozellikGrid);
+            this.ozelliklerPaneli.Controls.Add(this.ozelliklerBaslikLabel);
+            this.ozelliklerPaneli.Dock = System.Windows.Forms.DockStyle.Left;
+            this.ozelliklerPaneli.Location = new System.Drawing.Point(0, 25);
+            this.ozelliklerPaneli.Name = "ozelliklerPaneli";
+            this.ozelliklerPaneli.Size = new System.Drawing.Size(260, 703);
+            this.ozelliklerPaneli.TabIndex = 2;
+            //
+            // ozellikGrid
+            //
+            this.ozellikGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ozellikGrid.Location = new System.Drawing.Point(0, 24);
+            this.ozellikGrid.Name = "ozellikGrid";
+            this.ozellikGrid.Size = new System.Drawing.Size(260, 679);
+            this.ozellikGrid.TabIndex = 1;
+            this.ozellikGrid.ToolbarVisible = false;
+            this.ozellikGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.ozellikGrid_PropertyValueChanged);
+            //
+            // ozelliklerBaslikLabel
+            //
+            this.ozelliklerBaslikLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.ozelliklerBaslikLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold);
+            this.ozelliklerBaslikLabel.Location = new System.Drawing.Point(0, 0);
+            this.ozelliklerBaslikLabel.Name = "ozelliklerBaslikLabel";
+            this.ozelliklerBaslikLabel.Padding = new System.Windows.Forms.Padding(6, 4, 0, 4);
+            this.ozelliklerBaslikLabel.Size = new System.Drawing.Size(260, 24);
+            this.ozelliklerBaslikLabel.TabIndex = 0;
+            this.ozelliklerBaslikLabel.Text = "Özellikler";
+            //
+            // cizimPaneli1
+            //
+            this.cizimPaneli1.BackColor = System.Drawing.Color.White;
+            this.cizimPaneli1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cizimPaneli1.Location = new System.Drawing.Point(260, 25);
+            this.cizimPaneli1.Name = "cizimPaneli1";
+            this.cizimPaneli1.Size = new System.Drawing.Size(940, 703);
+            this.cizimPaneli1.TabIndex = 3;
+            //
+            // CizimEkrani
+            //
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(1200, 750);
+            this.Controls.Add(this.cizimPaneli1);
+            this.Controls.Add(this.ozelliklerPaneli);
+            this.Controls.Add(this.durumStrip);
+            this.Controls.Add(this.toolStrip1);
+            this.MinimumSize = new System.Drawing.Size(700, 450);
+            this.Name = "CizimEkrani";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Çizim Ekranı";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
+            this.durumStrip.ResumeLayout(false);
+            this.durumStrip.PerformLayout();
+            this.ozelliklerPaneli.ResumeLayout(false);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.ToolStripButton secAraciButton;
+        private System.Windows.Forms.ToolStripButton cizgiAraciButton;
+        private System.Windows.Forms.StatusStrip durumStrip;
+        private System.Windows.Forms.ToolStripStatusLabel konumDurumLabel;
+        private System.Windows.Forms.Panel ozelliklerPaneli;
+        private System.Windows.Forms.PropertyGrid ozellikGrid;
+        private System.Windows.Forms.Label ozelliklerBaslikLabel;
+        private XmlToKtb.Cizim.CizimPaneli cizimPaneli1;
+    }
+}

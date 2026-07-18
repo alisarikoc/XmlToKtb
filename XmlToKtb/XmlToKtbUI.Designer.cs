@@ -75,6 +75,7 @@ namespace XmlToKtb
             this.deverekleme = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.isimHaklariLabel = new System.Windows.Forms.Label();
+            this.cizimEkraniButton = new System.Windows.Forms.Button();
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.LisopenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.mdtOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
@@ -209,10 +210,13 @@ namespace XmlToKtb
             this.nivelmantabkontrol.Controls.Add(this.tabPage5);
             this.nivelmantabkontrol.Controls.Add(this.NivelmPage);
             this.nivelmantabkontrol.Controls.Add(this.deverTabpage);
+            this.nivelmantabkontrol.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.nivelmantabkontrol.Location = new System.Drawing.Point(12, 12);
             this.nivelmantabkontrol.Name = "nivelmantabkontrol";
             this.nivelmantabkontrol.SelectedIndex = 0;
-            this.nivelmantabkontrol.Size = new System.Drawing.Size(448, 233);
+            this.nivelmantabkontrol.Size = new System.Drawing.Size(876, 590);
             this.nivelmantabkontrol.TabIndex = 8;
             this.nivelmantabkontrol.SelectedIndexChanged += new System.EventHandler(this.nivelmantabkontrol_SelectedIndexChanged);
             // 
@@ -566,16 +570,28 @@ namespace XmlToKtb
             // 
             // isimHaklariLabel
             // 
+            this.isimHaklariLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.isimHaklariLabel.AutoSize = true;
             this.isimHaklariLabel.BackColor = System.Drawing.SystemColors.ControlDark;
             this.isimHaklariLabel.Font = new System.Drawing.Font("Arial", 10F);
             this.isimHaklariLabel.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.isimHaklariLabel.Location = new System.Drawing.Point(9, 248);
+            this.isimHaklariLabel.Location = new System.Drawing.Point(9, 625);
             this.isimHaklariLabel.Name = "isimHaklariLabel";
             this.isimHaklariLabel.Size = new System.Drawing.Size(194, 16);
             this.isimHaklariLabel.TabIndex = 1;
             this.isimHaklariLabel.Text = "© Burak Kalafat ve Ali Sarıkoç";
-            // 
+            //
+            // cizimEkraniButton
+            //
+            this.cizimEkraniButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.cizimEkraniButton.Location = new System.Drawing.Point(700, 612);
+            this.cizimEkraniButton.Name = "cizimEkraniButton";
+            this.cizimEkraniButton.Size = new System.Drawing.Size(188, 28);
+            this.cizimEkraniButton.TabIndex = 11;
+            this.cizimEkraniButton.Text = "Çizim Ekranı";
+            this.cizimEkraniButton.UseVisualStyleBackColor = true;
+            this.cizimEkraniButton.Click += new System.EventHandler(this.cizimEkraniButton_Click);
+            //
             // ncnOpenFileDialog
             // 
             this.ncnOpenFileDialog.Filter = "NCN veya ASC (*.ncn;*asc)|*.ncn;*.asc";
@@ -612,16 +628,18 @@ namespace XmlToKtb
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(462, 255);
+            this.ClientSize = new System.Drawing.Size(900, 650);
             this.Controls.Add(this.nivelmantabkontrol);
             this.Controls.Add(this.isimHaklariLabel);
-            this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(478, 294);
-            this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(478, 294);
+            this.Controls.Add(this.cizimEkraniButton);
+            this.MaximizeBox = true;
+            this.MinimizeBox = true;
+            this.MinimumSize = new System.Drawing.Size(500, 350);
             this.Name = "XmlToKtbUI";
             this.ShowIcon = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "XML to KTB";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.XmlToKtbUI_Load);
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
@@ -648,6 +666,7 @@ namespace XmlToKtb
         private OpenFileDialog openFileDialog;
         private Button donusturButton;
         private Label isimHaklariLabel;
+        private Button cizimEkraniButton;
         private Button kaydetButton;
         private Label bilgiLabel;
         private ComboBox dosyaTuruComboBox;

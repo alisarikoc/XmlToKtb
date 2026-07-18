@@ -106,6 +106,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="Cizim\CizimGorunum.cs" />
+    <Compile Include="Cizim\CizimNesnesi.cs" />
+    <Compile Include="Cizim\CizgiNesnesi.cs" />
+    <Compile Include="Cizim\CizimPaneli.cs" />
+    <Compile Include="CizimEkrani.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CizimEkrani.Designer.cs">
+      <DependentUpon>CizimEkrani.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dever.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

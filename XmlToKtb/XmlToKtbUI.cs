@@ -670,6 +670,11 @@ namespace XmlToKtb
         {
 
         }
+        private void cizimEkraniButton_Click(object sender, EventArgs e)
+        {
+            var cizimEkrani = new CizimEkrani();
+            cizimEkrani.Show();
+        }
         private void deverdenemesil_Click_1(object sender, EventArgs e)
         {
             Dever.Devergoster();
