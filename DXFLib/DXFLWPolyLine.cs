@@ -8,7 +8,10 @@ namespace DXFLib
     [Entity("LWPOLYLINE")]
     public class DXFLWPolyLine : DXFEntity
     {
-        public int VertexCount { get; set; }
+        public int VertexCount
+        {
+            get; set;
+        }
 
         [Flags]
         public enum FlagsEnum
@@ -17,23 +20,56 @@ namespace DXFLib
             plinegen = 128
         }
 
-        public FlagsEnum Flags { get; set; }
+        public FlagsEnum Flags
+        {
+            get; set;
+        }
 
-        public double? ConstantWidth { get; set; }
-        public double Elevation { get; set; }
-        public double Thickness { get; set; }
+        public double? ConstantWidth
+        {
+            get; set;
+        }
+        public double Elevation
+        {
+            get; set;
+        }
+        public double Thickness
+        {
+            get; set;
+        }
 
         public class Element
         {
             private DXFPoint vertex = new DXFPoint();
-            public DXFPoint Vertex { get { return vertex; } }
-            public double StartWidth { get; set; }
-            public double EndWidth { get; set; }
-            public double Bulge { get; set; }
+            public DXFPoint Vertex
+            {
+                get
+                {
+                    return vertex;
+                }
+            }
+            public double StartWidth
+            {
+                get; set;
+            }
+            public double EndWidth
+            {
+                get; set;
+            }
+            public double Bulge
+            {
+                get; set;
+            }
         }
 
         private List<Element> elements = new List<Element>();
-        public List<Element> Elements { get { return elements; } }
+        public List<Element> Elements
+        {
+            get
+            {
+                return elements;
+            }
+        }
 
         private Element LastElement
         {
@@ -50,7 +86,13 @@ namespace DXFLib
         }
 
         private DXFPoint extrusion = new DXFPoint();
-        public DXFPoint ExtrusionDirection { get { return extrusion; } }
+        public DXFPoint ExtrusionDirection
+        {
+            get
+            {
+                return extrusion;
+            }
+        }
 
         public override void ParseGroupCode(int groupcode, string value)
         {
@@ -61,7 +103,7 @@ namespace DXFLib
                     VertexCount = int.Parse(value);
                     break;
                 case 70:
-                    Flags = (FlagsEnum)Enum.Parse(typeof(FlagsEnum), value);
+                    Flags = (FlagsEnum) Enum.Parse(typeof(FlagsEnum), value);
                     break;
                 case 43:
                     ConstantWidth = double.Parse(value);

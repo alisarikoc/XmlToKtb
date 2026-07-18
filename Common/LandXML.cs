@@ -325,8 +325,23 @@ public class LandXMLAlignmentsAlignment
     private LandXMLAlignmentsAlignmentProfile profileField;
     private LandXMLAlignmentsAlignmentCant cantField;
     private LandXMLAlignmentsAlignmentCrossSect[] crossSectsField;
+    private LandXMLAlignmentsAlignmentStaEquation[] staEquationField;
     private decimal lengthField;
     private string descField;
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlElementAttribute("StaEquation")]
+    public LandXMLAlignmentsAlignmentStaEquation[] StaEquation
+    {
+        get
+        {
+            return this.staEquationField;
+        }
+        set
+        {
+            this.staEquationField = value;
+        }
+    }
 
     /// <remarks/>
     public LandXMLAlignmentsAlignmentCoordGeom CoordGeom { get; set; }
@@ -1248,6 +1263,78 @@ public partial class LandXMLAlignmentsAlignmentCrossSect
     }
 }
 
+
+/// <remarks/>
+[System.SerializableAttribute()]
+[System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.landxml.org/schema/LandXML-1.2")]
+public partial class LandXMLAlignmentsAlignmentStaEquation
+{
+
+    private decimal staAheadField;
+
+    private decimal staBackField;
+
+    private decimal staInternalField;
+
+    private string staIncrementField;
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal staAhead
+    {
+        get
+        {
+            return this.staAheadField;
+        }
+        set
+        {
+            this.staAheadField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal staBack
+    {
+        get
+        {
+            return this.staBackField;
+        }
+        set
+        {
+            this.staBackField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public decimal staInternal
+    {
+        get
+        {
+            return this.staInternalField;
+        }
+        set
+        {
+            this.staInternalField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string staIncrement
+    {
+        get
+        {
+            return this.staIncrementField;
+        }
+        set
+        {
+            this.staIncrementField = value;
+        }
+    }
+}
 /// <remarks/>
 [System.SerializableAttribute()]
 [System.ComponentModel.DesignerCategoryAttribute("code")]

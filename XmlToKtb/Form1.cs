@@ -81,10 +81,7 @@ namespace XmlToKtb
                     drow["Uygulama Dever"] = Convert.ToDecimal(satir.GetValue(1));
                     string yon = Convert.ToString(satir.GetValue(2));
                     if (yon == "SAG" || yon == "SAĞ") yon = "cw";
-                    else
-                    {
-                        yon = "ccw";
-                    }
+                    if (yon == "SOL" || yon == "Sol") yon = "ccw";
 
                     drow["Yön"] = yon;
                     table.Rows.Add(drow);

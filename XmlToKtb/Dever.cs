@@ -15,6 +15,7 @@ using Common;
 using Common.Enum;
 using Common.Modeller;
 using DXFLib;
+using System.Windows.Documents;
 
 namespace XmlToKtb
 {
@@ -77,7 +78,6 @@ namespace XmlToKtb
                                 };
                                 cantStations.Add(cantStation);
                                 landXml.Alignments.Alignment.Cant.CantStation = cantStations.ToArray();
-
                                 guncelKM += line.length;
                                 break;
                             }
@@ -174,10 +174,17 @@ namespace XmlToKtb
                 cantStations2.Add(cantStation2);
                 landXml.Alignments.Alignment.Cant.CantStation = cantStations2.ToArray();
             }
+
             string xmlIcerigi = KTBtoXML.Serialize(landXml);
             DosyaKaydetFiltreIle(xmlIcerigi, Resources.xmlExtensionFilter, "DEVERxml");
 
             return String.Empty;
+        }
+        private static void DeverKaydetFiltreIle()
+        {
+            List<Array> DeverListeArray = new List<Array>();
+
+
         }
         private static void DosyaKaydetFiltreIle(string icerik, string filtre, string dosyaadi)
         {

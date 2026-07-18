@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Common;
+using Common.Modeller;
 
 namespace XmlToKtb
 {
@@ -17,7 +19,8 @@ namespace XmlToKtb
             var baslangicKM = alignment.staStart;
             var guncelKM = baslangicKM;
 
-            foreach (var item in alignment.CoordGeom.Items)
+
+                foreach (var item in alignment.CoordGeom.Items)
             {
                 switch (item)
                 {

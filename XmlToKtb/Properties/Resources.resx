@@ -141,6 +141,10 @@
     <value>OFK|*.ofk</value>
     <comment>OFK|*.ofk</comment>
   </data>
+	<data name="dxfExtensionFilter" xml:space="preserve">
+    <value>DXF|*.dxf</value>
+    <comment>DXF|*.dxf</comment>
+  </data>
   <data name="TXTExtensionFilter" xml:space="preserve">
     <value>TXT|*.txt</value>
     <comment>TXT|*.txt</comment>
@@ -148,5 +152,8 @@
   <data name="lisExtensionFilter" xml:space="preserve">
     <value>TBL|*.tbl</value>
     <comment>TBL|*.tbl</comment>
+  </data>
+  <data name="geoExtensionFilter" xml:space="preserve">
+    <value>GEO|*.geo</value>
   </data>
 </root>

@@ -22,7 +22,6 @@ namespace XmlToKtb
             // no BOM in a .NET string
 
             //xmlWriterSettings.OmitXmlDeclaration = true;
-
             using (var sww = new Utf8StringWriter())
             {
                 using (XmlWriter writer = XmlWriter.Create(sww, xmlWriterSettings))
@@ -52,9 +51,9 @@ namespace XmlToKtb
                         temperatureUnit = "celsius",
                         pressureUnit = "milliBars",
                         diameterUnit = "millimeter",
-                        angularUnit = "grads",
-                        directionUnit = "grads"
-                    }
+                        angularUnit = "decimal degrees",
+                        directionUnit = "decimal degrees"
+                    },
                 },
 
                 Alignments = new LandXMLAlignments
@@ -272,10 +271,7 @@ namespace XmlToKtb
                 if (Convert.ToString(tumsatirlar[jj].GetValue(0)) == "$DUSEY")
                 {
                     for (int l = jj + 1; l < tumsatirlar.Count - 1; l++)
-
-
                     {
-
                         if (Convert.ToString(tumsatirlar[l].GetValue(0)) == "$SON") break;
 
                         var km = Convert.ToDouble(tumsatirlar[l].GetValue(0));
@@ -289,7 +285,14 @@ namespace XmlToKtb
                         double radius = 0;
                         if (tumsatirlar[l].Length > 4)
                         {
-                            radius = Convert.ToDouble(tumsatirlar[l].GetValue(6));
+                            try
+                            {
+                                radius = Convert.ToDouble(tumsatirlar[l].GetValue(6));
+                            }
+                            catch (Exception ex)
+                            {
+                                radius = 0;
+                            }
                         }
                         object[] array = { "PR", type, km, kot, boy, radius };
                         XMLDATA.Add(array);
@@ -298,14 +301,14 @@ namespace XmlToKtb
                 if (Convert.ToString(tumsatirlar[jj].GetValue(0)) == "$DEVER")
                 {
                     for (int l = jj + 1; l < tumsatirlar.Count - 1; l++)
-
-
                     {
                         double km;
                         double dever;
                         string yon = null;
                         if (Convert.ToString(tumsatirlar[l].GetValue(0)) == "$SON")
                         {
+                            if (Convert.ToString(tumsatirlar[l - 1].GetValue(0)) == "$DEVER")
+                                break;
                             km = Convert.ToDouble(tumsatirlar[l - 1].GetValue(1));
                             dever = Convert.ToDouble(tumsatirlar[l - 1].GetValue(4));
                             if (dever < 0) { yon = "ccw"; }
@@ -415,9 +418,21 @@ namespace XmlToKtb
                                         Spi_End_Y = Spi_PI_Y + Tk * Math.Sin(Tk_Semt);
                                         Spi_End_X = Spi_PI_X + Tk * Math.Cos(Tk_Semt);
                                     }
-                                    object[] array1 =
+
+                                    double Sta_PI = Math.Atan2((Spi_PI_Y - Spi_Sta_Y), (Spi_PI_X - Spi_Sta_X));
+                                    if (Sta_PI < 0) { Sta_PI += 2 * Math.PI; }
+
+                                    double PI_End = Math.Atan2((Spi_End_Y - Spi_PI_Y), (Spi_End_X - Spi_PI_X));
+                                    if (PI_End < 0) { PI_End += 2 * Math.PI; }
+
+                                    var clotoid_theta = (PI_End - Sta_PI) * 180 / Math.PI;
+                                    if (Math.Abs(clotoid_theta) > 180) clotoid_theta = 360-clotoid_theta;
+                                    
+
+
+                                    object[] array1 = 
                                     {
-                                        "SP", L1, R1, "INF", Yonstring, Math.Atan(Ym_Gir / Xm_Gir) * 180 / Math.PI, Y,X,Tu, Tk,
+                                        "SP", L1, R1, "INF", Yonstring, Math.Abs(clotoid_theta), Y,X,Tu, Tk,
                                         Spi_Sta_X, Spi_Sta_Y, Spi_PI_X, Spi_PI_Y, Spi_End_X, Spi_End_Y
                                     };
                                     XMLDATA.Add(array1);
@@ -439,9 +454,16 @@ namespace XmlToKtb
                                         Spi_PI_Y = Spi_Sta_Y + Tu * Math.Sin(semt_clotoid);
                                         Spi_PI_X = Spi_Sta_X + Tu * Math.Cos(semt_clotoid);
                                     }
+                                    double Sta_PI = Math.Atan2((Spi_PI_Y - Spi_Sta_Y), (Spi_PI_X - Spi_Sta_X));
+                                    if (Sta_PI < 0) { Sta_PI += 2 * Math.PI; }
+
+                                    double PI_End = Math.Atan2((Spi_End_Y - Spi_PI_Y), (Spi_End_X - Spi_PI_X));
+                                    if (PI_End < 0) { PI_End += 2 * Math.PI; }
+                                    var clotoid_theta = (PI_End - Sta_PI) * 180 / Math.PI;
+                                    if (Math.Abs(clotoid_theta) > 180) clotoid_theta = 360 - clotoid_theta;
                                     object[] array1 =
                                     {
-                                        "SP", L1, "INF", R1, Yonstring, Math.Atan(Ym_Gir / Xm_Gir) * 180 / Math.PI, Y,X, Tu, Tk,
+                                        "SP", L1, "INF", R1, Yonstring, Math.Abs(clotoid_theta) * 180 / Math.PI, Y,X, Tu, Tk,
                                         Spi_End_X, Spi_End_Y, Spi_PI_X, Spi_PI_Y, Spi_Sta_X, Spi_Sta_Y
                                     };
                                     XMLDATA.Add(array1);
@@ -539,11 +561,16 @@ namespace XmlToKtb
                                 //if (Spi_type2 == -1){Spi_PI_Y = Spi_Sta_Y + Tk * Math.Sin((semtilk_0 + Yon * (tetha1)));Spi_PI_X = Spi_Sta_X + Tk * Math.Cos((semtilk_0 + Yon * (tetha1)));R1 = R2;R2 = R_yedek;}
                                 //Spi_End_Y = Spi_Sta_Y + SL * Math.Sin(semtilk_0 + Yon * (theta_tum));
                                 //Spi_End_X = Spi_Sta_X + SL * Math.Cos(semtilk_0 + Yon * (theta_tum));
+                                double Sta_PI = Math.Atan2((Spi_PI_Y - Spi_Sta_Y), (Spi_PI_X - Spi_Sta_X));
+                                if (Sta_PI < 0) { Sta_PI += 2 * Math.PI; }
 
-
+                                double PI_End = Math.Atan2((Spi_End_Y - Spi_PI_Y), (Spi_End_X - Spi_PI_X));
+                                if (PI_End < 0) { PI_End += 2 * Math.PI; }
+                                var clotoid_theta = (PI_End - Sta_PI) * 180 / Math.PI;
+                                if (Math.Abs(clotoid_theta) > 180) clotoid_theta = 360 - clotoid_theta;
                                 object[] array =
                                 {
-                                        "SP", Math.Abs((L1-L2)), R1, R2,Yonstring, Math.Atan(tetha1-tetha2) * 180 / Math.PI,Y_0, X_0, Tu, Tk,
+                                        "SP", Math.Abs((L1-L2)), R1, R2,Yonstring, Math.Abs(clotoid_theta) * 180 / Math.PI,Y_0, X_0, Tu, Tk,
                                         Spi_Sta_X, Spi_Sta_Y, Spi_PI_X, Spi_PI_Y, Spi_End_X, Spi_End_Y
                                     };
                                 XMLDATA.Add(array);
@@ -587,9 +614,20 @@ namespace XmlToKtb
                             double Cur_PI_X = Cur_Sta_X + kurp_t * Math.Cos(dir_Start);
                             string Yonsaat = "cw";
                             if (Yon == -1) Yonsaat = "ccw";
+
+                            double Cen_End = Math.Atan2((Cur_End_Y - Cur_Cen_Y), (Cur_End_X - Cur_Cen_X));
+                            if (Cen_End < 0) { Cen_End += 2 * Math.PI; }
+
+                            double Cen_Sta = Math.Atan2((Cur_Sta_Y - Cur_Cen_Y), (Cur_Sta_X - Cur_Cen_X));
+                            if (Cen_Sta < 0) { Cen_Sta += 2 * Math.PI; }
+
+                            var curve_delta = (Cen_End - Cen_Sta) * 180 / Math.PI;
+                            if(Yonsaat=="ccw") curve_delta=(Cen_Sta - Cen_End) * 180 / Math.PI;
+                            if (curve_delta < 0) curve_delta = 360 + curve_delta;
+
                             object[] array2 =
                             {
-                                "AR", Yonsaat, chord, "arc", kurp_acisi * 180 / Math.PI, 450-dir_End * 180 / Math.PI,
+                                "AR", Yonsaat, chord, "arc", curve_delta, 450-dir_End * 180 / Math.PI,
                                 450-dir_Start * 180 / Math.PI, external, kurp_boyu, midOrd, R, kurp_t, Cur_Sta_X, Cur_Sta_Y,
                                 Cur_Cen_X, Cur_Cen_Y, Cur_End_X, Cur_End_Y, Cur_PI_X, Cur_PI_Y
                             };

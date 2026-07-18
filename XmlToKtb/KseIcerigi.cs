@@ -19,7 +19,7 @@ namespace XmlToKtb
             var baslangicKM = alignment.staStart;
             var guncelKM = baslangicKM;
             List<Array> kesitliste = new List<Array>();
-            double KesitMES = 0;
+            double KesitMES = 0;            
 
             foreach (var item in alignment.CoordGeom.Items)
             {
@@ -62,8 +62,9 @@ namespace XmlToKtb
 
                                 KesitMES = dikayak;
                                 KesitKM = guncelKM + (Convert.ToDecimal(dikboy));
-                                var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
-                                object[] array = {KesitKM, KesitMES, NoktaKot, NoktaNo, kirmizikot, 0};
+                                    var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
+                                    KesitKM = Convert.ToDecimal(KmEsitligihesap.Duzenleyici(alignment, KesitKM)); // Eklenecek ve array değişecek                                
+                                object[] array = { KesitKM, KesitMES, NoktaKot, NoktaNo, kirmizikot, 0};
                                 kesitliste.Add(array);
                             }
                         }
@@ -126,7 +127,8 @@ namespace XmlToKtb
                                 }
 
                                 KesitKM = guncelKM + (Convert.ToDecimal(aci * radius));
-                                var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
+                                    var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
+                                    KesitKM = Convert.ToDecimal(KmEsitligihesap.Duzenleyici(alignment, KesitKM));
                                 object[] array =
                                     {KesitKM, KesitMES, NoktaKot, NoktaNo, kirmizikot, sapmaHesabi(radius)};
                                 kesitliste.Add(array);
@@ -142,7 +144,8 @@ namespace XmlToKtb
 
                                 KesitMES = KesitMES * -1;
                                 KesitKM = guncelKM + (Convert.ToDecimal(aci * radius));
-                                var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
+                                    var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
+                                    KesitKM = Convert.ToDecimal(KmEsitligihesap.Duzenleyici(alignment, KesitKM));
                                 object[] array =
                                 {
                                     KesitKM, KesitMES, NoktaKot, NoktaNo, kirmizikot, sapmaHesabi(radius) * -1
@@ -228,9 +231,10 @@ namespace XmlToKtb
                                         KesitKM = guncelKM + (Convert.ToDecimal(L_point)); //KESİT DEĞERİ BURDA
                                         var EksenKaydir = sapmaHesabi(R_point);
                                         if (yon == "ccw") EksenKaydir = EksenKaydir * -1;
-                                        var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
+                                            var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
+                                            KesitKM = Convert.ToDecimal(KmEsitligihesap.Duzenleyici(alignment, KesitKM));
 
-                                        object[] array =
+                                            object[] array =
                                             {KesitKM, KesitMES, NoktaKot, NoktaNo, kirmizikot, EksenKaydir};
                                         kesitliste.Add(array);
                                     }
@@ -294,7 +298,9 @@ namespace XmlToKtb
                                         }
 
                                         KesitKM = guncelKM + (Convert.ToDecimal(Length - L_point)); //KESİT DEĞERİ BURDA
-                                        var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
+                                            var kirmizikot = Convert.ToDouble(Prfhesap.Duzenleyici(alignment, KesitKM));
+                                            KesitKM = Convert.ToDecimal(KmEsitligihesap.Duzenleyici(alignment, KesitKM)); //km şitliği düzeltme
+                                            
                                         var EksenKaydir = sapmaHesabi(R_point);
                                         if (yon == "ccw") EksenKaydir = EksenKaydir * -1;
                                         object[] array =

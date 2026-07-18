@@ -51,6 +51,7 @@ namespace XmlToKtb
                             double yon = 1;
                             decimal eksKaydirİleriKm = 0;
                             double eksKaydirİleriSapma = 0;
+                            guncelKM = SpiralYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomSpiral) item, guncelKM);
                             if (spiral.rot == "ccw") yon = -1;
                             if (spiral.radiusStart.ToUpper() == "INF")
                             {
@@ -151,7 +152,6 @@ namespace XmlToKtb
 
                             }
 
-                            guncelKM = SpiralYazdirKmGuncelle(ktb, (LandXMLAlignmentsAlignmentCoordGeomSpiral)item, guncelKM);
                             break;
                         }
                 }
@@ -378,42 +378,50 @@ namespace XmlToKtb
             }
 
             var Cant = alignment.Cant;
-            var CantItems = alignment.Cant.CantStation.ToList();
-
-            foreach (var cantStation in Cant.CantStation)
+            var CantItems = new List<LandXMLAlignmentsAlignmentCantCantStation>();
+            if (alignment.Cant.gauge != 0)
             {
-                int cantStationIndex = CantItems.IndexOf(cantStation);
-                decimal guncelKm = cantStation.station;
-                decimal guncelCant = cantStation.appliedCant;
-                string guncelYon = cantStation.curvature;
-                double guncelDever = Convert.ToDouble(guncelCant) / 15;
-                if (guncelYon == "ccw")
+                CantItems = alignment.Cant.CantStation.ToList();
+            }
+
+            if (Cant.CantStation != null)
+            {
+                foreach (var cantStation in Cant.CantStation)
                 {
-                    guncelDever = guncelDever * -1;
-                }
-
-
-                if (cantStationIndex != CantItems.Count - 1) //son item
-                {
-                    var nextCantStation = Cant.CantStation[cantStationIndex + 1];
-                    decimal ileriKm = nextCantStation.station;
-                    decimal ileriCant = nextCantStation.appliedCant;
-                    string ileriYon = nextCantStation.curvature;
-                    double ileriDever = Convert.ToDouble(ileriCant) / 15;
-
-                    if (ileriYon == "ccw")
+                    int cantStationIndex = CantItems.IndexOf(cantStation);
+                    decimal guncelKm = cantStation.station;
+                    decimal guncelCant = cantStation.appliedCant;
+                    string guncelYon = cantStation.curvature;
+                    double guncelDever = Convert.ToDouble(guncelCant) / 15;
+                    if (guncelYon == "ccw")
                     {
-                        ileriDever = ileriDever * -1;
+                        guncelDever = guncelDever * -1;
                     }
 
-                    sb.AppendLine(guncelKm + "  " + ileriKm + " 0 " + guncelDever + "  " + ileriDever);
-                }
-                else
-                {
-                    return;
-                }
 
+                    if (cantStationIndex != CantItems.Count - 1) //son item
+                    {
+                        var nextCantStation = Cant.CantStation[cantStationIndex + 1];
+                        decimal ileriKm = nextCantStation.station;
+                        decimal ileriCant = nextCantStation.appliedCant;
+                        string ileriYon = nextCantStation.curvature;
+                        double ileriDever = Convert.ToDouble(ileriCant) / 15;
+
+                        if (ileriYon == "ccw")
+                        {
+                            ileriDever = ileriDever * -1;
+                        }
+
+                        sb.AppendLine(guncelKm + "  " + ileriKm + " 0 " + guncelDever + "  " + ileriDever);
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                }
             }
+            
 
 
         }
@@ -479,43 +487,48 @@ namespace XmlToKtb
             }
 
             var Cant = alignment.Cant;
-            var CantItems = alignment.Cant.CantStation.ToList();
-
-            foreach (var cantStation in Cant.CantStation)
+            var CantItems = new List<LandXMLAlignmentsAlignmentCantCantStation>();
+            if (alignment.Cant.gauge != 0)
             {
-                int cantStationIndex = CantItems.IndexOf(cantStation);
-                decimal guncelKm = cantStation.station;
-                decimal guncelCant = cantStation.appliedCant;
-                string guncelYon = cantStation.curvature;
-                double guncelDever = Convert.ToDouble(guncelCant) / 15;
-                if (guncelYon == "cw")
+                CantItems = alignment.Cant.CantStation.ToList();
+            }
+            if (Cant.CantStation != null)
+            {
+                foreach (var cantStation in Cant.CantStation)
                 {
-                    guncelDever = guncelDever * -1;
-                }
-
-
-                if (cantStationIndex != CantItems.Count - 1) //son item
-                {
-                    var nextCantStation = Cant.CantStation[cantStationIndex + 1];
-                    decimal ileriKm = nextCantStation.station;
-                    decimal ileriCant = nextCantStation.appliedCant;
-                    string ileriYon = nextCantStation.curvature;
-                    double ileriDever = Convert.ToDouble(ileriCant) / 15;
-
-                    if (ileriYon == "cw")
+                    int cantStationIndex = CantItems.IndexOf(cantStation);
+                    decimal guncelKm = cantStation.station;
+                    decimal guncelCant = cantStation.appliedCant;
+                    string guncelYon = cantStation.curvature;
+                    double guncelDever = Convert.ToDouble(guncelCant) / 15;
+                    if (guncelYon == "cw")
                     {
-                        ileriDever = ileriDever * -1;
+                        guncelDever = guncelDever * -1;
                     }
 
-                    sb.AppendLine(guncelKm + "  " + ileriKm + " 0 " + guncelDever + "  " + ileriDever);
-                }
-                else
-                {
-                    return;
-                }
 
+                    if (cantStationIndex != CantItems.Count - 1) //son item
+                    {
+                        var nextCantStation = Cant.CantStation[cantStationIndex + 1];
+                        decimal ileriKm = nextCantStation.station;
+                        decimal ileriCant = nextCantStation.appliedCant;
+                        string ileriYon = nextCantStation.curvature;
+                        double ileriDever = Convert.ToDouble(ileriCant) / 15;
+
+                        if (ileriYon == "cw")
+                        {
+                            ileriDever = ileriDever * -1;
+                        }
+
+                        sb.AppendLine(guncelKm + "  " + ileriKm + " 0 " + guncelDever + "  " + ileriDever);
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                }
             }
-
 
         }
 
@@ -527,9 +540,14 @@ namespace XmlToKtb
             }
 
             var Cant = alignment.Cant;
-            var CantItems = alignment.Cant.CantStation.ToList();
-
-            foreach (var cantStation in Cant.CantStation)
+            var CantItems = new List<LandXMLAlignmentsAlignmentCantCantStation>();
+            if (alignment.Cant.gauge != 0)
+            {
+                CantItems = alignment.Cant.CantStation.ToList();
+            }
+            if (Cant.CantStation != null)
+            {
+                foreach (var cantStation in Cant.CantStation)
             {
                 int cantStationIndex = CantItems.IndexOf(cantStation);
                 decimal guncelKm = cantStation.station;
@@ -563,7 +581,7 @@ namespace XmlToKtb
                 }
 
             }
-
+            }
 
         }
 
@@ -575,35 +593,41 @@ namespace XmlToKtb
             }
 
             var Cant = alignment.Cant;
-            var CantItems = alignment.Cant.CantStation.ToList();
-
-            foreach (var cantStation in Cant.CantStation)
+            var CantItems = new List<LandXMLAlignmentsAlignmentCantCantStation>();
+            if (alignment.Cant.gauge != 0)
             {
-                int cantStationIndex = CantItems.IndexOf(cantStation);
-                decimal guncelKm = cantStation.station;
-                decimal guncelCant = cantStation.appliedCant;
-                double guncelDever = Math.Abs(Convert.ToDouble(guncelCant) / 2000);
-
-
-
-                if (cantStationIndex != CantItems.Count - 1) //son item
-                {
-                    var nextCantStation = Cant.CantStation[cantStationIndex + 1];
-                    decimal ileriKm = nextCantStation.station;
-                    decimal ileriCant = nextCantStation.appliedCant;
-                    double ileriDever = Math.Abs(Convert.ToDouble(ileriCant) / 2000);
-
-
-
-                    sb.AppendLine(guncelKm + "  " + ileriKm + " 0 " + guncelDever + "  " + ileriDever);
-                }
-                else
-                {
-                    return;
-                }
-
+                CantItems = alignment.Cant.CantStation.ToList();
             }
 
+            if (Cant.CantStation != null)
+            {
+                foreach (var cantStation in Cant.CantStation)
+                {
+                    int cantStationIndex = CantItems.IndexOf(cantStation);
+                    decimal guncelKm = cantStation.station;
+                    decimal guncelCant = cantStation.appliedCant;
+                    double guncelDever = Math.Abs(Convert.ToDouble(guncelCant) / 2000);
+
+
+
+                    if (cantStationIndex != CantItems.Count - 1) //son item
+                    {
+                        var nextCantStation = Cant.CantStation[cantStationIndex + 1];
+                        decimal ileriKm = nextCantStation.station;
+                        decimal ileriCant = nextCantStation.appliedCant;
+                        double ileriDever = Math.Abs(Convert.ToDouble(ileriCant) / 2000);
+
+
+
+                        sb.AppendLine(guncelKm + "  " + ileriKm + " 0 " + guncelDever + "  " + ileriDever);
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                }
+            }
 
         }
         private static void EksenKaymaBilgileriDoldur(List<Array> liste, StringBuilder sb)

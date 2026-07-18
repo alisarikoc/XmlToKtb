@@ -64,16 +64,22 @@ namespace XmlToKtb
             this.label8 = new System.Windows.Forms.Label();
             this.KoorHesap_label = new System.Windows.Forms.Label();
             this.NivelmPage = new System.Windows.Forms.TabPage();
+            this.GSIOkuKaydetButon = new System.Windows.Forms.Button();
             this.MDT_button = new System.Windows.Forms.Button();
+            this.GSIokuLabel = new System.Windows.Forms.Label();
             this.MDTokuLabel = new System.Windows.Forms.Label();
+            this.deverTabpage = new System.Windows.Forms.TabPage();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.geoolustur = new System.Windows.Forms.Button();
+            this.deverekleme = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.isimHaklariLabel = new System.Windows.Forms.Label();
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.LisopenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.mdtOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.deverTabpage = new System.Windows.Forms.TabPage();
-            this.deverekleme = new System.Windows.Forms.Button();
-            this.label9 = new System.Windows.Forms.Label();
+            this.JsonToDXF = new System.Windows.Forms.Label();
+            this.JsontoDXFolustur = new System.Windows.Forms.Button();
             tabPage2 = new System.Windows.Forms.TabPage();
             tabPage2.SuspendLayout();
             this.nivelmantabkontrol.SuspendLayout();
@@ -208,6 +214,7 @@ namespace XmlToKtb
             this.nivelmantabkontrol.SelectedIndex = 0;
             this.nivelmantabkontrol.Size = new System.Drawing.Size(448, 233);
             this.nivelmantabkontrol.TabIndex = 8;
+            this.nivelmantabkontrol.SelectedIndexChanged += new System.EventHandler(this.nivelmantabkontrol_SelectedIndexChanged);
             // 
             // tabPage1
             // 
@@ -359,7 +366,9 @@ namespace XmlToKtb
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.JsontoDXFolustur);
             this.tabPage4.Controls.Add(this.dxf_button);
+            this.tabPage4.Controls.Add(this.JsonToDXF);
             this.tabPage4.Controls.Add(this.dxf_label);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
@@ -445,7 +454,9 @@ namespace XmlToKtb
             // 
             // NivelmPage
             // 
+            this.NivelmPage.Controls.Add(this.GSIOkuKaydetButon);
             this.NivelmPage.Controls.Add(this.MDT_button);
+            this.NivelmPage.Controls.Add(this.GSIokuLabel);
             this.NivelmPage.Controls.Add(this.MDTokuLabel);
             this.NivelmPage.Location = new System.Drawing.Point(4, 22);
             this.NivelmPage.Name = "NivelmPage";
@@ -455,9 +466,19 @@ namespace XmlToKtb
             this.NivelmPage.Text = "Nivelman";
             this.NivelmPage.UseVisualStyleBackColor = true;
             // 
+            // GSIOkuKaydetButon
+            // 
+            this.GSIOkuKaydetButon.Location = new System.Drawing.Point(176, 145);
+            this.GSIOkuKaydetButon.Name = "GSIOkuKaydetButon";
+            this.GSIOkuKaydetButon.Size = new System.Drawing.Size(93, 31);
+            this.GSIOkuKaydetButon.TabIndex = 11;
+            this.GSIOkuKaydetButon.Text = "Oku Kaydet";
+            this.GSIOkuKaydetButon.UseVisualStyleBackColor = true;
+            this.GSIOkuKaydetButon.Click += new System.EventHandler(this.GSIoku_Click);
+            // 
             // MDT_button
             // 
-            this.MDT_button.Location = new System.Drawing.Point(176, 80);
+            this.MDT_button.Location = new System.Drawing.Point(176, 52);
             this.MDT_button.Name = "MDT_button";
             this.MDT_button.Size = new System.Drawing.Size(93, 31);
             this.MDT_button.TabIndex = 11;
@@ -465,15 +486,77 @@ namespace XmlToKtb
             this.MDT_button.UseVisualStyleBackColor = true;
             this.MDT_button.Click += new System.EventHandler(this.MDT_button_Click);
             // 
+            // GSIokuLabel
+            // 
+            this.GSIokuLabel.AutoSize = true;
+            this.GSIokuLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.GSIokuLabel.Location = new System.Drawing.Point(6, 98);
+            this.GSIokuLabel.Name = "GSIokuLabel";
+            this.GSIokuLabel.Size = new System.Drawing.Size(413, 16);
+            this.GSIokuLabel.TabIndex = 10;
+            this.GSIokuLabel.Text = "Nivelman GSI dosyasından okur ve Virgülle ayrılmış metin kaydeder.";
+            // 
             // MDTokuLabel
             // 
             this.MDTokuLabel.AutoSize = true;
             this.MDTokuLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.MDTokuLabel.Location = new System.Drawing.Point(6, 26);
             this.MDTokuLabel.Name = "MDTokuLabel";
-            this.MDTokuLabel.Size = new System.Drawing.Size(422, 16);
+            this.MDTokuLabel.Size = new System.Drawing.Size(421, 16);
             this.MDTokuLabel.TabIndex = 10;
             this.MDTokuLabel.Text = "Nivelman MDT dosyasından okur ve Virgülle ayrılmış metin kaydeder.";
+            // 
+            // deverTabpage
+            // 
+            this.deverTabpage.Controls.Add(this.label10);
+            this.deverTabpage.Controls.Add(this.label9);
+            this.deverTabpage.Controls.Add(this.geoolustur);
+            this.deverTabpage.Controls.Add(this.deverekleme);
+            this.deverTabpage.Location = new System.Drawing.Point(4, 22);
+            this.deverTabpage.Name = "deverTabpage";
+            this.deverTabpage.Padding = new System.Windows.Forms.Padding(3);
+            this.deverTabpage.Size = new System.Drawing.Size(440, 207);
+            this.deverTabpage.TabIndex = 6;
+            this.deverTabpage.Text = "Dever";
+            this.deverTabpage.UseVisualStyleBackColor = true;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(34, 96);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(117, 13);
+            this.label10.TabIndex = 14;
+            this.label10.Text = "Geo Dosyası Oluşturma";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(34, 52);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(198, 13);
+            this.label9.TabIndex = 14;
+            this.label9.Text = "XML Güzergah dosyasına Dever Ekleme";
+            // 
+            // geoolustur
+            // 
+            this.geoolustur.Location = new System.Drawing.Point(280, 86);
+            this.geoolustur.Name = "geoolustur";
+            this.geoolustur.Size = new System.Drawing.Size(88, 33);
+            this.geoolustur.TabIndex = 13;
+            this.geoolustur.Text = "Geo Oluştur";
+            this.geoolustur.UseVisualStyleBackColor = true;
+            this.geoolustur.Click += new System.EventHandler(this.Geodosyasi_olusturma);
+            // 
+            // deverekleme
+            // 
+            this.deverekleme.Location = new System.Drawing.Point(280, 42);
+            this.deverekleme.Name = "deverekleme";
+            this.deverekleme.Size = new System.Drawing.Size(88, 33);
+            this.deverekleme.TabIndex = 13;
+            this.deverekleme.Text = "Dever Ekle";
+            this.deverekleme.UseVisualStyleBackColor = true;
+            this.deverekleme.Click += new System.EventHandler(this.deverdenemesil_Click_1);
             // 
             // openFileDialog
             // 
@@ -489,7 +572,7 @@ namespace XmlToKtb
             this.isimHaklariLabel.ForeColor = System.Drawing.SystemColors.Highlight;
             this.isimHaklariLabel.Location = new System.Drawing.Point(9, 248);
             this.isimHaklariLabel.Name = "isimHaklariLabel";
-            this.isimHaklariLabel.Size = new System.Drawing.Size(195, 16);
+            this.isimHaklariLabel.Size = new System.Drawing.Size(194, 16);
             this.isimHaklariLabel.TabIndex = 1;
             this.isimHaklariLabel.Text = "© Burak Kalafat ve Ali Sarıkoç";
             // 
@@ -505,48 +588,37 @@ namespace XmlToKtb
             // 
             this.mdtOpenFileDialog.Filter = "MDT veya MDT (*.mdt;*asc)|*.mdt;*.asc";
             // 
-            // deverTabpage
+            // JsonToDXF
             // 
-            this.deverTabpage.Controls.Add(this.label9);
-            this.deverTabpage.Controls.Add(this.deverekleme);
-            this.deverTabpage.Location = new System.Drawing.Point(4, 22);
-            this.deverTabpage.Name = "deverTabpage";
-            this.deverTabpage.Padding = new System.Windows.Forms.Padding(3);
-            this.deverTabpage.Size = new System.Drawing.Size(440, 207);
-            this.deverTabpage.TabIndex = 6;
-            this.deverTabpage.Text = "Dever";
-            this.deverTabpage.UseVisualStyleBackColor = true;
+            this.JsonToDXF.AutoSize = true;
+            this.JsonToDXF.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.JsonToDXF.Location = new System.Drawing.Point(51, 100);
+            this.JsonToDXF.Name = "JsonToDXF";
+            this.JsonToDXF.Size = new System.Drawing.Size(156, 18);
+            this.JsonToDXF.TabIndex = 9;
+            this.JsonToDXF.Text = "Json dan DXF oluştur:";
             // 
-            // deverekleme
+            // JsontoDXFolustur
             // 
-            this.deverekleme.Location = new System.Drawing.Point(280, 42);
-            this.deverekleme.Name = "deverekleme";
-            this.deverekleme.Size = new System.Drawing.Size(88, 33);
-            this.deverekleme.TabIndex = 13;
-            this.deverekleme.Text = "Dever Ekle";
-            this.deverekleme.UseVisualStyleBackColor = true;
-            this.deverekleme.Click += new System.EventHandler(this.deverdenemesil_Click_1);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(34, 52);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(198, 13);
-            this.label9.TabIndex = 14;
-            this.label9.Text = "XML Güzergah dosyasına Dever Ekleme";
+            this.JsontoDXFolustur.Location = new System.Drawing.Point(260, 100);
+            this.JsontoDXFolustur.Name = "JsontoDXFolustur";
+            this.JsontoDXFolustur.Size = new System.Drawing.Size(93, 31);
+            this.JsontoDXFolustur.TabIndex = 10;
+            this.JsontoDXFolustur.Text = "DXF Olustur";
+            this.JsontoDXFolustur.UseVisualStyleBackColor = true;
+            this.JsontoDXFolustur.Click += new System.EventHandler(this.JsontoDXF_click);
             // 
             // XmlToKtbUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(464, 261);
+            this.ClientSize = new System.Drawing.Size(462, 255);
             this.Controls.Add(this.nivelmantabkontrol);
             this.Controls.Add(this.isimHaklariLabel);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(480, 300);
+            this.MaximumSize = new System.Drawing.Size(478, 294);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(480, 300);
+            this.MinimumSize = new System.Drawing.Size(478, 294);
             this.Name = "XmlToKtbUI";
             this.ShowIcon = false;
             this.Text = "XML to KTB";
@@ -624,6 +696,12 @@ namespace XmlToKtb
         private TabPage deverTabpage;
         private Label label9;
         private Button deverekleme;
+        private Label label10;
+        private Button geoolustur;
+        public Button GSIOkuKaydetButon;
+        public Label GSIokuLabel;
+        public Button JsontoDXFolustur;
+        public Label JsonToDXF;
     }
 }
 

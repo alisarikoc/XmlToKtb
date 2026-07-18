@@ -591,7 +591,7 @@ namespace XmlToKtb
             return Lp;
         }
 
-        private static Array GetirDeverVeYon(LandXMLAlignmentsAlignment alignment, decimal kilometre)
+        public static Array GetirDeverVeYon(LandXMLAlignmentsAlignment alignment, decimal kilometre)
         {
             if (alignment.Cant.CantStation == null)
             {

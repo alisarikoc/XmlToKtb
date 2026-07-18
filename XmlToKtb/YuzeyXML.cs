@@ -7,6 +7,9 @@ using System.Windows.Forms;
 using System.Windows.Shapes;
 using Common.Modeller;
 using DXFLib;
+using System.Xml;
+using System.Xml.Serialization;
+using System.Text;
 
 namespace XmlToKtb
 {
@@ -86,14 +89,23 @@ namespace XmlToKtb
             landXml.Surfaces.Surface.Definition.Faces.Items = ucgenItems.ToArray();
 
             var saveFileDialog = new SaveFileDialog() { FileName = "yuzey" ,Filter = Properties.Resources.xmlExtensionFilter };
-            var icerik = KTBtoXML.Serialize(landXml);
+            XmlSerializer xsSubmit = new XmlSerializer(typeof(LandXML));
+
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                saveFileDialog.Title = "Sonuç Enkesit Dosyasını Seçin";
-                using (var sw = new StreamWriter(saveFileDialog.FileName))
-                    sw.WriteLine(icerik);
-            }
+                saveFileDialog.Title = "Sonuç Yuzey Dosyasını Seçin";
+                var path = saveFileDialog.FileName;
+                System.IO.FileStream file = System.IO.File.Create(path);
+                xsSubmit.Serialize(file, landXml);
+                file.Close();
 
+                //using (var sw = new StreamWriter(saveFileDialog.FileName))
+                //{
+                //    sw.WriteLine(xml);
+                //    sw.Flush();
+                //}
+
+            }
             return landXml;
         }
 

@@ -1,15 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Windows.Forms;
-using System.Data;
 using System.Windows.Shapes;
 using Common;
+using Common.Common;
 using Common.Enum;
 using Common.Modeller;
-using DXFLib;
+using netDxf;
+using netDxf.Entities;
+using netDxf.Tables;
 using XmlToKtb.Properties;
+using static System.Net.Mime.MediaTypeNames;
+using static DXFLib.DXFGenericEntity;
 using Path = System.IO.Path;
 
 namespace XmlToKtb
@@ -27,6 +34,7 @@ namespace XmlToKtb
         private DurumTip durumTip;
         private DosyaTip dosyaTip;
         private readonly Random _rastgele = new Random();
+        private string geoIcerigi;
 
         public XmlToKtbUI()
         {
@@ -39,9 +47,9 @@ namespace XmlToKtb
         private void xmlDonustur_Tikla(object sender, EventArgs e)
         {
             var dialogResult = openFileDialog.ShowDialog();
-            
+            dosyaAdi=Path.GetFileNameWithoutExtension(openFileDialog.FileName);
             var dosyaUzantisi = Path.GetExtension(openFileDialog.FileName);
-            if (dosyaUzantisi != null && dosyaUzantisi.ToLower().Equals(".ktb"))
+            if (dosyaUzantisi != null && dosyaUzantisi.ToLower().Equals(".ktb")&&dosyaTip!=DosyaTip.ALNPRF)
             {
                 kayitTuruLabel.Visible = false;
                 dosyaTuruComboBox.Visible = false;
@@ -49,19 +57,32 @@ namespace XmlToKtb
 
                 StreamReader ktbStreamReader = new StreamReader(openFileDialog.FileName);
                 string shortName = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
+                dosyaAdi = shortName;
                 var xmlData = KTBtoXML.GetirXmlData(ktbStreamReader);
                 LandXML landXml = KTBtoXML.LandXmlOlustur(shortName, xmlData);
-
 
                 xmlIcerigi = KTBtoXML.Serialize(landXml);
             }
             else if (dialogResult == DialogResult.OK)
             {
+                var landXml=new LandXML();
                 kayitTuruLabel.Visible = true;
                 dosyaTuruComboBox.Visible = true;
+                if (dosyaUzantisi.ToLower().Equals(".ktb"))
+                {
+                    StreamReader ktbStreamReader = new StreamReader(openFileDialog.FileName);
+                    string shortName = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
+                    var xmlData = KTBtoXML.GetirXmlData(ktbStreamReader);
+                    landXml= KTBtoXML.LandXmlOlustur(shortName, xmlData);
+                    dosyaAdi = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
+                    rootPath = Path.GetDirectoryName(openFileDialog.FileName);
+                }
+                else
+                {
+                    var serializer = new DosyaDeserializer();
+                    landXml = serializer.XmlDeserializer<LandXML>(openFileDialog.FileName);
+                }
 
-                var serializer = new DosyaDeserializer();
-                var landXml = serializer.XmlDeserializer<LandXML>(openFileDialog.FileName);
                 dosyaTip = (DosyaTip) dosyaTuruComboBox.SelectedIndex;
 
                 switch (dosyaTip)
@@ -128,7 +149,7 @@ namespace XmlToKtb
         {
             var saveFileDialog = new SaveFileDialog
             {
-                FileName = "output",
+                FileName = dosyaadi,
                 Filter = filtre
             };
             saveFileDialog.Title = "Kaydedilecek Dosya Adı Girin";
@@ -192,7 +213,7 @@ namespace XmlToKtb
             switch (dosyaTip)
             {
                 case DosyaTip.KTB:
-                    DosyaKaydetFiltreIle(ktbIcerigi, Resources.ktbExtensionFilter, "ktb");
+                    DosyaKaydetFiltreIle(ktbIcerigi, Resources.ktbExtensionFilter, dosyaAdi);
                     break;
 
                 case DosyaTip.ALNPRF:
@@ -202,11 +223,11 @@ namespace XmlToKtb
 
                 case DosyaTip.XML:
 
-                    DosyaKaydetFiltreIle(xmlIcerigi, Resources.xmlExtensionFilter, "xml");
+                    DosyaKaydetFiltreIle(xmlIcerigi, Resources.xmlExtensionFilter, dosyaAdi);
                     break;
                 case DosyaTip.TBL:
 
-                    DosyaKaydetFiltreIle(lisIcerigi, Resources.lisExtensionFilter, "tbl");
+                    DosyaKaydetFiltreIle(lisIcerigi, Resources.lisExtensionFilter, dosyaAdi);
                     break;
             }
             durumTip = DurumTip.Kaydedildi;
@@ -250,7 +271,7 @@ namespace XmlToKtb
         {
             LandXML guzergah = GetirLandXmlDosyaTipiIle();
             List<Array> kmData = GetirKmListeDosyasi();
-            DXFDocument dxfdosya = this.getirDxfDocument();
+            DXFLib.DXFDocument dxfdosya = this.getirDxfDocument();
 
             string kseIcerigi = KSEIcerigi.TipkesittenEnkesitOlustur(dxfdosya, kmData, guzergah);
 
@@ -294,7 +315,7 @@ namespace XmlToKtb
 
             if (secenek == DialogResult.Yes)
             {
-                DXFDocument doc = getirDxfDocument();
+                DXFLib.DXFDocument doc = getirDxfDocument();
                 DateTime start = DateTime.UtcNow;
                 // Parse DXF
 
@@ -308,16 +329,59 @@ namespace XmlToKtb
                     int noktano = 2;
                     foreach (DXFLib.DXFEntity entity in doc.Entities)
                     {
-                        DXFLib.DXFPolyLine polyLine = (DXFLib.DXFPolyLine) entity;
-                        bool isClosed = polyLine.Flags == DXFLib.DXFPolyLine.FlagsEnum.closed;
+                        if (entity.EntityType == "DXFPolyLine")
+                        {
 
-                        DXFLib.DXFVertex vertex0 = (DXFLib.DXFVertex) polyLine.Children[0];
-                        DXFLib.DXFVertex vertex1 = (DXFLib.DXFVertex) polyLine.Children[1];
-                        DXFLib.DXFVertex vertex2 = (DXFLib.DXFVertex) polyLine.Children[2];
+                            DXFLib.DXFVertex vertex0 = new DXFLib.DXFVertex();
+                            DXFLib.DXFVertex vertex1 = new DXFLib.DXFVertex();
+                            DXFLib.DXFVertex vertex2 = new DXFLib.DXFVertex();
+                            DXFLib.DXFPolyLine polyLine = (DXFLib.DXFPolyLine) entity;
+                            bool isClosed = polyLine.Flags == DXFLib.DXFPolyLine.FlagsEnum.closed;
 
-                        noktano = noktano + 3;
-                        ucgenList.Add(new Ucgen { Numara2 = noktano, Numara1 = noktano + 1, Numara0 = noktano + 2 });
-                        nokList.Add(new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z }); nokList.Add(new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z });
+                            vertex0 = (DXFLib.DXFVertex) polyLine.Children[0];
+                            vertex1 = (DXFLib.DXFVertex) polyLine.Children[1];
+                            vertex2 = (DXFLib.DXFVertex) polyLine.Children[2];
+
+                            noktano = noktano + 3;
+                            ucgenList.Add(new Ucgen { Numara2 = noktano, Numara1 = noktano + 1, Numara0 = noktano + 2 });
+                            nokList.Add(new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z });
+                            nokList.Add(new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z });
+                            nokList.Add(new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z });
+                        }
+                        if (entity.EntityType == "POLYLINE")
+                        {
+
+                            DXFLib.DXFVertex vertex0 = new DXFLib.DXFVertex();
+                            DXFLib.DXFVertex vertex1 = new DXFLib.DXFVertex();
+                            DXFLib.DXFVertex vertex2 = new DXFLib.DXFVertex();
+                            DXFLib.DXFPolyLine polyLine = (DXFLib.DXFPolyLine) entity;
+                            bool isClosed = polyLine.Flags == DXFLib.DXFPolyLine.FlagsEnum.closed;
+
+                            vertex0 = (DXFLib.DXFVertex) polyLine.Children[0];
+                            vertex1 = (DXFLib.DXFVertex) polyLine.Children[1];
+                            vertex2 = (DXFLib.DXFVertex) polyLine.Children[2];
+
+                            noktano = noktano + 3;
+                            ucgenList.Add(new Ucgen { Numara2 = noktano, Numara1 = noktano + 1, Numara0 = noktano + 2 });
+                            nokList.Add(new Nokta { Numara = noktano, X = vertex0.Location.Y, Y = vertex0.Location.X, Z = vertex0.Location.Z });
+                            nokList.Add(new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z });
+                            nokList.Add(new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z });
+                        }
+
+                        if (entity.EntityType =="3DFACE")
+                        {
+                            DXFLib.DXF3DFace dxf3DFace = (DXFLib.DXF3DFace) entity;
+                            noktano = noktano + 3;
+                            ucgenList.Add(new Ucgen { Numara2 = noktano, Numara1 = noktano + 1, Numara0 = noktano + 2 });
+
+                            nokList.Add(new Nokta { Numara = noktano, X = dxf3DFace.Corners[0].Y, Y = dxf3DFace.Corners[0].X, Z = dxf3DFace.Corners[0].Z });
+                            nokList.Add(new Nokta { Numara = noktano+1, X = dxf3DFace.Corners[1].Y, Y = dxf3DFace.Corners[1].X, Z = dxf3DFace.Corners[1].Z });
+                            nokList.Add(new Nokta { Numara = noktano+2, X = dxf3DFace.Corners[2].Y, Y = dxf3DFace.Corners[2].X, Z = dxf3DFace.Corners[2].Z });
+
+
+                        }
+
+                        
 
                     }
                     System.Diagnostics.Debug.WriteLine("Created shapes in {0}ms", DateTime.UtcNow.Subtract(start).TotalMilliseconds);
@@ -330,7 +394,102 @@ namespace XmlToKtb
             }
             
         }
+        private void JsontoDXF_click(object sender, EventArgs e)
+        {
+            DialogResult secenek = MessageBox.Show("Parsel Sorguda JSON Kaydeilmiş Ücgen Model Dosyasındaki Polyline ları DXF kaydeder." +
+                                                   "\t\n \t\n Seçilecek JSON Dosyası 3DPolyline lardan mı oluşuyor?", "Bilgilendirme Penceresi", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
 
+            if (secenek == DialogResult.Yes)
+            {
+                DateTime start = DateTime.UtcNow;
+                // Parse DXF
+                OpenFileDialog dlg = new OpenFileDialog();
+                dlg.Title = "Json Dosyası Seçin";
+                dlg.Filter = "JSON (*.json)|*.json";
+                string doc = null;
+                RootObject data = null;
+                List<Feature> datafeatures = null;
+
+                netDxf.DxfDocument dxfdosya = new netDxf.DxfDocument();
+                Layer customlayer = new Layer("Kadastro_parsel")
+                {
+                    Color = AciColor.Red
+                };
+                dxfdosya.Layers.Add(customlayer);
+
+                if (DialogResult.OK == dlg.ShowDialog())
+                {
+                    var filename = dlg.FileName;
+                    if (!string.IsNullOrEmpty(filename))
+                    {
+                        // Parse DXF
+                        doc = File.ReadAllText(filename);
+
+                        data = JsonSerializer.Deserialize<RootObject>(doc);
+                        datafeatures = data.Features;
+                        var merkeznokta = datafeatures[1].Geometry.Coordinates.Values;
+                        foreach (var item in datafeatures)
+                        {
+                            double ortalamaX = 0;
+                            double ortalamaY = 0;
+                            var objetipi = item.Geometry.Type;
+                            if(objetipi== "Polygon")
+                            {
+
+                                List<Vector2> vertices= new List<Vector2>();
+                                
+                                    foreach (var noktalar in item.Geometry.Coordinates)
+                                    {
+                                        var değerler = noktalar.Value;
+                                        foreach (var koordinatlar in değerler)
+                                        {
+                                        Vector2 array = new Vector2();
+                                        array.X = koordinatlar.Value.Longitude;
+                                        array.Y = koordinatlar.Value.Latitude;
+                                        vertices.Add(array);
+                                        }
+                                    }
+                                ortalamaX = vertices.Average(k => k.X);
+                                ortalamaY = vertices.Average(k => k.Y);
+                                netDxf.Entities.Polyline2D polyline2D= new Polyline2D(vertices,isClosed:true);
+                                dxfdosya.Entities.Add(polyline2D);
+                            }
+                            var adano = item.Properties.AdaNo;
+                            var parselNo = item.Properties.ParselNo;
+                            double textheigth = 1.5;
+                            Vector3 textposition = new Vector3(ortalamaX, ortalamaY, 0);
+                            netDxf.Entities.Text textEntity = new netDxf.Entities.Text((adano+"/"+parselNo), textposition, textheigth);
+                            textEntity.Rotation = 0;
+                            dxfdosya.Entities.Add(textEntity);
+                        }
+                        // Process entities
+                    }
+                }
+                //DXF KAYDET
+                var dosyaadi = "objectoutput";
+                var saveFileDialog = new SaveFileDialog
+                {
+                    FileName = "objectoutput",
+                    Filter = Resources.dxfExtensionFilter
+                };
+                saveFileDialog.Title = "Kaydedilecek Dosya Adı Girin";
+                if (dosyaadi != null)
+                {
+                    saveFileDialog.FileName = dosyaadi;
+                }
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    dxfdosya.Save(saveFileDialog.FileName);
+                }
+
+            }
+            else if (secenek == DialogResult.No)
+            {
+                //Hayır seçeneğine tıklandığında çalıştırılacak kodlar
+            }
+
+        }
         private void KoordinatHesapla(object sender, EventArgs e)
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();
@@ -340,7 +499,6 @@ namespace XmlToKtb
 
             DosyaKaydetFiltreIle(ncnIcerigi, Resources.ncnExtensionFilter, "Koorliste");
         }
-
         private void OfsetKotHesapla(object sender, EventArgs e)
         {
             LandXML landXml = GetirLandXmlDosyaTipiIle();
@@ -350,8 +508,7 @@ namespace XmlToKtb
             //string listeIcerigi = KSEIcerigi.EnkesitListesiOlustur(kesitler);
             DosyaKaydetFiltreIle(kesitler, Resources.ofkExtensionFilter, "OfsetKotliste");
         }
-
-        private DXFDocument getirDxfDocument()
+        private DXFLib.DXFDocument getirDxfDocument()
         {
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.Title = "DXF Dosyası Seçin";
@@ -389,7 +546,6 @@ namespace XmlToKtb
 
             DosyaKaydetFiltreIle(TcddIcerigi, Resources.lisExtensionFilter, "TBL");
         }
-
         private LandXML GetirLandXmlDosyaTipiIle()
         {
             openFileDialog.Title = "Güzergah Dosyasını Seçin";
@@ -413,9 +569,7 @@ namespace XmlToKtb
 
             return landXml;
         }
-
-        private List<Array> GetirNcnData()
-        {
+        private List<Array> GetirNcnData()        {
             ncnOpenFileDialog.Title = "NCN Türü Nokta Dosyası Seçin";
             ncnOpenFileDialog.ShowDialog();
             StreamReader ncnIcerigi = new StreamReader(ncnOpenFileDialog.FileName);
@@ -431,6 +585,35 @@ namespace XmlToKtb
                 }
             }
             return tumsatirlar;
+        }
+        private List<Array> GetirGSIData()
+        {
+            OpenFileDialog file = new OpenFileDialog();
+            file.FilterIndex = 0;
+            file.DefaultExt = "gsi";
+            file.Title = "Nivelman GSI Dosyası Seçiniz..";
+            file.Filter = "GSI Dosyası |*.gsi";
+            if (file.ShowDialog() == DialogResult.OK)
+            {
+
+            }
+            StreamReader GsiIcerigi = new StreamReader(file.FileName);
+            List<Array> tumsatirlar = new List<Array>();
+            //StreamReader lisIcerigi = new StreamReader(LisopenFileDialog.FileName);
+
+            while (!GsiIcerigi.EndOfStream)
+            {
+                char[] separator = { ' ', '\t' };
+                var veriSatir = GsiIcerigi.ReadLine();
+                if (veriSatir != null)
+                {
+                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions) 1);
+                    tumsatirlar.Add(veriKelimeleri);
+                }
+            }
+
+            return tumsatirlar;
+
         }
         private List<Array> GetirKmListeDosyasi()
         {
@@ -459,6 +642,12 @@ namespace XmlToKtb
             string liste = MDT_icerigi.Excellistesi(mdtData);
             DosyaKaydetFiltreIle(liste, Resources.TXTExtensionFilter, "Nivelmanliste");
         }
+        private void GSIoku_Click(object sender, EventArgs e)
+        {
+            List<Array> GsiData = GetirGSIData();
+            // TODO yüklenen GSI dosyası text formatında boşlukla ayrılmış olarak kayıt edilecek..
+            // Buraya kod yazılacak pull için yazdım.tekas
+        }
         private List<Array> GetirMdtData()
         {
             mdtOpenFileDialog.Title = "MDT Türü Nokta Nivelman Dosyası Seçin";
@@ -477,17 +666,44 @@ namespace XmlToKtb
             }
             return tumsatirlar;
         }
-
         private void XmlToKtbUI_Load(object sender, EventArgs e)
         {
 
         }
-
-
         private void deverdenemesil_Click_1(object sender, EventArgs e)
         {
             Dever.Devergoster();
         }
+        private void Geodosyasi_olusturma(object sender, EventArgs e)
+        {
+            OpenFileDialog file = new OpenFileDialog();
+            file.FilterIndex = 0;
+            file.DefaultExt = "xml";
+            file.Title = "Güzergah XML Dosyası Seçiniz..";
+            file.Filter = "XML Dosyası |*.xml";
+            if (file.ShowDialog() == DialogResult.OK)
+            {
+
+            }
+
+            var serializer = new DosyaDeserializer();
+            var landXml = serializer.XmlDeserializer<LandXML>(file.FileName);
+            geoIcerigi= GeoCevir.Duzenleyici(landXml);
+            DosyaKaydetFiltreIle(geoIcerigi, Resources.geoExtensionFilter, "GEO");
+        }
+        private void DXFdosyasi_kaydet(DXFLib.DXFDocument dxfdosya)
+        {
+            var texett = new DXFLib.DXFHeader();
+            texett = dxfdosya.Header;
+            var text2=texett.ToString();
+            DosyaKaydetFiltreIle(text2, Resources.dxfExtensionFilter, "DXF");
+        }
+
+        private void nivelmantabkontrol_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
     }
 
 }
