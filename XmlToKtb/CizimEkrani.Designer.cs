@@ -23,6 +23,11 @@ namespace XmlToKtb
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.secAraciButton = new System.Windows.Forms.ToolStripButton();
             this.cizgiAraciButton = new System.Windows.Forms.ToolStripButton();
+            this.yakalamaAyraci = new System.Windows.Forms.ToolStripSeparator();
+            this.noktaYakalaButton = new System.Windows.Forms.ToolStripButton();
+            this.ucYakalaButton = new System.Windows.Forms.ToolStripButton();
+            this.ortaYakalaButton = new System.Windows.Forms.ToolStripButton();
+            this.dikYakalaButton = new System.Windows.Forms.ToolStripButton();
             this.durumStrip = new System.Windows.Forms.StatusStrip();
             this.konumDurumLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ozelliklerPaneli = new System.Windows.Forms.Panel();
@@ -64,7 +69,12 @@ namespace XmlToKtb
             //
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.secAraciButton,
-            this.cizgiAraciButton});
+            this.cizgiAraciButton,
+            this.yakalamaAyraci,
+            this.noktaYakalaButton,
+            this.ucYakalaButton,
+            this.ortaYakalaButton,
+            this.dikYakalaButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1200, 25);
@@ -89,6 +99,51 @@ namespace XmlToKtb
             this.cizgiAraciButton.Size = new System.Drawing.Size(43, 22);
             this.cizgiAraciButton.Text = "Çizgi";
             this.cizgiAraciButton.Click += new System.EventHandler(this.cizgiAraciButton_Click);
+            //
+            // yakalamaAyraci
+            //
+            this.yakalamaAyraci.Name = "yakalamaAyraci";
+            this.yakalamaAyraci.Size = new System.Drawing.Size(6, 25);
+            //
+            // noktaYakalaButton
+            //
+            this.noktaYakalaButton.CheckOnClick = true;
+            this.noktaYakalaButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.noktaYakalaButton.Name = "noktaYakalaButton";
+            this.noktaYakalaButton.Size = new System.Drawing.Size(50, 22);
+            this.noktaYakalaButton.Text = "Nokta";
+            this.noktaYakalaButton.ToolTipText = "Nokta Yakala";
+            this.noktaYakalaButton.CheckedChanged += new System.EventHandler(this.yakalamaButonu_CheckedChanged);
+            //
+            // ucYakalaButton
+            //
+            this.ucYakalaButton.CheckOnClick = true;
+            this.ucYakalaButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ucYakalaButton.Name = "ucYakalaButton";
+            this.ucYakalaButton.Size = new System.Drawing.Size(30, 22);
+            this.ucYakalaButton.Text = "Uç";
+            this.ucYakalaButton.ToolTipText = "Doğru Ucu Yakala";
+            this.ucYakalaButton.CheckedChanged += new System.EventHandler(this.yakalamaButonu_CheckedChanged);
+            //
+            // ortaYakalaButton
+            //
+            this.ortaYakalaButton.CheckOnClick = true;
+            this.ortaYakalaButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ortaYakalaButton.Name = "ortaYakalaButton";
+            this.ortaYakalaButton.Size = new System.Drawing.Size(40, 22);
+            this.ortaYakalaButton.Text = "Orta";
+            this.ortaYakalaButton.ToolTipText = "Doğru Ortası Yakala";
+            this.ortaYakalaButton.CheckedChanged += new System.EventHandler(this.yakalamaButonu_CheckedChanged);
+            //
+            // dikYakalaButton
+            //
+            this.dikYakalaButton.CheckOnClick = true;
+            this.dikYakalaButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.dikYakalaButton.Name = "dikYakalaButton";
+            this.dikYakalaButton.Size = new System.Drawing.Size(30, 22);
+            this.dikYakalaButton.Text = "Dik";
+            this.dikYakalaButton.ToolTipText = "Objeye Dik Yakala";
+            this.dikYakalaButton.CheckedChanged += new System.EventHandler(this.yakalamaButonu_CheckedChanged);
             //
             // durumStrip
             //
@@ -181,6 +236,11 @@ namespace XmlToKtb
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton secAraciButton;
         private System.Windows.Forms.ToolStripButton cizgiAraciButton;
+        private System.Windows.Forms.ToolStripSeparator yakalamaAyraci;
+        private System.Windows.Forms.ToolStripButton noktaYakalaButton;
+        private System.Windows.Forms.ToolStripButton ucYakalaButton;
+        private System.Windows.Forms.ToolStripButton ortaYakalaButton;
+        private System.Windows.Forms.ToolStripButton dikYakalaButton;
         private System.Windows.Forms.StatusStrip durumStrip;
         private System.Windows.Forms.ToolStripStatusLabel konumDurumLabel;
         private System.Windows.Forms.Panel ozelliklerPaneli;

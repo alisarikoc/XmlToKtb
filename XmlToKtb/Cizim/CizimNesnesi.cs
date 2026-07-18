@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace XmlToKtb.Cizim
@@ -11,5 +12,23 @@ namespace XmlToKtb.Cizim
 
         /// <summary>Verilen dünya noktasına, verilen dünya toleransı içinde değiyor mu?</summary>
         public abstract bool IsabetEttiMi(PointF dunyaNoktasi, double toleransDunya);
+
+        /// <summary>Nokta/Uç yakalama için objenin dünya koordinatındaki uç noktaları.</summary>
+        public virtual IEnumerable<PointF> UcNoktalariAl()
+        {
+            yield break;
+        }
+
+        /// <summary>Orta nokta yakalama için objenin dünya koordinatındaki orta noktası (yoksa null).</summary>
+        public virtual PointF? OrtaNoktaAl()
+        {
+            return null;
+        }
+
+        /// <summary>Dik yakalama için, verilen referans noktasından objeye indirilen dikmenin ayağı (yoksa null).</summary>
+        public virtual PointF? DikNoktaAl(PointF referansDunyaNoktasi)
+        {
+            return null;
+        }
     }
 }

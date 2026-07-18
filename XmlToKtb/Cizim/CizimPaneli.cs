@@ -12,18 +12,33 @@ namespace XmlToKtb.Cizim
         Cizgi
     }
 
+    /// <summary>Çizim ekranında aynı anda birden fazlası aktif olabilen nokta yakalama (object snap) türleri.</summary>
+    [Flags]
+    public enum YakalamaModu
+    {
+        Yok = 0,
+        Nokta = 1,
+        Uc = 2,
+        Orta = 4,
+        Dik = 8
+    }
+
     /// <summary>AutoCAD benzeri pan/zoom yapılabilen, çizim yapılabilen koordinat düzlemi.</summary>
     public class CizimPaneli : Panel
     {
         private const float SecimToleransPiksel = 5f;
+        private const float YakalamaToleransPiksel = 10f;
         private const double ZoomCarpani = 1.15;
 
         public readonly List<CizimNesnesi> Nesneler = new List<CizimNesnesi>();
         public readonly CizimGorunum Gorunum = new CizimGorunum();
 
         private CizimAraci _aktifArac = CizimAraci.Sec;
+        private YakalamaModu _aktifYakalamaModu = YakalamaModu.Yok;
         private PointF? _beklemedekiBaslangic;
         private PointF _sonFareEkranKonumu;
+        private PointF? _yakalananDunyaNoktasi;
+        private YakalamaModu _yakalananTuru;
         private bool _panSurukleniyor;
         private Point _panBaslangicEkran;
         private double _panBaslangicOfsetX;
@@ -43,6 +58,20 @@ namespace XmlToKtb.Cizim
                 _aktifArac = value;
                 _beklemedekiBaslangic = null;
                 AracDegisti?.Invoke(this, _aktifArac);
+                Invalidate();
+            }
+        }
+
+        /// <summary>Aktif nokta yakalama türlerinin bit birleşimi. Birden fazlası aynı anda açık olabilir.</summary>
+        public YakalamaModu AktifYakalamaModu
+        {
+            get => _aktifYakalamaModu;
+            set
+            {
+                if (_aktifYakalamaModu == value)
+                    return;
+                _aktifYakalamaModu = value;
+                _yakalananDunyaNoktasi = null;
                 Invalidate();
             }
         }
@@ -70,6 +99,43 @@ namespace XmlToKtb.Cizim
                 {
                     e.Graphics.DrawLine(kalem, bas, _sonFareEkranKonumu);
                 }
+            }
+
+            if (_yakalananDunyaNoktasi != null)
+            {
+                var yakalamaEkran = Gorunum.DunyadanEkrana(_yakalananDunyaNoktasi.Value.X, _yakalananDunyaNoktasi.Value.Y, Width, Height);
+                YakalamaIsaretiCiz(e.Graphics, yakalamaEkran, _yakalananTuru);
+            }
+        }
+
+        private static void YakalamaIsaretiCiz(Graphics grafik, PointF ekranNoktasi, YakalamaModu turu)
+        {
+            const float yaricap = 6f;
+
+            if (turu == YakalamaModu.Orta)
+            {
+                var ucgen = new[]
+                {
+                    new PointF(ekranNoktasi.X, ekranNoktasi.Y - yaricap),
+                    new PointF(ekranNoktasi.X - yaricap, ekranNoktasi.Y + yaricap),
+                    new PointF(ekranNoktasi.X + yaricap, ekranNoktasi.Y + yaricap)
+                };
+                using (var kalem = new Pen(Color.DarkCyan, 2f))
+                    grafik.DrawPolygon(kalem, ucgen);
+            }
+            else if (turu == YakalamaModu.Dik)
+            {
+                using (var kalem = new Pen(Color.OrangeRed, 2f))
+                {
+                    grafik.DrawLine(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y, ekranNoktasi.X, ekranNoktasi.Y);
+                    grafik.DrawLine(kalem, ekranNoktasi.X, ekranNoktasi.Y, ekranNoktasi.X, ekranNoktasi.Y - yaricap);
+                    grafik.DrawRectangle(kalem, ekranNoktasi.X - yaricap * 0.4f, ekranNoktasi.Y - yaricap * 0.4f, yaricap * 0.4f, yaricap * 0.4f);
+                }
+            }
+            else
+            {
+                using (var kalem = new Pen(Color.Magenta, 2f))
+                    grafik.DrawRectangle(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y - yaricap, yaricap * 2, yaricap * 2);
             }
         }
 
@@ -135,6 +201,86 @@ namespace XmlToKtb.Cizim
             return katsayi * kuvvet;
         }
 
+        private struct YakalamaAdayi
+        {
+            public PointF Nokta;
+            public YakalamaModu Tur;
+
+            public YakalamaAdayi(PointF nokta, YakalamaModu tur)
+            {
+                Nokta = nokta;
+                Tur = tur;
+            }
+        }
+
+        /// <summary>Aktif yakalama modlarına göre verilen ekran noktasına en yakın yakalama adayını (varsa) bulur.</summary>
+        private PointF? YakalamaUygula(PointF ekranNoktasi, out YakalamaModu bulunanTur)
+        {
+            bulunanTur = YakalamaModu.Yok;
+            if (_aktifYakalamaModu == YakalamaModu.Yok)
+                return null;
+
+            PointF? enYakinDunya = null;
+            var enYakinMesafeKare = double.MaxValue;
+
+            foreach (var nesne in Nesneler)
+            {
+                var adaylar = new List<YakalamaAdayi>();
+
+                if ((_aktifYakalamaModu & (YakalamaModu.Nokta | YakalamaModu.Uc)) != 0)
+                {
+                    var ucTuru = (_aktifYakalamaModu & YakalamaModu.Uc) != 0 ? YakalamaModu.Uc : YakalamaModu.Nokta;
+                    foreach (var uc in nesne.UcNoktalariAl())
+                        adaylar.Add(new YakalamaAdayi(uc, ucTuru));
+                }
+
+                if ((_aktifYakalamaModu & YakalamaModu.Orta) != 0)
+                {
+                    var orta = nesne.OrtaNoktaAl();
+                    if (orta != null)
+                        adaylar.Add(new YakalamaAdayi(orta.Value, YakalamaModu.Orta));
+                }
+
+                if ((_aktifYakalamaModu & YakalamaModu.Dik) != 0 && _beklemedekiBaslangic != null)
+                {
+                    var dik = nesne.DikNoktaAl(_beklemedekiBaslangic.Value);
+                    if (dik != null)
+                        adaylar.Add(new YakalamaAdayi(dik.Value, YakalamaModu.Dik));
+                }
+
+                foreach (var aday in adaylar)
+                {
+                    var adayEkran = Gorunum.DunyadanEkrana(aday.Nokta.X, aday.Nokta.Y, Width, Height);
+                    var dx = adayEkran.X - ekranNoktasi.X;
+                    var dy = adayEkran.Y - ekranNoktasi.Y;
+                    var mesafeKare = (double)dx * dx + (double)dy * dy;
+                    if (mesafeKare > YakalamaToleransPiksel * YakalamaToleransPiksel || mesafeKare >= enYakinMesafeKare)
+                        continue;
+
+                    enYakinMesafeKare = mesafeKare;
+                    enYakinDunya = aday.Nokta;
+                    bulunanTur = aday.Tur;
+                }
+            }
+
+            return enYakinDunya;
+        }
+
+        /// <summary>Ekran noktasını dünya koordinatına çevirir; aktif yakalama modları varsa ve tolerans içinde bir aday bulunursa ona kilitlenir.</summary>
+        private PointF DunyaNoktasiHesaplaVeYakala(Point ekranNoktasi)
+        {
+            var yakalanan = YakalamaUygula(ekranNoktasi, out var yakalamaTuru);
+            if (yakalanan != null)
+            {
+                _yakalananDunyaNoktasi = yakalanan;
+                _yakalananTuru = yakalamaTuru;
+                return yakalanan.Value;
+            }
+
+            _yakalananDunyaNoktasi = null;
+            return Gorunum.EkrandanDunyaya(ekranNoktasi, Width, Height);
+        }
+
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -159,7 +305,7 @@ namespace XmlToKtb.Cizim
             if (e.Button != MouseButtons.Left)
                 return;
 
-            var dunyaNoktasi = Gorunum.EkrandanDunyaya(e.Location, Width, Height);
+            var dunyaNoktasi = DunyaNoktasiHesaplaVeYakala(e.Location);
 
             if (AktifArac == CizimAraci.Cizgi)
             {
@@ -207,11 +353,11 @@ namespace XmlToKtb.Cizim
             base.OnMouseMove(e);
             _sonFareEkranKonumu = e.Location;
 
-            var dunyaNoktasi = Gorunum.EkrandanDunyaya(e.Location, Width, Height);
-            FareKonumuDegisti?.Invoke(this, dunyaNoktasi);
-
             if (_panSurukleniyor)
             {
+                var dunyaPanNoktasi = Gorunum.EkrandanDunyaya(e.Location, Width, Height);
+                FareKonumuDegisti?.Invoke(this, dunyaPanNoktasi);
+
                 var deltaX = e.Location.X - _panBaslangicEkran.X;
                 var deltaY = e.Location.Y - _panBaslangicEkran.Y;
                 Gorunum.OfsetX = _panBaslangicOfsetX - deltaX / Gorunum.Olcek;
@@ -220,7 +366,10 @@ namespace XmlToKtb.Cizim
                 return;
             }
 
-            if (AktifArac == CizimAraci.Cizgi && _beklemedekiBaslangic != null)
+            var dunyaNoktasi = DunyaNoktasiHesaplaVeYakala(e.Location);
+            FareKonumuDegisti?.Invoke(this, dunyaNoktasi);
+
+            if ((AktifArac == CizimAraci.Cizgi && _beklemedekiBaslangic != null) || _aktifYakalamaModu != YakalamaModu.Yok)
                 Invalidate();
         }
 

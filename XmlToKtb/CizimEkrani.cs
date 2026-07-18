@@ -45,6 +45,16 @@ namespace XmlToKtb
             cizimPaneli1.SeciliNesneGuncellendi();
         }
 
+        private void yakalamaButonu_CheckedChanged(object sender, EventArgs e)
+        {
+            var mod = YakalamaModu.Yok;
+            if (noktaYakalaButton.Checked) mod |= YakalamaModu.Nokta;
+            if (ucYakalaButton.Checked) mod |= YakalamaModu.Uc;
+            if (ortaYakalaButton.Checked) mod |= YakalamaModu.Orta;
+            if (dikYakalaButton.Checked) mod |= YakalamaModu.Dik;
+            cizimPaneli1.AktifYakalamaModu = mod;
+        }
+
         private void girisEkraniMenuItem_Click(object sender, EventArgs e)
         {
             var girisEkrani = new XmlToKtbUI();

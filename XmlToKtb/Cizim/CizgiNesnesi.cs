@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 
@@ -55,6 +56,34 @@ namespace XmlToKtb.Cizim
         {
             var uzaklik = NoktaDogruParcasiUzakligi(dunyaNoktasi.X, dunyaNoktasi.Y, BaslangicX, BaslangicY, BitisX, BitisY);
             return uzaklik <= toleransDunya;
+        }
+
+        public override IEnumerable<PointF> UcNoktalariAl()
+        {
+            yield return new PointF((float)BaslangicX, (float)BaslangicY);
+            yield return new PointF((float)BitisX, (float)BitisY);
+        }
+
+        public override PointF? OrtaNoktaAl()
+        {
+            return new PointF((float)((BaslangicX + BitisX) / 2.0), (float)((BaslangicY + BitisY) / 2.0));
+        }
+
+        public override PointF? DikNoktaAl(PointF referansDunyaNoktasi)
+        {
+            var dx = BitisX - BaslangicX;
+            var dy = BitisY - BaslangicY;
+            var uzunlukKare = dx * dx + dy * dy;
+            if (uzunlukKare < 1e-12)
+                return null;
+
+            var t = ((referansDunyaNoktasi.X - BaslangicX) * dx + (referansDunyaNoktasi.Y - BaslangicY) * dy) / uzunlukKare;
+            if (t < 0 || t > 1)
+                return null;
+
+            var ayakX = BaslangicX + t * dx;
+            var ayakY = BaslangicY + t * dy;
+            return new PointF((float)ayakX, (float)ayakY);
         }
 
         private static double NoktaDogruParcasiUzakligi(double px, double py, double x1, double y1, double x2, double y2)
