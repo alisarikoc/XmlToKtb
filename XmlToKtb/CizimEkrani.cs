@@ -44,5 +44,11 @@ namespace XmlToKtb
         {
             cizimPaneli1.SeciliNesneGuncellendi();
         }
+
+        private void girisEkraniMenuItem_Click(object sender, EventArgs e)
+        {
+            var girisEkrani = new XmlToKtbUI();
+            girisEkrani.Show();
+        }
     }
 }

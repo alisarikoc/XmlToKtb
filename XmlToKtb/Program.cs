@@ -13,7 +13,7 @@ namespace XmlToKtb
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new XmlToKtbUI());
+            Application.Run(new CizimEkrani());
         }
     }
 }

@@ -17,6 +17,9 @@ namespace XmlToKtb
 
         private void InitializeComponent()
         {
+            this.anaMenuStrip = new System.Windows.Forms.MenuStrip();
+            this.ekranMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.girisEkraniMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.secAraciButton = new System.Windows.Forms.ToolStripButton();
             this.cizgiAraciButton = new System.Windows.Forms.ToolStripButton();
@@ -26,17 +29,43 @@ namespace XmlToKtb
             this.ozellikGrid = new System.Windows.Forms.PropertyGrid();
             this.ozelliklerBaslikLabel = new System.Windows.Forms.Label();
             this.cizimPaneli1 = new XmlToKtb.Cizim.CizimPaneli();
+            this.anaMenuStrip.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.durumStrip.SuspendLayout();
             this.ozelliklerPaneli.SuspendLayout();
             this.SuspendLayout();
+            //
+            // anaMenuStrip
+            //
+            this.anaMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ekranMenuItem});
+            this.anaMenuStrip.Location = new System.Drawing.Point(0, 0);
+            this.anaMenuStrip.Name = "anaMenuStrip";
+            this.anaMenuStrip.Size = new System.Drawing.Size(1200, 24);
+            this.anaMenuStrip.TabIndex = 4;
+            this.anaMenuStrip.Text = "anaMenuStrip";
+            //
+            // ekranMenuItem
+            //
+            this.ekranMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.girisEkraniMenuItem});
+            this.ekranMenuItem.Name = "ekranMenuItem";
+            this.ekranMenuItem.Size = new System.Drawing.Size(50, 20);
+            this.ekranMenuItem.Text = "Ekran";
+            //
+            // girisEkraniMenuItem
+            //
+            this.girisEkraniMenuItem.Name = "girisEkraniMenuItem";
+            this.girisEkraniMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.girisEkraniMenuItem.Text = "Giriş Ekranı";
+            this.girisEkraniMenuItem.Click += new System.EventHandler(this.girisEkraniMenuItem_Click);
             //
             // toolStrip1
             //
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.secAraciButton,
             this.cizgiAraciButton});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1200, 25);
             this.toolStrip1.TabIndex = 0;
@@ -81,9 +110,9 @@ namespace XmlToKtb
             this.ozelliklerPaneli.Controls.Add(this.ozellikGrid);
             this.ozelliklerPaneli.Controls.Add(this.ozelliklerBaslikLabel);
             this.ozelliklerPaneli.Dock = System.Windows.Forms.DockStyle.Left;
-            this.ozelliklerPaneli.Location = new System.Drawing.Point(0, 25);
+            this.ozelliklerPaneli.Location = new System.Drawing.Point(0, 49);
             this.ozelliklerPaneli.Name = "ozelliklerPaneli";
-            this.ozelliklerPaneli.Size = new System.Drawing.Size(260, 703);
+            this.ozelliklerPaneli.Size = new System.Drawing.Size(260, 679);
             this.ozelliklerPaneli.TabIndex = 2;
             //
             // ozellikGrid
@@ -111,9 +140,9 @@ namespace XmlToKtb
             //
             this.cizimPaneli1.BackColor = System.Drawing.Color.White;
             this.cizimPaneli1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.cizimPaneli1.Location = new System.Drawing.Point(260, 25);
+            this.cizimPaneli1.Location = new System.Drawing.Point(260, 49);
             this.cizimPaneli1.Name = "cizimPaneli1";
-            this.cizimPaneli1.Size = new System.Drawing.Size(940, 703);
+            this.cizimPaneli1.Size = new System.Drawing.Size(940, 679);
             this.cizimPaneli1.TabIndex = 3;
             //
             // CizimEkrani
@@ -125,11 +154,15 @@ namespace XmlToKtb
             this.Controls.Add(this.ozelliklerPaneli);
             this.Controls.Add(this.durumStrip);
             this.Controls.Add(this.toolStrip1);
+            this.Controls.Add(this.anaMenuStrip);
+            this.MainMenuStrip = this.anaMenuStrip;
             this.MinimumSize = new System.Drawing.Size(700, 450);
             this.Name = "CizimEkrani";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Çizim Ekranı";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.anaMenuStrip.ResumeLayout(false);
+            this.anaMenuStrip.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.durumStrip.ResumeLayout(false);
@@ -142,6 +175,9 @@ namespace XmlToKtb
 
         #endregion
 
+        private System.Windows.Forms.MenuStrip anaMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem ekranMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem girisEkraniMenuItem;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton secAraciButton;
         private System.Windows.Forms.ToolStripButton cizgiAraciButton;

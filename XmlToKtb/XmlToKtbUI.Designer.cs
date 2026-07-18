@@ -75,7 +75,6 @@ namespace XmlToKtb
             this.deverekleme = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.isimHaklariLabel = new System.Windows.Forms.Label();
-            this.cizimEkraniButton = new System.Windows.Forms.Button();
             this.ncnOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.LisopenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.mdtOpenFileDialog = new System.Windows.Forms.OpenFileDialog();
@@ -581,17 +580,6 @@ namespace XmlToKtb
             this.isimHaklariLabel.TabIndex = 1;
             this.isimHaklariLabel.Text = "© Burak Kalafat ve Ali Sarıkoç";
             //
-            // cizimEkraniButton
-            //
-            this.cizimEkraniButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.cizimEkraniButton.Location = new System.Drawing.Point(700, 612);
-            this.cizimEkraniButton.Name = "cizimEkraniButton";
-            this.cizimEkraniButton.Size = new System.Drawing.Size(188, 28);
-            this.cizimEkraniButton.TabIndex = 11;
-            this.cizimEkraniButton.Text = "Çizim Ekranı";
-            this.cizimEkraniButton.UseVisualStyleBackColor = true;
-            this.cizimEkraniButton.Click += new System.EventHandler(this.cizimEkraniButton_Click);
-            //
             // ncnOpenFileDialog
             // 
             this.ncnOpenFileDialog.Filter = "NCN veya ASC (*.ncn;*asc)|*.ncn;*.asc";
@@ -631,7 +619,6 @@ namespace XmlToKtb
             this.ClientSize = new System.Drawing.Size(900, 650);
             this.Controls.Add(this.nivelmantabkontrol);
             this.Controls.Add(this.isimHaklariLabel);
-            this.Controls.Add(this.cizimEkraniButton);
             this.MaximizeBox = true;
             this.MinimizeBox = true;
             this.MinimumSize = new System.Drawing.Size(500, 350);
@@ -666,7 +653,6 @@ namespace XmlToKtb
         private OpenFileDialog openFileDialog;
         private Button donusturButton;
         private Label isimHaklariLabel;
-        private Button cizimEkraniButton;
         private Button kaydetButton;
         private Label bilgiLabel;
         private ComboBox dosyaTuruComboBox;
