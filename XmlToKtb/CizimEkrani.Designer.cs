@@ -18,6 +18,11 @@ namespace XmlToKtb
         private void InitializeComponent()
         {
             this.anaMenuStrip = new System.Windows.Forms.MenuStrip();
+            this.dosyaMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dosyaAcMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dosyaKaydetMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iceAktarMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.jsonIceAktarMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ekranMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.girisEkraniMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -30,6 +35,7 @@ namespace XmlToKtb
             this.dikYakalaButton = new System.Windows.Forms.ToolStripButton();
             this.durumStrip = new System.Windows.Forms.StatusStrip();
             this.konumDurumLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.koordinatSistemiLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ozelliklerPaneli = new System.Windows.Forms.Panel();
             this.ozellikGrid = new System.Windows.Forms.PropertyGrid();
             this.ozelliklerBaslikLabel = new System.Windows.Forms.Label();
@@ -43,12 +49,52 @@ namespace XmlToKtb
             // anaMenuStrip
             //
             this.anaMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.dosyaMenuItem,
+            this.iceAktarMenuItem,
             this.ekranMenuItem});
             this.anaMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.anaMenuStrip.Name = "anaMenuStrip";
             this.anaMenuStrip.Size = new System.Drawing.Size(1200, 24);
             this.anaMenuStrip.TabIndex = 4;
             this.anaMenuStrip.Text = "anaMenuStrip";
+            //
+            // dosyaMenuItem
+            //
+            this.dosyaMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.dosyaAcMenuItem,
+            this.dosyaKaydetMenuItem});
+            this.dosyaMenuItem.Name = "dosyaMenuItem";
+            this.dosyaMenuItem.Size = new System.Drawing.Size(58, 20);
+            this.dosyaMenuItem.Text = "Dosya";
+            //
+            // dosyaAcMenuItem
+            //
+            this.dosyaAcMenuItem.Name = "dosyaAcMenuItem";
+            this.dosyaAcMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.dosyaAcMenuItem.Text = "Aç (DXF)";
+            this.dosyaAcMenuItem.Click += new System.EventHandler(this.dosyaAcMenuItem_Click);
+            //
+            // dosyaKaydetMenuItem
+            //
+            this.dosyaKaydetMenuItem.Name = "dosyaKaydetMenuItem";
+            this.dosyaKaydetMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.dosyaKaydetMenuItem.Text = "Kaydet (DXF)";
+            this.dosyaKaydetMenuItem.Click += new System.EventHandler(this.dosyaKaydetMenuItem_Click);
+            //
+            // iceAktarMenuItem
+            //
+            this.iceAktarMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.jsonIceAktarMenuItem});
+            this.iceAktarMenuItem.Name = "iceAktarMenuItem";
+            this.iceAktarMenuItem.Size = new System.Drawing.Size(75, 20);
+            this.iceAktarMenuItem.Text = "İçe Aktar";
+            //
+            // jsonIceAktarMenuItem
+            //
+            this.jsonIceAktarMenuItem.Name = "jsonIceAktarMenuItem";
+            this.jsonIceAktarMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.jsonIceAktarMenuItem.Text = "JSON İçe Aktar";
+            this.jsonIceAktarMenuItem.Click += new System.EventHandler(this.jsonIceAktarMenuItem_Click);
             //
             // ekranMenuItem
             //
@@ -148,7 +194,8 @@ namespace XmlToKtb
             // durumStrip
             //
             this.durumStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.konumDurumLabel});
+            this.konumDurumLabel,
+            this.koordinatSistemiLabel});
             this.durumStrip.Location = new System.Drawing.Point(0, 728);
             this.durumStrip.Name = "durumStrip";
             this.durumStrip.Size = new System.Drawing.Size(1200, 22);
@@ -159,6 +206,15 @@ namespace XmlToKtb
             this.konumDurumLabel.Name = "konumDurumLabel";
             this.konumDurumLabel.Size = new System.Drawing.Size(120, 17);
             this.konumDurumLabel.Text = "X: 0.000   Y: 0.000";
+            //
+            // koordinatSistemiLabel
+            //
+            this.koordinatSistemiLabel.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.koordinatSistemiLabel.IsLink = true;
+            this.koordinatSistemiLabel.Name = "koordinatSistemiLabel";
+            this.koordinatSistemiLabel.Size = new System.Drawing.Size(59, 17);
+            this.koordinatSistemiLabel.Text = "Tanımsız";
+            this.koordinatSistemiLabel.Click += new System.EventHandler(this.koordinatSistemiLabel_Click);
             //
             // ozelliklerPaneli
             //
@@ -231,6 +287,11 @@ namespace XmlToKtb
         #endregion
 
         private System.Windows.Forms.MenuStrip anaMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem dosyaMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dosyaAcMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dosyaKaydetMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem iceAktarMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem jsonIceAktarMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ekranMenuItem;
         private System.Windows.Forms.ToolStripMenuItem girisEkraniMenuItem;
         private System.Windows.Forms.ToolStrip toolStrip1;
@@ -243,6 +304,7 @@ namespace XmlToKtb
         private System.Windows.Forms.ToolStripButton dikYakalaButton;
         private System.Windows.Forms.StatusStrip durumStrip;
         private System.Windows.Forms.ToolStripStatusLabel konumDurumLabel;
+        private System.Windows.Forms.ToolStripStatusLabel koordinatSistemiLabel;
         private System.Windows.Forms.Panel ozelliklerPaneli;
         private System.Windows.Forms.PropertyGrid ozellikGrid;
         private System.Windows.Forms.Label ozelliklerBaslikLabel;

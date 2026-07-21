@@ -112,11 +112,22 @@
     <Compile Include="Cizim\CizimPaneli.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Projeksiyon\Elipsoid.cs" />
+    <Compile Include="Projeksiyon\GaussKruger.cs" />
+    <Compile Include="Projeksiyon\DatumDonusumu.cs" />
+    <Compile Include="Projeksiyon\ProjeksiyonSistemi.cs" />
+    <Compile Include="Projeksiyon\KoordinatDonusturucu.cs" />
     <Compile Include="CizimEkrani.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="CizimEkrani.Designer.cs">
       <DependentUpon>CizimEkrani.cs</DependentUpon>
+    </Compile>
+    <Compile Include="KoordinatSistemiForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="KoordinatSistemiForm.Designer.cs">
+      <DependentUpon>KoordinatSistemiForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Dever.cs" />
     <Compile Include="Form1.cs">
