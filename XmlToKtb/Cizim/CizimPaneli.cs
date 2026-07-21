@@ -288,6 +288,12 @@ namespace XmlToKtb.Cizim
 
             if (e.Button == MouseButtons.Middle)
             {
+                if (e.Clicks >= 2)
+                {
+                    TumObjeleriGoster();
+                    return;
+                }
+
                 _panSurukleniyor = true;
                 _panBaslangicEkran = e.Location;
                 _panBaslangicOfsetX = Gorunum.OfsetX;
@@ -391,6 +397,47 @@ namespace XmlToKtb.Cizim
         /// <summary>Seçili objeyi (varsa) properties panelinden güncelleme sonrası yeniden çizmek için.</summary>
         public void SeciliNesneGuncellendi()
         {
+            Invalidate();
+        }
+
+        /// <summary>Görünümü, çizimdeki bütün objeleri kapsayacak şekilde ortalar ve yakınlaştırır (zoom to fit).</summary>
+        public void TumObjeleriGoster()
+        {
+            if (Nesneler.Count == 0 || Width <= 0 || Height <= 0)
+                return;
+
+            var minX = double.MaxValue;
+            var minY = double.MaxValue;
+            var maxX = double.MinValue;
+            var maxY = double.MinValue;
+            var noktaBulundu = false;
+
+            foreach (var nesne in Nesneler)
+            {
+                foreach (var nokta in nesne.UcNoktalariAl())
+                {
+                    noktaBulundu = true;
+                    if (nokta.X < minX) minX = nokta.X;
+                    if (nokta.X > maxX) maxX = nokta.X;
+                    if (nokta.Y < minY) minY = nokta.Y;
+                    if (nokta.Y > maxY) maxY = nokta.Y;
+                }
+            }
+
+            if (!noktaBulundu)
+                return;
+
+            const double kenarBosluguCarpani = 1.2;
+            const double minimumDunyaBoyutu = 1.0;
+            var genislikDunya = Math.Max(maxX - minX, minimumDunyaBoyutu);
+            var yukseklikDunya = Math.Max(maxY - minY, minimumDunyaBoyutu);
+
+            Gorunum.OfsetX = (minX + maxX) / 2.0;
+            Gorunum.OfsetY = (minY + maxY) / 2.0;
+
+            var olcek = Math.Min(Width / (genislikDunya * kenarBosluguCarpani), Height / (yukseklikDunya * kenarBosluguCarpani));
+            Gorunum.Olcek = Math.Max(CizimGorunum.MinOlcek, Math.Min(CizimGorunum.MaxOlcek, olcek));
+
             Invalidate();
         }
     }

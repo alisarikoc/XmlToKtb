@@ -109,7 +109,9 @@
     <Compile Include="Cizim\CizimGorunum.cs" />
     <Compile Include="Cizim\CizimNesnesi.cs" />
     <Compile Include="Cizim\CizgiNesnesi.cs" />
-    <Compile Include="Cizim\CizimPaneli.cs" />
+    <Compile Include="Cizim\CizimPaneli.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="CizimEkrani.cs">
       <SubType>Form</SubType>
     </Compile>
