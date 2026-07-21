@@ -1,0 +1,95 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+
+namespace XmlToKtb.Cizim
+{
+    /// <summary>Merkez, yarıçap ve başlangıç/bitiş açılarıyla tanımlı yay (ör. DXF ARC varlığı).
+    /// Açılar, DXF standardına uygun şekilde +X ekseninden saat yönünün tersine (CCW), derece cinsindendir.</summary>
+    public class YayNesnesi : CizimNesnesi
+    {
+        [DisplayName("Tip")]
+        [ReadOnly(true)]
+        public override string Tip => "Yay";
+
+        [DisplayName("Merkez X")]
+        public double MerkezX { get; set; }
+
+        [DisplayName("Merkez Y")]
+        public double MerkezY { get; set; }
+
+        [DisplayName("Yarıçap")]
+        public double Yaricap { get; set; }
+
+        [DisplayName("Başlangıç Açısı")]
+        public double BaslangicAcisi { get; set; }
+
+        [DisplayName("Bitiş Açısı")]
+        public double BitisAcisi { get; set; }
+
+        public override void Ciz(Graphics grafik, CizimGorunum gorunum, int panelGenislik, int panelYukseklik)
+        {
+            var ekranMerkez = gorunum.DunyadanEkrana(MerkezX, MerkezY, panelGenislik, panelYukseklik);
+            var pikselYaricap = (float)(Yaricap * gorunum.Olcek);
+            if (pikselYaricap < 0.5f)
+                return;
+
+            var dunyaSupurme = NormalizeSupurme(BitisAcisi - BaslangicAcisi);
+            var gdiBaslangic = -BaslangicAcisi;
+            var gdiSupurme = -dunyaSupurme;
+
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : Color.Black, Secili ? 2f : 1f))
+            {
+                grafik.DrawArc(kalem, ekranMerkez.X - pikselYaricap, ekranMerkez.Y - pikselYaricap,
+                    pikselYaricap * 2, pikselYaricap * 2, (float)gdiBaslangic, (float)gdiSupurme);
+            }
+        }
+
+        public override bool IsabetEttiMi(PointF dunyaNoktasi, double toleransDunya)
+        {
+            var dx = dunyaNoktasi.X - MerkezX;
+            var dy = dunyaNoktasi.Y - MerkezY;
+            var mesafe = Math.Sqrt(dx * dx + dy * dy);
+            if (Math.Abs(mesafe - Yaricap) > toleransDunya)
+                return false;
+
+            var aci = NormalizeAci(Math.Atan2(dy, dx) * 180.0 / Math.PI);
+            var supurme = NormalizeSupurme(BitisAcisi - BaslangicAcisi);
+            var goreliAci = NormalizeAci(aci - BaslangicAcisi);
+            return goreliAci <= supurme;
+        }
+
+        public override IEnumerable<PointF> UcNoktalariAl()
+        {
+            yield return new PointF((float)MerkezX, (float)MerkezY);
+            yield return AcidaNokta(BaslangicAcisi);
+            yield return AcidaNokta(BitisAcisi);
+            yield return AcidaNokta((BaslangicAcisi + BitisAcisi) / 2);
+        }
+
+        public override PointF? MerkezNoktaAl()
+        {
+            return new PointF((float)MerkezX, (float)MerkezY);
+        }
+
+        private PointF AcidaNokta(double aciDerece)
+        {
+            var rad = aciDerece * Math.PI / 180.0;
+            return new PointF((float)(MerkezX + Yaricap * Math.Cos(rad)), (float)(MerkezY + Yaricap * Math.Sin(rad)));
+        }
+
+        private static double NormalizeAci(double aciDerece)
+        {
+            var sonuc = aciDerece % 360.0;
+            if (sonuc < 0) sonuc += 360.0;
+            return sonuc;
+        }
+
+        private static double NormalizeSupurme(double supurmeDerece)
+        {
+            var sonuc = NormalizeAci(supurmeDerece);
+            return sonuc <= 0 ? sonuc + 360.0 : sonuc;
+        }
+    }
+}

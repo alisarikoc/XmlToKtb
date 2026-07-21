@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows.Forms;
+using Common;
 using Common.Common;
 using netDxf;
 using netDxf.Entities;
@@ -69,19 +71,27 @@ namespace XmlToKtb
         {
             foreach (var nesne in cizimPaneli1.Nesneler)
             {
-                if (!(nesne is CizgiNesnesi cizgi))
-                    continue;
-
-                if (KoordinatDonusturucu.Donustur(eskiSistem, eskiDilim, cizgi.BaslangicX, cizgi.BaslangicY, yeniSistem, yeniDilim, out var bx, out var by))
+                if (nesne is CizgiNesnesi cizgi)
                 {
-                    cizgi.BaslangicX = bx;
-                    cizgi.BaslangicY = by;
+                    if (KoordinatDonusturucu.Donustur(eskiSistem, eskiDilim, cizgi.BaslangicX, cizgi.BaslangicY, yeniSistem, yeniDilim, out var bx, out var by))
+                    {
+                        cizgi.BaslangicX = bx;
+                        cizgi.BaslangicY = by;
+                    }
+
+                    if (KoordinatDonusturucu.Donustur(eskiSistem, eskiDilim, cizgi.BitisX, cizgi.BitisY, yeniSistem, yeniDilim, out var ex, out var ey))
+                    {
+                        cizgi.BitisX = ex;
+                        cizgi.BitisY = ey;
+                    }
                 }
-
-                if (KoordinatDonusturucu.Donustur(eskiSistem, eskiDilim, cizgi.BitisX, cizgi.BitisY, yeniSistem, yeniDilim, out var ex, out var ey))
+                else if (nesne is YaziNesnesi yazi)
                 {
-                    cizgi.BitisX = ex;
-                    cizgi.BitisY = ey;
+                    if (KoordinatDonusturucu.Donustur(eskiSistem, eskiDilim, yazi.KonumX, yazi.KonumY, yeniSistem, yeniDilim, out var yx, out var yy))
+                    {
+                        yazi.KonumX = yx;
+                        yazi.KonumY = yy;
+                    }
                 }
             }
 
@@ -92,7 +102,6 @@ namespace XmlToKtb
         private void CizimPaneli1_AracDegisti(object sender, CizimAraci araci)
         {
             secAraciButton.Checked = araci == CizimAraci.Sec;
-            cizgiAraciButton.Checked = araci == CizimAraci.Cizgi;
         }
 
         private void secAraciButton_Click(object sender, EventArgs e)
@@ -100,9 +109,91 @@ namespace XmlToKtb
             cizimPaneli1.AktifArac = CizimAraci.Sec;
         }
 
-        private void cizgiAraciButton_Click(object sender, EventArgs e)
+        private void cizgiCizMenuItem_Click(object sender, EventArgs e)
         {
             cizimPaneli1.AktifArac = CizimAraci.Cizgi;
+        }
+
+        private void daireMerkezYaricapMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.DaireMerkezYaricap;
+        }
+
+        private void daire3NoktaMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.Daire3Nokta;
+        }
+
+        private void daire2NoktaYaricapMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.Daire2NoktaYaricap;
+        }
+
+        private void daireTegetIkiObjeMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.DaireTegetIkiObje;
+        }
+
+        private void daireTegetUcObjeMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.DaireTegetUcObje;
+        }
+
+        private void guzergahXmlCizMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new OpenFileDialog { Title = "Güzergah XML Dosyası Seçin", Filter = "XML (*.xml)|*.xml" })
+            {
+                if (dlg.ShowDialog() != DialogResult.OK)
+                    return;
+
+                LandXML landXml;
+                try
+                {
+                    var serializer = new DosyaDeserializer();
+                    landXml = serializer.XmlDeserializer<LandXML>(dlg.FileName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("XML dosyası okunamadı: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var nesneler = GuzergahCizici.Olustur(landXml);
+                if (nesneler.Count == 0)
+                {
+                    MessageBox.Show("Dosyada bir güzergah ekseni (Alignment) bulunamadı.", "Güzergah Çiz", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                cizimPaneli1.Nesneler.AddRange(nesneler);
+                cizimPaneli1.TumObjeleriGoster();
+                cizimPaneli1.Invalidate();
+            }
+        }
+
+        private void kaydirMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.Kaydir;
+        }
+
+        private void dondurMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.Dondur;
+        }
+
+        private void kesMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.Kes;
+        }
+
+        private void kopyalaMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.Kopyala;
+        }
+
+        private void olcekleMenuItem_Click(object sender, EventArgs e)
+        {
+            cizimPaneli1.AktifArac = CizimAraci.Olcekle;
         }
 
         private void ozellikGrid_PropertyValueChanged(object sender, PropertyValueChangedEventArgs e)
@@ -117,6 +208,7 @@ namespace XmlToKtb
             if (ucYakalaButton.Checked) mod |= YakalamaModu.Uc;
             if (ortaYakalaButton.Checked) mod |= YakalamaModu.Orta;
             if (dikYakalaButton.Checked) mod |= YakalamaModu.Dik;
+            if (merkezYakalaButton.Checked) mod |= YakalamaModu.Merkez;
             cizimPaneli1.AktifYakalamaModu = mod;
         }
 
@@ -150,35 +242,12 @@ namespace XmlToKtb
                     return;
                 }
 
-                foreach (var dogru in dxfBelge.Entities.Lines)
-                    CizgiEkle(dogru.StartPoint.X, dogru.StartPoint.Y, dogru.EndPoint.X, dogru.EndPoint.Y);
-
-                foreach (var polyline in dxfBelge.Entities.Polylines2D)
-                {
-                    var vertexler = polyline.Vertexes;
-                    for (var i = 0; i < vertexler.Count - 1; i++)
-                        CizgiEkle(vertexler[i].Position.X, vertexler[i].Position.Y, vertexler[i + 1].Position.X, vertexler[i + 1].Position.Y);
-                    if (polyline.IsClosed && vertexler.Count > 1)
-                        CizgiEkle(vertexler[vertexler.Count - 1].Position.X, vertexler[vertexler.Count - 1].Position.Y, vertexler[0].Position.X, vertexler[0].Position.Y);
-                }
-
-                foreach (var polyline in dxfBelge.Entities.Polylines3D)
-                {
-                    var vertexler = polyline.Vertexes;
-                    for (var i = 0; i < vertexler.Count - 1; i++)
-                        CizgiEkle(vertexler[i].X, vertexler[i].Y, vertexler[i + 1].X, vertexler[i + 1].Y);
-                    if (polyline.IsClosed && vertexler.Count > 1)
-                        CizgiEkle(vertexler[vertexler.Count - 1].X, vertexler[vertexler.Count - 1].Y, vertexler[0].X, vertexler[0].Y);
-                }
+                var nesneler = DxfIceAktarici.Ayikla(dxfBelge);
+                cizimPaneli1.Nesneler.AddRange(nesneler);
 
                 cizimPaneli1.TumObjeleriGoster();
                 cizimPaneli1.Invalidate();
             }
-        }
-
-        private void CizgiEkle(double x1, double y1, double x2, double y2)
-        {
-            cizimPaneli1.Nesneler.Add(new CizgiNesnesi { BaslangicX = x1, BaslangicY = y1, BitisX = x2, BitisY = y2 });
         }
 
         private void dosyaKaydetMenuItem_Click(object sender, EventArgs e)
@@ -196,6 +265,28 @@ namespace XmlToKtb
                         dxfBelge.Entities.Add(new Line(
                             new Vector2(cizgi.BaslangicX, cizgi.BaslangicY),
                             new Vector2(cizgi.BitisX, cizgi.BitisY)));
+                    }
+                    else if (nesne is YaziNesnesi yazi && !string.IsNullOrEmpty(yazi.Metin))
+                    {
+                        // DXF TEXT tek satırlıdır; metindeki satır sonları dosya yapısını bozmasın diye boşlukla değiştirilir.
+                        var dxfMetin = yazi.Metin.Replace("\r\n", " ").Replace('\n', ' ').Replace('\r', ' ');
+                        var metinNesnesi = new Text(dxfMetin, new Vector2(yazi.KonumX, yazi.KonumY), yazi.Yukseklik)
+                        {
+                            Rotation = yazi.Donus
+                        };
+                        dxfBelge.Entities.Add(metinNesnesi);
+                    }
+                    else if (nesne is NoktaNesnesi nokta)
+                    {
+                        dxfBelge.Entities.Add(new netDxf.Entities.Point(new Vector2(nokta.X, nokta.Y)));
+                    }
+                    else if (nesne is DaireNesnesi daire)
+                    {
+                        dxfBelge.Entities.Add(new Circle(new Vector2(daire.MerkezX, daire.MerkezY), daire.Yaricap));
+                    }
+                    else if (nesne is YayNesnesi yay)
+                    {
+                        dxfBelge.Entities.Add(new Arc(new Vector2(yay.MerkezX, yay.MerkezY), yay.Yaricap, yay.BaslangicAcisi, yay.BitisAcisi));
                     }
                 }
 
@@ -257,6 +348,15 @@ namespace XmlToKtb
                             BitisY = bit.Y
                         });
                     }
+
+                    var etiket = $"{feature.Properties?.AdaNo}/{feature.Properties?.ParselNo}";
+                    cizimPaneli1.Nesneler.Add(new YaziNesnesi
+                    {
+                        KonumX = koseNoktalari.Average(p => p.X),
+                        KonumY = koseNoktalari.Average(p => p.Y),
+                        Metin = etiket,
+                        Yukseklik = 1.5
+                    });
                 }
 
                 cizimPaneli1.TumObjeleriGoster();

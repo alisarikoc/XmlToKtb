@@ -8,6 +8,10 @@ namespace XmlToKtb.Cizim
     /// <summary>İki nokta arasında çizilen bir çizgi objesi.</summary>
     public class CizgiNesnesi : CizimNesnesi
     {
+        [DisplayName("Tip")]
+        [ReadOnly(true)]
+        public override string Tip => "Çizgi";
+
         [DisplayName("Başlangıç X")]
         [Category("Başlangıç Noktası")]
         public double BaslangicX { get; set; }

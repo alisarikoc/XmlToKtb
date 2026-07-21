@@ -23,16 +23,32 @@ namespace XmlToKtb
             this.dosyaKaydetMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.iceAktarMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.jsonIceAktarMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.duzenleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kaydirMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dondurMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kopyalaMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.olcekleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cizimMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cizgiCizMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.daireCizMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.daireMerkezYaricapMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.daire3NoktaMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.daire2NoktaYaricapMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.daireTegetIkiObjeMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.daireTegetUcObjeMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yolMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.guzergahXmlCizMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ekranMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.girisEkraniMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.secAraciButton = new System.Windows.Forms.ToolStripButton();
-            this.cizgiAraciButton = new System.Windows.Forms.ToolStripButton();
             this.yakalamaAyraci = new System.Windows.Forms.ToolStripSeparator();
             this.noktaYakalaButton = new System.Windows.Forms.ToolStripButton();
             this.ucYakalaButton = new System.Windows.Forms.ToolStripButton();
             this.ortaYakalaButton = new System.Windows.Forms.ToolStripButton();
             this.dikYakalaButton = new System.Windows.Forms.ToolStripButton();
+            this.merkezYakalaButton = new System.Windows.Forms.ToolStripButton();
             this.durumStrip = new System.Windows.Forms.StatusStrip();
             this.konumDurumLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.koordinatSistemiLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -50,7 +66,9 @@ namespace XmlToKtb
             //
             this.anaMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dosyaMenuItem,
-            this.iceAktarMenuItem,
+            this.cizimMenuItem,
+            this.duzenleMenuItem,
+            this.yolMenuItem,
             this.ekranMenuItem});
             this.anaMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.anaMenuStrip.Name = "anaMenuStrip";
@@ -62,7 +80,8 @@ namespace XmlToKtb
             //
             this.dosyaMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dosyaAcMenuItem,
-            this.dosyaKaydetMenuItem});
+            this.dosyaKaydetMenuItem,
+            this.iceAktarMenuItem});
             this.dosyaMenuItem.Name = "dosyaMenuItem";
             this.dosyaMenuItem.Size = new System.Drawing.Size(58, 20);
             this.dosyaMenuItem.Text = "Dosya";
@@ -96,6 +115,131 @@ namespace XmlToKtb
             this.jsonIceAktarMenuItem.Text = "JSON İçe Aktar";
             this.jsonIceAktarMenuItem.Click += new System.EventHandler(this.jsonIceAktarMenuItem_Click);
             //
+            // duzenleMenuItem
+            //
+            this.duzenleMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.kaydirMenuItem,
+            this.dondurMenuItem,
+            this.kesMenuItem,
+            this.kopyalaMenuItem,
+            this.olcekleMenuItem});
+            this.duzenleMenuItem.Name = "duzenleMenuItem";
+            this.duzenleMenuItem.Size = new System.Drawing.Size(64, 20);
+            this.duzenleMenuItem.Text = "Düzenle";
+            //
+            // kaydirMenuItem
+            //
+            this.kaydirMenuItem.Name = "kaydirMenuItem";
+            this.kaydirMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.kaydirMenuItem.Text = "Kaydır";
+            this.kaydirMenuItem.Click += new System.EventHandler(this.kaydirMenuItem_Click);
+            //
+            // dondurMenuItem
+            //
+            this.dondurMenuItem.Name = "dondurMenuItem";
+            this.dondurMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.dondurMenuItem.Text = "Döndür";
+            this.dondurMenuItem.Click += new System.EventHandler(this.dondurMenuItem_Click);
+            //
+            // kesMenuItem
+            //
+            this.kesMenuItem.Name = "kesMenuItem";
+            this.kesMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.kesMenuItem.Text = "Kes";
+            this.kesMenuItem.Click += new System.EventHandler(this.kesMenuItem_Click);
+            //
+            // kopyalaMenuItem
+            //
+            this.kopyalaMenuItem.Name = "kopyalaMenuItem";
+            this.kopyalaMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.kopyalaMenuItem.Text = "Kopyala";
+            this.kopyalaMenuItem.Click += new System.EventHandler(this.kopyalaMenuItem_Click);
+            //
+            // olcekleMenuItem
+            //
+            this.olcekleMenuItem.Name = "olcekleMenuItem";
+            this.olcekleMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.olcekleMenuItem.Text = "Ölçekle";
+            this.olcekleMenuItem.Click += new System.EventHandler(this.olcekleMenuItem_Click);
+            //
+            // cizimMenuItem
+            //
+            this.cizimMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.cizgiCizMenuItem,
+            this.daireCizMenuItem});
+            this.cizimMenuItem.Name = "cizimMenuItem";
+            this.cizimMenuItem.Size = new System.Drawing.Size(58, 20);
+            this.cizimMenuItem.Text = "Çizim";
+            //
+            // cizgiCizMenuItem
+            //
+            this.cizgiCizMenuItem.Name = "cizgiCizMenuItem";
+            this.cizgiCizMenuItem.Size = new System.Drawing.Size(220, 22);
+            this.cizgiCizMenuItem.Text = "Çizgi Çiz";
+            this.cizgiCizMenuItem.Click += new System.EventHandler(this.cizgiCizMenuItem_Click);
+            //
+            // daireCizMenuItem
+            //
+            this.daireCizMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.daireMerkezYaricapMenuItem,
+            this.daire3NoktaMenuItem,
+            this.daire2NoktaYaricapMenuItem,
+            this.daireTegetIkiObjeMenuItem,
+            this.daireTegetUcObjeMenuItem});
+            this.daireCizMenuItem.Name = "daireCizMenuItem";
+            this.daireCizMenuItem.Size = new System.Drawing.Size(220, 22);
+            this.daireCizMenuItem.Text = "Daire Çiz";
+            //
+            // daireMerkezYaricapMenuItem
+            //
+            this.daireMerkezYaricapMenuItem.Name = "daireMerkezYaricapMenuItem";
+            this.daireMerkezYaricapMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.daireMerkezYaricapMenuItem.Text = "Merkez ve Yarıçap";
+            this.daireMerkezYaricapMenuItem.Click += new System.EventHandler(this.daireMerkezYaricapMenuItem_Click);
+            //
+            // daire3NoktaMenuItem
+            //
+            this.daire3NoktaMenuItem.Name = "daire3NoktaMenuItem";
+            this.daire3NoktaMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.daire3NoktaMenuItem.Text = "3 Nokta";
+            this.daire3NoktaMenuItem.Click += new System.EventHandler(this.daire3NoktaMenuItem_Click);
+            //
+            // daire2NoktaYaricapMenuItem
+            //
+            this.daire2NoktaYaricapMenuItem.Name = "daire2NoktaYaricapMenuItem";
+            this.daire2NoktaYaricapMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.daire2NoktaYaricapMenuItem.Text = "2 Nokta ve Yarıçap";
+            this.daire2NoktaYaricapMenuItem.Click += new System.EventHandler(this.daire2NoktaYaricapMenuItem_Click);
+            //
+            // daireTegetIkiObjeMenuItem
+            //
+            this.daireTegetIkiObjeMenuItem.Name = "daireTegetIkiObjeMenuItem";
+            this.daireTegetIkiObjeMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.daireTegetIkiObjeMenuItem.Text = "2 Objeye Teğet ve Yarıçap";
+            this.daireTegetIkiObjeMenuItem.Click += new System.EventHandler(this.daireTegetIkiObjeMenuItem_Click);
+            //
+            // daireTegetUcObjeMenuItem
+            //
+            this.daireTegetUcObjeMenuItem.Name = "daireTegetUcObjeMenuItem";
+            this.daireTegetUcObjeMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.daireTegetUcObjeMenuItem.Text = "3 Objeye Teğet";
+            this.daireTegetUcObjeMenuItem.Click += new System.EventHandler(this.daireTegetUcObjeMenuItem_Click);
+            //
+            // yolMenuItem
+            //
+            this.yolMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.guzergahXmlCizMenuItem});
+            this.yolMenuItem.Name = "yolMenuItem";
+            this.yolMenuItem.Size = new System.Drawing.Size(42, 20);
+            this.yolMenuItem.Text = "Yol";
+            //
+            // guzergahXmlCizMenuItem
+            //
+            this.guzergahXmlCizMenuItem.Name = "guzergahXmlCizMenuItem";
+            this.guzergahXmlCizMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.guzergahXmlCizMenuItem.Text = "Xml Dosyasından Güzergah Çiz";
+            this.guzergahXmlCizMenuItem.Click += new System.EventHandler(this.guzergahXmlCizMenuItem_Click);
+            //
             // ekranMenuItem
             //
             this.ekranMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -115,12 +259,12 @@ namespace XmlToKtb
             //
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.secAraciButton,
-            this.cizgiAraciButton,
             this.yakalamaAyraci,
             this.noktaYakalaButton,
             this.ucYakalaButton,
             this.ortaYakalaButton,
-            this.dikYakalaButton});
+            this.dikYakalaButton,
+            this.merkezYakalaButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1200, 25);
@@ -137,22 +281,15 @@ namespace XmlToKtb
             this.secAraciButton.Text = "Seç";
             this.secAraciButton.Click += new System.EventHandler(this.secAraciButton_Click);
             //
-            // cizgiAraciButton
-            //
-            this.cizgiAraciButton.CheckOnClick = true;
-            this.cizgiAraciButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.cizgiAraciButton.Name = "cizgiAraciButton";
-            this.cizgiAraciButton.Size = new System.Drawing.Size(43, 22);
-            this.cizgiAraciButton.Text = "Çizgi";
-            this.cizgiAraciButton.Click += new System.EventHandler(this.cizgiAraciButton_Click);
-            //
             // yakalamaAyraci
             //
+            this.yakalamaAyraci.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.yakalamaAyraci.Name = "yakalamaAyraci";
             this.yakalamaAyraci.Size = new System.Drawing.Size(6, 25);
             //
             // noktaYakalaButton
             //
+            this.noktaYakalaButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.noktaYakalaButton.CheckOnClick = true;
             this.noktaYakalaButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.noktaYakalaButton.Name = "noktaYakalaButton";
@@ -163,6 +300,7 @@ namespace XmlToKtb
             //
             // ucYakalaButton
             //
+            this.ucYakalaButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.ucYakalaButton.CheckOnClick = true;
             this.ucYakalaButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.ucYakalaButton.Name = "ucYakalaButton";
@@ -173,6 +311,7 @@ namespace XmlToKtb
             //
             // ortaYakalaButton
             //
+            this.ortaYakalaButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.ortaYakalaButton.CheckOnClick = true;
             this.ortaYakalaButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.ortaYakalaButton.Name = "ortaYakalaButton";
@@ -183,6 +322,7 @@ namespace XmlToKtb
             //
             // dikYakalaButton
             //
+            this.dikYakalaButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.dikYakalaButton.CheckOnClick = true;
             this.dikYakalaButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.dikYakalaButton.Name = "dikYakalaButton";
@@ -190,6 +330,17 @@ namespace XmlToKtb
             this.dikYakalaButton.Text = "Dik";
             this.dikYakalaButton.ToolTipText = "Objeye Dik Yakala";
             this.dikYakalaButton.CheckedChanged += new System.EventHandler(this.yakalamaButonu_CheckedChanged);
+            //
+            // merkezYakalaButton
+            //
+            this.merkezYakalaButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.merkezYakalaButton.CheckOnClick = true;
+            this.merkezYakalaButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.merkezYakalaButton.Name = "merkezYakalaButton";
+            this.merkezYakalaButton.Size = new System.Drawing.Size(50, 22);
+            this.merkezYakalaButton.Text = "Merkez";
+            this.merkezYakalaButton.ToolTipText = "Daire/Yay Merkezi Yakala";
+            this.merkezYakalaButton.CheckedChanged += new System.EventHandler(this.yakalamaButonu_CheckedChanged);
             //
             // durumStrip
             //
@@ -292,16 +443,32 @@ namespace XmlToKtb
         private System.Windows.Forms.ToolStripMenuItem dosyaKaydetMenuItem;
         private System.Windows.Forms.ToolStripMenuItem iceAktarMenuItem;
         private System.Windows.Forms.ToolStripMenuItem jsonIceAktarMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem duzenleMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem kaydirMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dondurMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem kesMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem kopyalaMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem olcekleMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem cizimMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem cizgiCizMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem daireCizMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem daireMerkezYaricapMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem daire3NoktaMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem daire2NoktaYaricapMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem daireTegetIkiObjeMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem daireTegetUcObjeMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yolMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem guzergahXmlCizMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ekranMenuItem;
         private System.Windows.Forms.ToolStripMenuItem girisEkraniMenuItem;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton secAraciButton;
-        private System.Windows.Forms.ToolStripButton cizgiAraciButton;
         private System.Windows.Forms.ToolStripSeparator yakalamaAyraci;
         private System.Windows.Forms.ToolStripButton noktaYakalaButton;
         private System.Windows.Forms.ToolStripButton ucYakalaButton;
         private System.Windows.Forms.ToolStripButton ortaYakalaButton;
         private System.Windows.Forms.ToolStripButton dikYakalaButton;
+        private System.Windows.Forms.ToolStripButton merkezYakalaButton;
         private System.Windows.Forms.StatusStrip durumStrip;
         private System.Windows.Forms.ToolStripStatusLabel konumDurumLabel;
         private System.Windows.Forms.ToolStripStatusLabel koordinatSistemiLabel;

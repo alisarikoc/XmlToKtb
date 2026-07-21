@@ -109,6 +109,15 @@
     <Compile Include="Cizim\CizimGorunum.cs" />
     <Compile Include="Cizim\CizimNesnesi.cs" />
     <Compile Include="Cizim\CizgiNesnesi.cs" />
+    <Compile Include="Cizim\YaziNesnesi.cs" />
+    <Compile Include="Cizim\NoktaNesnesi.cs" />
+    <Compile Include="Cizim\DaireNesnesi.cs" />
+    <Compile Include="Cizim\YayNesnesi.cs" />
+    <Compile Include="Cizim\DxfIceAktarici.cs" />
+    <Compile Include="Cizim\NesneDonusumleri.cs" />
+    <Compile Include="Cizim\Kesisimler.cs" />
+    <Compile Include="Cizim\DaireInsaHesaplari.cs" />
+    <Compile Include="Cizim\GuzergahCizici.cs" />
     <Compile Include="Cizim\CizimPaneli.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -128,6 +137,12 @@
     </Compile>
     <Compile Include="KoordinatSistemiForm.Designer.cs">
       <DependentUpon>KoordinatSistemiForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="OlcekFaktoruForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OlcekFaktoruForm.Designer.cs">
+      <DependentUpon>OlcekFaktoruForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Dever.cs" />
     <Compile Include="Form1.cs">

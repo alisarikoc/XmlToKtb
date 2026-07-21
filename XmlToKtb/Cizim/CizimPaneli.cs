@@ -9,7 +9,32 @@ namespace XmlToKtb.Cizim
     public enum CizimAraci
     {
         Sec,
-        Cizgi
+        Cizgi,
+        Kaydir,
+        Kopyala,
+        Dondur,
+        Olcekle,
+        Kes,
+        DaireMerkezYaricap,
+        Daire3Nokta,
+        Daire2NoktaYaricap,
+        DaireTegetIkiObje,
+        DaireTegetUcObje
+    }
+
+    /// <summary>Kaydır/Kopyala/Döndür/Ölçekle komutlarının çok adımlı akışındaki aşama.</summary>
+    public enum DuzenlemeAsamasi
+    {
+        ObjeSeciliyor,
+        TabanNoktasiBekleniyor,
+        IkinciNoktaBekleniyor
+    }
+
+    /// <summary>Daire çizim komutlarının çok adımlı akışındaki aşama.</summary>
+    public enum DaireAsamasi
+    {
+        GirdiBekleniyor,
+        CozumSeciliyor
     }
 
     /// <summary>Çizim ekranında aynı anda birden fazlası aktif olabilen nokta yakalama (object snap) türleri.</summary>
@@ -20,7 +45,8 @@ namespace XmlToKtb.Cizim
         Nokta = 1,
         Uc = 2,
         Orta = 4,
-        Dik = 8
+        Dik = 8,
+        Merkez = 16
     }
 
     /// <summary>AutoCAD benzeri pan/zoom yapılabilen, çizim yapılabilen koordinat düzlemi.</summary>
@@ -44,6 +70,15 @@ namespace XmlToKtb.Cizim
         private double _panBaslangicOfsetX;
         private double _panBaslangicOfsetY;
 
+        private DuzenlemeAsamasi _duzenlemeAsamasi;
+        private readonly List<CizimNesnesi> _duzenlenecekNesneler = new List<CizimNesnesi>();
+        private PointF _tabanNoktasi;
+
+        private DaireAsamasi _daireAsamasi;
+        private readonly List<PointF> _daireNoktalar = new List<PointF>();
+        private readonly List<CizimNesnesi> _daireObjeleri = new List<CizimNesnesi>();
+        private List<DaireNesnesi> _daireAdaylari;
+
         public event EventHandler<CizimNesnesi> SecimDegisti;
         public event EventHandler<PointF> FareKonumuDegisti;
         public event EventHandler<CizimAraci> AracDegisti;
@@ -57,9 +92,45 @@ namespace XmlToKtb.Cizim
                     return;
                 _aktifArac = value;
                 _beklemedekiBaslangic = null;
+                _duzenlenecekNesneler.Clear();
+                _duzenlemeAsamasi = DuzenlemeAsamasi.ObjeSeciliyor;
+                _daireNoktalar.Clear();
+                _daireObjeleri.Clear();
+                _daireAdaylari = null;
+                _daireAsamasi = DaireAsamasi.GirdiBekleniyor;
+                Cursor = value == CizimAraci.Sec ? _secAraciImleci : Cursors.Default;
+
+                if (DuzenlemeAraciMi(value))
+                {
+                    foreach (var nesne in Nesneler)
+                    {
+                        if (nesne.Secili)
+                            _duzenlenecekNesneler.Add(nesne);
+                    }
+                    if (_duzenlenecekNesneler.Count > 0)
+                        _duzenlemeAsamasi = DuzenlemeAsamasi.TabanNoktasiBekleniyor;
+                }
+
                 AracDegisti?.Invoke(this, _aktifArac);
                 Invalidate();
             }
+        }
+
+        private static bool DuzenlemeAraciMi(CizimAraci arac)
+        {
+            return arac == CizimAraci.Kaydir || arac == CizimAraci.Kopyala || arac == CizimAraci.Dondur || arac == CizimAraci.Olcekle;
+        }
+
+        private static bool DaireAraciMi(CizimAraci arac)
+        {
+            return arac == CizimAraci.DaireMerkezYaricap || arac == CizimAraci.Daire3Nokta
+                || arac == CizimAraci.Daire2NoktaYaricap || arac == CizimAraci.DaireTegetIkiObje
+                || arac == CizimAraci.DaireTegetUcObje;
+        }
+
+        private static bool DaireTegetObjesiOlabilirMi(CizimNesnesi nesne)
+        {
+            return nesne is CizgiNesnesi || nesne is YayNesnesi || nesne is DaireNesnesi;
         }
 
         /// <summary>Aktif nokta yakalama türlerinin bit birleşimi. Birden fazlası aynı anda açık olabilir.</summary>
@@ -76,10 +147,36 @@ namespace XmlToKtb.Cizim
             }
         }
 
+        private readonly Cursor _secAraciImleci;
+
         public CizimPaneli()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
             BackColor = Color.White;
+            _secAraciImleci = KareImleciOlustur(MilimetreyiPikselYap(2.0));
+            Cursor = _secAraciImleci;
+        }
+
+        private int MilimetreyiPikselYap(double milimetre)
+        {
+            var dpi = DeviceDpi > 0 ? DeviceDpi : 96;
+            return Math.Max(1, (int)Math.Round(milimetre / 25.4 * dpi));
+        }
+
+        private static Cursor KareImleciOlustur(int boyutPiksel)
+        {
+            using (var bitmap = new Bitmap(boyutPiksel, boyutPiksel))
+            {
+                using (var g = Graphics.FromImage(bitmap))
+                {
+                    g.Clear(Color.Transparent);
+                    using (var kalem = new Pen(Color.Black, 1f))
+                        g.DrawRectangle(kalem, 0, 0, boyutPiksel - 1, boyutPiksel - 1);
+                }
+
+                var hIcon = bitmap.GetHicon();
+                return new Cursor(hIcon);
+            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -106,6 +203,82 @@ namespace XmlToKtb.Cizim
                 var yakalamaEkran = Gorunum.DunyadanEkrana(_yakalananDunyaNoktasi.Value.X, _yakalananDunyaNoktasi.Value.Y, Width, Height);
                 YakalamaIsaretiCiz(e.Graphics, yakalamaEkran, _yakalananTuru);
             }
+
+            if (DuzenlemeAraciMi(AktifArac) && _duzenlemeAsamasi == DuzenlemeAsamasi.IkinciNoktaBekleniyor)
+            {
+                var fareDunya = Gorunum.EkrandanDunyaya(_sonFareEkranKonumu, Width, Height);
+                OnizlemeCiz(e.Graphics, fareDunya);
+            }
+
+            if (DaireAraciMi(AktifArac))
+                DaireOnizlemeCiz(e.Graphics);
+        }
+
+        private void DaireOnizlemeCiz(Graphics grafik)
+        {
+            if (_daireAsamasi == DaireAsamasi.CozumSeciliyor && _daireAdaylari != null)
+            {
+                using (var kalem = new Pen(Color.DarkOrange, 1.5f) { DashStyle = DashStyle.Dash })
+                {
+                    foreach (var aday in _daireAdaylari)
+                    {
+                        var ekranMerkez = Gorunum.DunyadanEkrana(aday.MerkezX, aday.MerkezY, Width, Height);
+                        var pikselYaricap = (float)(aday.Yaricap * Gorunum.Olcek);
+                        grafik.DrawEllipse(kalem, ekranMerkez.X - pikselYaricap, ekranMerkez.Y - pikselYaricap, pikselYaricap * 2, pikselYaricap * 2);
+                    }
+                }
+                return;
+            }
+
+            if (_daireNoktalar.Count == 0)
+                return;
+
+            using (var kalem = new Pen(Color.DarkOrange, 1.5f))
+            {
+                foreach (var nokta in _daireNoktalar)
+                {
+                    var ekran = Gorunum.DunyadanEkrana(nokta.X, nokta.Y, Width, Height);
+                    grafik.DrawLine(kalem, ekran.X - 4, ekran.Y, ekran.X + 4, ekran.Y);
+                    grafik.DrawLine(kalem, ekran.X, ekran.Y - 4, ekran.X, ekran.Y + 4);
+                }
+            }
+
+            var sonNokta = _daireNoktalar[_daireNoktalar.Count - 1];
+            var sonEkran = Gorunum.DunyadanEkrana(sonNokta.X, sonNokta.Y, Width, Height);
+            using (var kalemCizgi = new Pen(Color.Gray, 1f) { DashStyle = DashStyle.Dash })
+                grafik.DrawLine(kalemCizgi, sonEkran, _sonFareEkranKonumu);
+        }
+
+        private void OnizlemeCiz(Graphics grafik, PointF fareDunya)
+        {
+            var tabanEkran = Gorunum.DunyadanEkrana(_tabanNoktasi.X, _tabanNoktasi.Y, Width, Height);
+            using (var kalem = new Pen(Color.Gray, 1f) { DashStyle = DashStyle.Dash })
+            {
+                grafik.DrawLine(kalem, tabanEkran, _sonFareEkranKonumu);
+            }
+
+            foreach (var orijinal in _duzenlenecekNesneler)
+            {
+                var onizleme = NesneDonusumleri.Klonla(orijinal);
+
+                switch (AktifArac)
+                {
+                    case CizimAraci.Kaydir:
+                    case CizimAraci.Kopyala:
+                        NesneDonusumleri.Tasi(onizleme, fareDunya.X - _tabanNoktasi.X, fareDunya.Y - _tabanNoktasi.Y);
+                        break;
+
+                    case CizimAraci.Dondur:
+                    {
+                        var aciDerece = Math.Atan2(fareDunya.Y - _tabanNoktasi.Y, fareDunya.X - _tabanNoktasi.X) * 180.0 / Math.PI;
+                        NesneDonusumleri.Dondur(onizleme, _tabanNoktasi, aciDerece);
+                        break;
+                    }
+                }
+
+                onizleme.Secili = true;
+                onizleme.Ciz(grafik, Gorunum, Width, Height);
+            }
         }
 
         private static void YakalamaIsaretiCiz(Graphics grafik, PointF ekranNoktasi, YakalamaModu turu)
@@ -130,6 +303,15 @@ namespace XmlToKtb.Cizim
                     grafik.DrawLine(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y, ekranNoktasi.X, ekranNoktasi.Y);
                     grafik.DrawLine(kalem, ekranNoktasi.X, ekranNoktasi.Y, ekranNoktasi.X, ekranNoktasi.Y - yaricap);
                     grafik.DrawRectangle(kalem, ekranNoktasi.X - yaricap * 0.4f, ekranNoktasi.Y - yaricap * 0.4f, yaricap * 0.4f, yaricap * 0.4f);
+                }
+            }
+            else if (turu == YakalamaModu.Merkez)
+            {
+                using (var kalem = new Pen(Color.ForestGreen, 2f))
+                {
+                    grafik.DrawEllipse(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y - yaricap, yaricap * 2, yaricap * 2);
+                    grafik.DrawLine(kalem, ekranNoktasi.X - 2f, ekranNoktasi.Y, ekranNoktasi.X + 2f, ekranNoktasi.Y);
+                    grafik.DrawLine(kalem, ekranNoktasi.X, ekranNoktasi.Y - 2f, ekranNoktasi.X, ekranNoktasi.Y + 2f);
                 }
             }
             else
@@ -248,6 +430,13 @@ namespace XmlToKtb.Cizim
                         adaylar.Add(new YakalamaAdayi(dik.Value, YakalamaModu.Dik));
                 }
 
+                if ((_aktifYakalamaModu & YakalamaModu.Merkez) != 0)
+                {
+                    var merkez = nesne.MerkezNoktaAl();
+                    if (merkez != null)
+                        adaylar.Add(new YakalamaAdayi(merkez.Value, YakalamaModu.Merkez));
+                }
+
                 foreach (var aday in adaylar)
                 {
                     var adayEkran = Gorunum.DunyadanEkrana(aday.Nokta.X, aday.Nokta.Y, Width, Height);
@@ -303,8 +492,30 @@ namespace XmlToKtb.Cizim
 
             if (e.Button == MouseButtons.Right)
             {
-                if (AktifArac == CizimAraci.Cizgi)
+                if (AktifArac == CizimAraci.Cizgi || AktifArac == CizimAraci.Kes)
+                {
                     AktifArac = CizimAraci.Sec;
+                }
+                else if (DuzenlemeAraciMi(AktifArac))
+                {
+                    if (_duzenlemeAsamasi == DuzenlemeAsamasi.ObjeSeciliyor && _duzenlenecekNesneler.Count > 0)
+                    {
+                        _duzenlemeAsamasi = DuzenlemeAsamasi.TabanNoktasiBekleniyor;
+                        Invalidate();
+                    }
+                    else
+                    {
+                        foreach (var nesne in _duzenlenecekNesneler)
+                            nesne.Secili = false;
+                        AktifArac = CizimAraci.Sec;
+                    }
+                }
+                else if (DaireAraciMi(AktifArac))
+                {
+                    foreach (var nesne in _daireObjeleri)
+                        nesne.Secili = false;
+                    AktifArac = CizimAraci.Sec;
+                }
                 return;
             }
 
@@ -333,6 +544,18 @@ namespace XmlToKtb.Cizim
                 }
                 Invalidate();
             }
+            else if (AktifArac == CizimAraci.Kes)
+            {
+                KesUygula(dunyaNoktasi);
+            }
+            else if (DuzenlemeAraciMi(AktifArac))
+            {
+                DuzenlemeTikla(dunyaNoktasi);
+            }
+            else if (DaireAraciMi(AktifArac))
+            {
+                DaireTikla(dunyaNoktasi);
+            }
             else
             {
                 var toleransDunya = SecimToleransPiksel / Gorunum.Olcek;
@@ -352,6 +575,324 @@ namespace XmlToKtb.Cizim
                 SecimDegisti?.Invoke(this, bulunan);
                 Invalidate();
             }
+        }
+
+        private void KesUygula(PointF dunyaNoktasi)
+        {
+            var toleransDunya = SecimToleransPiksel / Gorunum.Olcek;
+            CizimNesnesi hedef = null;
+            for (var i = Nesneler.Count - 1; i >= 0; i--)
+            {
+                if ((Nesneler[i] is CizgiNesnesi || Nesneler[i] is YayNesnesi || Nesneler[i] is DaireNesnesi) && Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
+                {
+                    hedef = Nesneler[i];
+                    break;
+                }
+            }
+
+            if (hedef == null)
+                return;
+
+            var parcalar = Kesisimler.Kirp(hedef, dunyaNoktasi, Nesneler);
+            if (parcalar == null)
+                return;
+
+            Nesneler.Remove(hedef);
+            Nesneler.AddRange(parcalar);
+            Invalidate();
+        }
+
+        private void DuzenlemeTikla(PointF dunyaNoktasi)
+        {
+            switch (_duzenlemeAsamasi)
+            {
+                case DuzenlemeAsamasi.ObjeSeciliyor:
+                {
+                    var toleransDunya = SecimToleransPiksel / Gorunum.Olcek;
+                    CizimNesnesi bulunan = null;
+                    for (var i = Nesneler.Count - 1; i >= 0; i--)
+                    {
+                        if (Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
+                        {
+                            bulunan = Nesneler[i];
+                            break;
+                        }
+                    }
+
+                    if (bulunan != null)
+                    {
+                        if (_duzenlenecekNesneler.Contains(bulunan))
+                        {
+                            _duzenlenecekNesneler.Remove(bulunan);
+                            bulunan.Secili = false;
+                        }
+                        else
+                        {
+                            _duzenlenecekNesneler.Add(bulunan);
+                            bulunan.Secili = true;
+                        }
+                    }
+                    Invalidate();
+                    break;
+                }
+
+                case DuzenlemeAsamasi.TabanNoktasiBekleniyor:
+                    _tabanNoktasi = dunyaNoktasi;
+                    if (AktifArac == CizimAraci.Olcekle)
+                        OlcekleUygulaDiyalogIle();
+                    else
+                    {
+                        _duzenlemeAsamasi = DuzenlemeAsamasi.IkinciNoktaBekleniyor;
+                        Invalidate();
+                    }
+                    break;
+
+                case DuzenlemeAsamasi.IkinciNoktaBekleniyor:
+                    DuzenlemeUygula(dunyaNoktasi);
+                    foreach (var nesne in _duzenlenecekNesneler)
+                        nesne.Secili = false;
+                    AktifArac = CizimAraci.Sec;
+                    Invalidate();
+                    break;
+            }
+        }
+
+        private void OlcekleUygulaDiyalogIle()
+        {
+            using (var dlg = new OlcekFaktoruForm())
+            {
+                if (dlg.ShowDialog(FindForm()) == DialogResult.OK)
+                {
+                    foreach (var nesne in _duzenlenecekNesneler)
+                        NesneDonusumleri.Olcekle(nesne, _tabanNoktasi, dlg.Deger);
+                }
+
+                foreach (var nesne in _duzenlenecekNesneler)
+                    nesne.Secili = false;
+                AktifArac = CizimAraci.Sec;
+                Invalidate();
+            }
+        }
+
+        private void DuzenlemeUygula(PointF ikinciNokta)
+        {
+            switch (AktifArac)
+            {
+                case CizimAraci.Kaydir:
+                {
+                    var dx = ikinciNokta.X - _tabanNoktasi.X;
+                    var dy = ikinciNokta.Y - _tabanNoktasi.Y;
+                    foreach (var nesne in _duzenlenecekNesneler)
+                        NesneDonusumleri.Tasi(nesne, dx, dy);
+                    break;
+                }
+
+                case CizimAraci.Kopyala:
+                {
+                    var dx = ikinciNokta.X - _tabanNoktasi.X;
+                    var dy = ikinciNokta.Y - _tabanNoktasi.Y;
+                    foreach (var nesne in _duzenlenecekNesneler)
+                    {
+                        var kopya = NesneDonusumleri.Klonla(nesne);
+                        NesneDonusumleri.Tasi(kopya, dx, dy);
+                        Nesneler.Add(kopya);
+                    }
+                    break;
+                }
+
+                case CizimAraci.Dondur:
+                {
+                    var aciDerece = Math.Atan2(ikinciNokta.Y - _tabanNoktasi.Y, ikinciNokta.X - _tabanNoktasi.X) * 180.0 / Math.PI;
+                    foreach (var nesne in _duzenlenecekNesneler)
+                        NesneDonusumleri.Dondur(nesne, _tabanNoktasi, aciDerece);
+                    break;
+                }
+            }
+        }
+
+        private void DaireTikla(PointF dunyaNoktasi)
+        {
+            if (_daireAsamasi == DaireAsamasi.CozumSeciliyor)
+            {
+                DaireCozumSec(dunyaNoktasi);
+                return;
+            }
+
+            switch (AktifArac)
+            {
+                case CizimAraci.DaireMerkezYaricap:
+                    DaireMerkezYaricapTikla(dunyaNoktasi);
+                    break;
+                case CizimAraci.Daire3Nokta:
+                    Daire3NoktaTikla(dunyaNoktasi);
+                    break;
+                case CizimAraci.Daire2NoktaYaricap:
+                    Daire2NoktaYaricapTikla(dunyaNoktasi);
+                    break;
+                case CizimAraci.DaireTegetIkiObje:
+                    DaireTegetObjeTikla(dunyaNoktasi, 2);
+                    break;
+                case CizimAraci.DaireTegetUcObje:
+                    DaireTegetObjeTikla(dunyaNoktasi, 3);
+                    break;
+            }
+        }
+
+        private void DaireMerkezYaricapTikla(PointF merkez)
+        {
+            using (var dlg = new OlcekFaktoruForm("Daire Çiz", "Yarıçap:", 1.0))
+            {
+                if (dlg.ShowDialog(FindForm()) == DialogResult.OK)
+                    Nesneler.Add(new DaireNesnesi { MerkezX = merkez.X, MerkezY = merkez.Y, Yaricap = dlg.Deger });
+            }
+
+            AktifArac = CizimAraci.Sec;
+            Invalidate();
+        }
+
+        private void Daire3NoktaTikla(PointF nokta)
+        {
+            _daireNoktalar.Add(nokta);
+            if (_daireNoktalar.Count < 3)
+            {
+                Invalidate();
+                return;
+            }
+
+            var daire = DaireInsaHesaplari.UcNoktadanGecen(_daireNoktalar[0], _daireNoktalar[1], _daireNoktalar[2]);
+            if (daire != null)
+                Nesneler.Add(daire);
+            else
+                MessageBox.Show("Seçilen 3 nokta aynı doğru üzerinde, daire oluşturulamadı.", "Daire Çiz", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            AktifArac = CizimAraci.Sec;
+            Invalidate();
+        }
+
+        private void Daire2NoktaYaricapTikla(PointF nokta)
+        {
+            _daireNoktalar.Add(nokta);
+            if (_daireNoktalar.Count < 2)
+            {
+                Invalidate();
+                return;
+            }
+
+            using (var dlg = new OlcekFaktoruForm("Daire Çiz", "Yarıçap:", 1.0))
+            {
+                if (dlg.ShowDialog(FindForm()) != DialogResult.OK)
+                {
+                    AktifArac = CizimAraci.Sec;
+                    return;
+                }
+
+                var adaylar = DaireInsaHesaplari.IkiNoktaVeYaricap(_daireNoktalar[0], _daireNoktalar[1], dlg.Deger);
+                DaireAdaylariIsle(adaylar);
+            }
+        }
+
+        private void DaireTegetObjeTikla(PointF dunyaNoktasi, int gerekenObjeSayisi)
+        {
+            var toleransDunya = SecimToleransPiksel / Gorunum.Olcek;
+            CizimNesnesi bulunan = null;
+            for (var i = Nesneler.Count - 1; i >= 0; i--)
+            {
+                if (DaireTegetObjesiOlabilirMi(Nesneler[i]) && Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
+                {
+                    bulunan = Nesneler[i];
+                    break;
+                }
+            }
+
+            if (bulunan == null || _daireObjeleri.Contains(bulunan))
+                return;
+
+            _daireObjeleri.Add(bulunan);
+            bulunan.Secili = true;
+            _daireNoktalar.Add(dunyaNoktasi);
+
+            if (_daireObjeleri.Count < gerekenObjeSayisi)
+            {
+                Invalidate();
+                return;
+            }
+
+            List<DaireNesnesi> adaylar;
+            if (gerekenObjeSayisi == 2)
+            {
+                using (var dlg = new OlcekFaktoruForm("Daire Çiz", "Yarıçap:", 1.0))
+                {
+                    if (dlg.ShowDialog(FindForm()) != DialogResult.OK)
+                    {
+                        foreach (var nesne in _daireObjeleri)
+                            nesne.Secili = false;
+                        AktifArac = CizimAraci.Sec;
+                        return;
+                    }
+
+                    adaylar = DaireInsaHesaplari.TegetIkiObjeYaricap(_daireObjeleri[0], _daireObjeleri[1], dlg.Deger);
+                }
+            }
+            else
+            {
+                var baslangicTahmini = new PointF(
+                    (_daireNoktalar[0].X + _daireNoktalar[1].X + _daireNoktalar[2].X) / 3f,
+                    (_daireNoktalar[0].Y + _daireNoktalar[1].Y + _daireNoktalar[2].Y) / 3f);
+                adaylar = DaireInsaHesaplari.TegetUcObje(_daireObjeleri[0], _daireObjeleri[1], _daireObjeleri[2], baslangicTahmini);
+            }
+
+            foreach (var nesne in _daireObjeleri)
+                nesne.Secili = false;
+
+            DaireAdaylariIsle(adaylar);
+        }
+
+        private void DaireAdaylariIsle(List<DaireNesnesi> adaylar)
+        {
+            if (adaylar == null || adaylar.Count == 0)
+            {
+                MessageBox.Show("Verilen koşullara uyan bir daire bulunamadı.", "Daire Çiz", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                AktifArac = CizimAraci.Sec;
+                return;
+            }
+
+            if (adaylar.Count == 1)
+            {
+                Nesneler.Add(adaylar[0]);
+                AktifArac = CizimAraci.Sec;
+                Invalidate();
+                return;
+            }
+
+            _daireAdaylari = adaylar;
+            _daireAsamasi = DaireAsamasi.CozumSeciliyor;
+            Invalidate();
+        }
+
+        private void DaireCozumSec(PointF dunyaNoktasi)
+        {
+            var toleransDunya = SecimToleransPiksel / Gorunum.Olcek;
+            DaireNesnesi enYakin = null;
+            var enYakinFark = double.MaxValue;
+
+            foreach (var aday in _daireAdaylari)
+            {
+                var dx = dunyaNoktasi.X - aday.MerkezX;
+                var dy = dunyaNoktasi.Y - aday.MerkezY;
+                var mesafe = Math.Sqrt(dx * dx + dy * dy);
+                var fark = Math.Abs(mesafe - aday.Yaricap);
+                if (fark > toleransDunya || fark >= enYakinFark)
+                    continue;
+
+                enYakinFark = fark;
+                enYakin = aday;
+            }
+
+            if (enYakin != null)
+                Nesneler.Add(enYakin);
+
+            AktifArac = CizimAraci.Sec;
+            Invalidate();
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
@@ -375,7 +916,9 @@ namespace XmlToKtb.Cizim
             var dunyaNoktasi = DunyaNoktasiHesaplaVeYakala(e.Location);
             FareKonumuDegisti?.Invoke(this, dunyaNoktasi);
 
-            if ((AktifArac == CizimAraci.Cizgi && _beklemedekiBaslangic != null) || _aktifYakalamaModu != YakalamaModu.Yok)
+            if ((AktifArac == CizimAraci.Cizgi && _beklemedekiBaslangic != null) || _aktifYakalamaModu != YakalamaModu.Yok
+                || (DuzenlemeAraciMi(AktifArac) && _duzenlemeAsamasi == DuzenlemeAsamasi.IkinciNoktaBekleniyor)
+                || (DaireAraciMi(AktifArac) && _daireAsamasi == DaireAsamasi.GirdiBekleniyor && _daireNoktalar.Count > 0))
                 Invalidate();
         }
 
