@@ -14,19 +14,33 @@ namespace XmlToKtb.Cizim
 
         [DisplayName("Başlangıç X")]
         [Category("Başlangıç Noktası")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double BaslangicX { get; set; }
 
         [DisplayName("Başlangıç Y")]
         [Category("Başlangıç Noktası")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double BaslangicY { get; set; }
 
         [DisplayName("Bitiş X")]
         [Category("Bitiş Noktası")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double BitisX { get; set; }
 
         [DisplayName("Bitiş Y")]
         [Category("Bitiş Noktası")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double BitisY { get; set; }
+
+        [DisplayName("Başlangıç Z")]
+        [Category("Başlangıç Noktası")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
+        public double BaslangicZ { get; set; }
+
+        [DisplayName("Bitiş Z")]
+        [Category("Bitiş Noktası")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
+        public double BitisZ { get; set; }
 
         public override void Ciz(Graphics grafik, CizimGorunum gorunum, int panelGenislik, int panelYukseklik)
         {

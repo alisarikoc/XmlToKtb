@@ -72,11 +72,14 @@ namespace XmlToKtb.Cizim
                 if (t >= tiklamaT && t < ustSinir) ustSinir = t;
             }
 
+            var z1 = hedef.BaslangicZ;
+            var dz = hedef.BitisZ - z1;
+
             var sonuc = new List<CizimNesnesi>();
             if (altSinir > 1e-6)
-                sonuc.Add(new CizgiNesnesi { BaslangicX = x1, BaslangicY = y1, BitisX = x1 + altSinir * dx, BitisY = y1 + altSinir * dy });
+                sonuc.Add(new CizgiNesnesi { BaslangicX = x1, BaslangicY = y1, BaslangicZ = z1, BitisX = x1 + altSinir * dx, BitisY = y1 + altSinir * dy, BitisZ = z1 + altSinir * dz });
             if (ustSinir < 1 - 1e-6)
-                sonuc.Add(new CizgiNesnesi { BaslangicX = x1 + ustSinir * dx, BaslangicY = y1 + ustSinir * dy, BitisX = hedef.BitisX, BitisY = hedef.BitisY });
+                sonuc.Add(new CizgiNesnesi { BaslangicX = x1 + ustSinir * dx, BaslangicY = y1 + ustSinir * dy, BaslangicZ = z1 + ustSinir * dz, BitisX = hedef.BitisX, BitisY = hedef.BitisY, BitisZ = hedef.BitisZ });
 
             return sonuc;
         }
@@ -120,9 +123,9 @@ namespace XmlToKtb.Cizim
 
             var sonuc = new List<CizimNesnesi>();
             if (altSinir > 1e-4)
-                sonuc.Add(new YayNesnesi { MerkezX = hedef.MerkezX, MerkezY = hedef.MerkezY, Yaricap = hedef.Yaricap, BaslangicAcisi = hedef.BaslangicAcisi, BitisAcisi = hedef.BaslangicAcisi + altSinir });
+                sonuc.Add(new YayNesnesi { MerkezX = hedef.MerkezX, MerkezY = hedef.MerkezY, MerkezZ = hedef.MerkezZ, Yaricap = hedef.Yaricap, BaslangicAcisi = hedef.BaslangicAcisi, BitisAcisi = hedef.BaslangicAcisi + altSinir });
             if (ustSinir < supurme - 1e-4)
-                sonuc.Add(new YayNesnesi { MerkezX = hedef.MerkezX, MerkezY = hedef.MerkezY, Yaricap = hedef.Yaricap, BaslangicAcisi = hedef.BaslangicAcisi + ustSinir, BitisAcisi = hedef.BitisAcisi });
+                sonuc.Add(new YayNesnesi { MerkezX = hedef.MerkezX, MerkezY = hedef.MerkezY, MerkezZ = hedef.MerkezZ, Yaricap = hedef.Yaricap, BaslangicAcisi = hedef.BaslangicAcisi + ustSinir, BitisAcisi = hedef.BitisAcisi });
 
             return sonuc;
         }
@@ -179,7 +182,7 @@ namespace XmlToKtb.Cizim
 
                 var bas = acilar[i];
                 var bit = acilar[(i + 1) % n];
-                sonuc.Add(new YayNesnesi { MerkezX = hedef.MerkezX, MerkezY = hedef.MerkezY, Yaricap = hedef.Yaricap, BaslangicAcisi = bas, BitisAcisi = bit });
+                sonuc.Add(new YayNesnesi { MerkezX = hedef.MerkezX, MerkezY = hedef.MerkezY, MerkezZ = hedef.MerkezZ, Yaricap = hedef.Yaricap, BaslangicAcisi = bas, BitisAcisi = bit });
             }
 
             return sonuc;

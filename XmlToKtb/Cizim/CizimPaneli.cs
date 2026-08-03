@@ -79,6 +79,10 @@ namespace XmlToKtb.Cizim
         private readonly List<CizimNesnesi> _daireObjeleri = new List<CizimNesnesi>();
         private List<DaireNesnesi> _daireAdaylari;
 
+        private bool _secimKutusuBekleniyor;
+        private bool _secimKutusuSurukleniyor;
+        private Point _secimKutusuBaslangicEkran;
+
         public event EventHandler<CizimNesnesi> SecimDegisti;
         public event EventHandler<PointF> FareKonumuDegisti;
         public event EventHandler<CizimAraci> AracDegisti;
@@ -153,8 +157,89 @@ namespace XmlToKtb.Cizim
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
             BackColor = Color.White;
+            TabStop = true;
             _secAraciImleci = KareImleciOlustur(MilimetreyiPikselYap(2.0));
             Cursor = _secAraciImleci;
+            KeyDown += CizimPaneli_KeyDown;
+        }
+
+        private void CizimPaneli_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete && AktifArac == CizimAraci.Sec)
+            {
+                SeciliNesneleriSil();
+                e.Handled = true;
+            }
+            else if (e.KeyCode == Keys.Escape)
+            {
+                EscUygula();
+                e.Handled = true;
+            }
+        }
+
+        private void EscUygula()
+        {
+            if (AktifArac == CizimAraci.Sec)
+            {
+                var degisiklikVar = false;
+                foreach (var nesne in Nesneler)
+                {
+                    if (!nesne.Secili)
+                        continue;
+                    nesne.Secili = false;
+                    degisiklikVar = true;
+                }
+
+                _secimKutusuBekleniyor = false;
+                _secimKutusuSurukleniyor = false;
+
+                if (degisiklikVar)
+                    SecimBildir();
+                Invalidate();
+            }
+            else
+            {
+                foreach (var nesne in _duzenlenecekNesneler)
+                    nesne.Secili = false;
+                foreach (var nesne in _daireObjeleri)
+                    nesne.Secili = false;
+                AktifArac = CizimAraci.Sec;
+            }
+        }
+
+        private void SeciliNesneleriSil()
+        {
+            var silinecekler = new List<CizimNesnesi>();
+            foreach (var nesne in Nesneler)
+            {
+                if (nesne.Secili)
+                    silinecekler.Add(nesne);
+            }
+
+            if (silinecekler.Count == 0)
+                return;
+
+            foreach (var nesne in silinecekler)
+                Nesneler.Remove(nesne);
+
+            SecimBildir();
+            Invalidate();
+        }
+
+        /// <summary>Seçili obje sayısına göre Properties panelini günceller (tek obje seçiliyse onu, aksi halde boşu bildirir).</summary>
+        private void SecimBildir()
+        {
+            CizimNesnesi tekObje = null;
+            var sayac = 0;
+            foreach (var nesne in Nesneler)
+            {
+                if (!nesne.Secili)
+                    continue;
+                sayac++;
+                tekObje = nesne;
+            }
+
+            SecimDegisti?.Invoke(this, sayac == 1 ? tekObje : null);
         }
 
         private int MilimetreyiPikselYap(double milimetre)
@@ -212,6 +297,26 @@ namespace XmlToKtb.Cizim
 
             if (DaireAraciMi(AktifArac))
                 DaireOnizlemeCiz(e.Graphics);
+
+            if (_secimKutusuSurukleniyor)
+                SecimKutusuCiz(e.Graphics);
+        }
+
+        private void SecimKutusuCiz(Graphics grafik)
+        {
+            var x = Math.Min(_secimKutusuBaslangicEkran.X, _sonFareEkranKonumu.X);
+            var y = Math.Min(_secimKutusuBaslangicEkran.Y, _sonFareEkranKonumu.Y);
+            var genislik = Math.Abs(_sonFareEkranKonumu.X - _secimKutusuBaslangicEkran.X);
+            var yukseklik = Math.Abs(_sonFareEkranKonumu.Y - _secimKutusuBaslangicEkran.Y);
+            var gecisSecimi = _sonFareEkranKonumu.X < _secimKutusuBaslangicEkran.X;
+            var renk = gecisSecimi ? Color.LimeGreen : Color.DodgerBlue;
+
+            using (var dolgu = new SolidBrush(Color.FromArgb(40, renk)))
+            using (var kalem = new Pen(renk, 1f) { DashStyle = gecisSecimi ? DashStyle.Dash : DashStyle.Solid })
+            {
+                grafik.FillRectangle(dolgu, x, y, genislik, yukseklik);
+                grafik.DrawRectangle(kalem, x, y, genislik, yukseklik);
+            }
         }
 
         private void DaireOnizlemeCiz(Graphics grafik)
@@ -558,23 +663,44 @@ namespace XmlToKtb.Cizim
             }
             else
             {
-                var toleransDunya = SecimToleransPiksel / Gorunum.Olcek;
-                CizimNesnesi bulunan = null;
-                for (var i = Nesneler.Count - 1; i >= 0; i--)
+                SecAraciMouseDown(dunyaNoktasi, e.Location);
+            }
+        }
+
+        private void SecAraciMouseDown(PointF dunyaNoktasi, Point ekranNoktasi)
+        {
+            var toleransDunya = SecimToleransPiksel / Gorunum.Olcek;
+            CizimNesnesi bulunan = null;
+            for (var i = Nesneler.Count - 1; i >= 0; i--)
+            {
+                if (Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
                 {
-                    if (Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
-                    {
-                        bulunan = Nesneler[i];
-                        break;
-                    }
+                    bulunan = Nesneler[i];
+                    break;
+                }
+            }
+
+            if (bulunan != null)
+            {
+                if (ModifierKeys.HasFlag(Keys.Shift))
+                {
+                    bulunan.Secili = !bulunan.Secili;
+                }
+                else
+                {
+                    foreach (var nesne in Nesneler)
+                        nesne.Secili = ReferenceEquals(nesne, bulunan);
                 }
 
-                foreach (var nesne in Nesneler)
-                    nesne.Secili = ReferenceEquals(nesne, bulunan);
-
-                SecimDegisti?.Invoke(this, bulunan);
+                SecimBildir();
                 Invalidate();
+                return;
             }
+
+            // Boş alana tıklandı: pencere/kesişme seçimi sürüklemesi olası. Kesin karar MouseUp'ta veriliyor.
+            _secimKutusuBekleniyor = true;
+            _secimKutusuSurukleniyor = false;
+            _secimKutusuBaslangicEkran = ekranNoktasi;
         }
 
         private void KesUygula(PointF dunyaNoktasi)
@@ -913,6 +1039,17 @@ namespace XmlToKtb.Cizim
                 return;
             }
 
+            if (_secimKutusuBekleniyor)
+            {
+                var dx = e.Location.X - _secimKutusuBaslangicEkran.X;
+                var dy = e.Location.Y - _secimKutusuBaslangicEkran.Y;
+                if (!_secimKutusuSurukleniyor && (Math.Abs(dx) > 3 || Math.Abs(dy) > 3))
+                    _secimKutusuSurukleniyor = true;
+
+                if (_secimKutusuSurukleniyor)
+                    Invalidate();
+            }
+
             var dunyaNoktasi = DunyaNoktasiHesaplaVeYakala(e.Location);
             FareKonumuDegisti?.Invoke(this, dunyaNoktasi);
 
@@ -927,6 +1064,131 @@ namespace XmlToKtb.Cizim
             base.OnMouseUp(e);
             if (e.Button == MouseButtons.Middle)
                 _panSurukleniyor = false;
+
+            if (e.Button == MouseButtons.Left && _secimKutusuBekleniyor)
+            {
+                if (_secimKutusuSurukleniyor)
+                {
+                    SecimKutusuTamamla(e.Location);
+                }
+                else if (!ModifierKeys.HasFlag(Keys.Shift))
+                {
+                    foreach (var nesne in Nesneler)
+                        nesne.Secili = false;
+                    SecimBildir();
+                    Invalidate();
+                }
+
+                _secimKutusuBekleniyor = false;
+                _secimKutusuSurukleniyor = false;
+            }
+        }
+
+        private void SecimKutusuTamamla(Point ekranBitisNoktasi)
+        {
+            var dunyaBaslangic = Gorunum.EkrandanDunyaya(_secimKutusuBaslangicEkran, Width, Height);
+            var dunyaBitis = Gorunum.EkrandanDunyaya(ekranBitisNoktasi, Width, Height);
+
+            var minX = Math.Min(dunyaBaslangic.X, dunyaBitis.X);
+            var maxX = Math.Max(dunyaBaslangic.X, dunyaBitis.X);
+            var minY = Math.Min(dunyaBaslangic.Y, dunyaBitis.Y);
+            var maxY = Math.Max(dunyaBaslangic.Y, dunyaBitis.Y);
+            var kutu = RectangleF.FromLTRB(minX, minY, maxX, maxY);
+
+            var gecisSecimi = ekranBitisNoktasi.X < _secimKutusuBaslangicEkran.X;
+            var shiftBasili = ModifierKeys.HasFlag(Keys.Shift);
+
+            if (!shiftBasili)
+            {
+                foreach (var nesne in Nesneler)
+                    nesne.Secili = false;
+            }
+
+            foreach (var nesne in Nesneler)
+            {
+                var uygun = gecisSecimi ? NesneKutuyuKesiyorMu(nesne, kutu) : TumUcNoktalarKutuIcindeMi(nesne, kutu);
+                if (!uygun)
+                    continue;
+
+                nesne.Secili = shiftBasili ? !nesne.Secili : true;
+            }
+
+            SecimBildir();
+            Invalidate();
+        }
+
+        private static bool TumUcNoktalarKutuIcindeMi(CizimNesnesi nesne, RectangleF kutu)
+        {
+            var herhangiNoktaVar = false;
+            foreach (var nokta in nesne.UcNoktalariAl())
+            {
+                herhangiNoktaVar = true;
+                if (!kutu.Contains(nokta))
+                    return false;
+            }
+            return herhangiNoktaVar;
+        }
+
+        private static bool NesneKutuyuKesiyorMu(CizimNesnesi nesne, RectangleF kutu)
+        {
+            foreach (var nokta in nesne.UcNoktalariAl())
+            {
+                if (kutu.Contains(nokta))
+                    return true;
+            }
+
+            switch (nesne)
+            {
+                case CizgiNesnesi cizgi:
+                    return DogruParcasiKutuyuKesiyorMu(cizgi.BaslangicX, cizgi.BaslangicY, cizgi.BitisX, cizgi.BitisY, kutu);
+                case DaireNesnesi daire:
+                    return DaireKutuyuKesiyorMu(daire.MerkezX, daire.MerkezY, daire.Yaricap, kutu);
+                case YayNesnesi yay:
+                    return DaireKutuyuKesiyorMu(yay.MerkezX, yay.MerkezY, yay.Yaricap, kutu);
+                case SpiralNesnesi spiral:
+                    return SpiralKutuyuKesiyorMu(spiral, kutu);
+                default:
+                    return false;
+            }
+        }
+
+        private static bool SpiralKutuyuKesiyorMu(SpiralNesnesi spiral, RectangleF kutu)
+        {
+            var noktalar = spiral.OrnekNoktalariGetir();
+            for (var i = 0; i < noktalar.Count - 1; i++)
+            {
+                if (DogruParcasiKutuyuKesiyorMu(noktalar[i].X, noktalar[i].Y, noktalar[i + 1].X, noktalar[i + 1].Y, kutu))
+                    return true;
+            }
+            return false;
+        }
+
+        private static bool DogruParcasiKutuyuKesiyorMu(double x1, double y1, double x2, double y2, RectangleF kutu)
+        {
+            return DogruDoruKesisiyorMu(x1, y1, x2, y2, kutu.Left, kutu.Top, kutu.Right, kutu.Top)
+                || DogruDoruKesisiyorMu(x1, y1, x2, y2, kutu.Right, kutu.Top, kutu.Right, kutu.Bottom)
+                || DogruDoruKesisiyorMu(x1, y1, x2, y2, kutu.Right, kutu.Bottom, kutu.Left, kutu.Bottom)
+                || DogruDoruKesisiyorMu(x1, y1, x2, y2, kutu.Left, kutu.Bottom, kutu.Left, kutu.Top);
+        }
+
+        private static bool DogruDoruKesisiyorMu(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
+        {
+            var payda = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+            if (Math.Abs(payda) < 1e-9)
+                return false;
+
+            var t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / payda;
+            var u = ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / payda;
+            return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+        }
+
+        private static bool DaireKutuyuKesiyorMu(double merkezX, double merkezY, double yaricap, RectangleF kutu)
+        {
+            var enYakinX = Math.Max(kutu.Left, Math.Min(merkezX, kutu.Right));
+            var enYakinY = Math.Max(kutu.Top, Math.Min(merkezY, kutu.Bottom));
+            var dx = merkezX - enYakinX;
+            var dy = merkezY - enYakinY;
+            return dx * dx + dy * dy <= yaricap * yaricap;
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)

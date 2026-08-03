@@ -29,7 +29,7 @@ namespace DXFLib
 
         public void Load(string filename)
         {
-            FileStream stream = new FileStream(filename, FileMode.Open);
+            FileStream stream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             Load(stream);
             stream.Close();
         }

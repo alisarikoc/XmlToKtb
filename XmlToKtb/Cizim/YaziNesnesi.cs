@@ -31,15 +31,23 @@ namespace XmlToKtb.Cizim
         public string Metin { get; set; } = "";
 
         [DisplayName("Konum X")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double KonumX { get; set; }
 
         [DisplayName("Konum Y")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double KonumY { get; set; }
 
+        [DisplayName("Konum Z")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
+        public double KonumZ { get; set; }
+
         [DisplayName("Yükseklik")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double Yukseklik { get; set; } = 1.5;
 
         [DisplayName("Döndürme")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double Donus { get; set; }
 
         [DisplayName("Yatay Hiza")]
