@@ -16,9 +16,9 @@ namespace XmlToKtb.Cizim
 
         private struct Donusum
         {
-            public double OfsetX, OfsetY, OlcekX, OlcekY, DonusDerece;
+            public double OfsetX, OfsetY, OfsetZ, OlcekX, OlcekY, OlcekZ, DonusDerece;
 
-            public static readonly Donusum Kimlik = new Donusum { OlcekX = 1, OlcekY = 1 };
+            public static readonly Donusum Kimlik = new Donusum { OlcekX = 1, OlcekY = 1, OlcekZ = 1 };
 
             public (double x, double y) Uygula(double x, double y)
             {
@@ -32,6 +32,8 @@ namespace XmlToKtb.Cizim
                 return (rx + OfsetX, ry + OfsetY);
             }
 
+            public double UygulaZ(double z) => z * OlcekZ + OfsetZ;
+
             public double OlcekOrtalama => (OlcekX + OlcekY) / 2.0;
 
             public Donusum IceIceEkle(Vector3 pozisyon, Vector3 olcek, double donusDerece)
@@ -41,8 +43,10 @@ namespace XmlToKtb.Cizim
                 {
                     OfsetX = px,
                     OfsetY = py,
+                    OfsetZ = UygulaZ(pozisyon.Z),
                     OlcekX = OlcekX * olcek.X,
                     OlcekY = OlcekY * olcek.Y,
+                    OlcekZ = OlcekZ * olcek.Z,
                     DonusDerece = DonusDerece + donusDerece
                 };
             }
@@ -67,7 +71,11 @@ namespace XmlToKtb.Cizim
                 {
                     var (x1, y1) = donusum.Uygula(dogru.StartPoint.X, dogru.StartPoint.Y);
                     var (x2, y2) = donusum.Uygula(dogru.EndPoint.X, dogru.EndPoint.Y);
-                    sonuc.Add(new CizgiNesnesi { BaslangicX = x1, BaslangicY = y1, BitisX = x2, BitisY = y2 });
+                    sonuc.Add(new CizgiNesnesi
+                    {
+                        BaslangicX = x1, BaslangicY = y1, BaslangicZ = donusum.UygulaZ(dogru.StartPoint.Z),
+                        BitisX = x2, BitisY = y2, BitisZ = donusum.UygulaZ(dogru.EndPoint.Z)
+                    });
                     break;
                 }
 
@@ -88,14 +96,14 @@ namespace XmlToKtb.Cizim
                 case netDxf.Entities.Point nokta:
                 {
                     var (x, y) = donusum.Uygula(nokta.Position.X, nokta.Position.Y);
-                    sonuc.Add(new NoktaNesnesi { X = x, Y = y });
+                    sonuc.Add(new NoktaNesnesi { X = x, Y = y, Z = donusum.UygulaZ(nokta.Position.Z) });
                     break;
                 }
 
                 case Circle daire:
                 {
                     var (cx, cy) = donusum.Uygula(daire.Center.X, daire.Center.Y);
-                    sonuc.Add(new DaireNesnesi { MerkezX = cx, MerkezY = cy, Yaricap = daire.Radius * donusum.OlcekOrtalama });
+                    sonuc.Add(new DaireNesnesi { MerkezX = cx, MerkezY = cy, MerkezZ = donusum.UygulaZ(daire.Center.Z), Yaricap = daire.Radius * donusum.OlcekOrtalama });
                     break;
                 }
 
@@ -106,6 +114,7 @@ namespace XmlToKtb.Cizim
                     {
                         MerkezX = cx,
                         MerkezY = cy,
+                        MerkezZ = donusum.UygulaZ(yay.Center.Z),
                         Yaricap = yay.Radius * donusum.OlcekOrtalama,
                         BaslangicAcisi = yay.StartAngle + donusum.DonusDerece,
                         BitisAcisi = yay.EndAngle + donusum.DonusDerece
@@ -115,46 +124,46 @@ namespace XmlToKtb.Cizim
 
                 case Polyline2D polyline2D:
                 {
-                    var noktalar = new List<(double X, double Y)>(polyline2D.Vertexes.Count);
+                    var noktalar = new List<(double X, double Y, double Z)>(polyline2D.Vertexes.Count);
                     foreach (var v in polyline2D.Vertexes)
-                        noktalar.Add((v.Position.X, v.Position.Y));
+                        noktalar.Add((v.Position.X, v.Position.Y, polyline2D.Elevation));
                     CokgenEkle(noktalar, polyline2D.IsClosed, donusum, sonuc);
                     break;
                 }
 
                 case Polyline3D polyline3D:
                 {
-                    var noktalar = new List<(double X, double Y)>(polyline3D.Vertexes.Count);
+                    var noktalar = new List<(double X, double Y, double Z)>(polyline3D.Vertexes.Count);
                     foreach (var v in polyline3D.Vertexes)
-                        noktalar.Add((v.X, v.Y));
+                        noktalar.Add((v.X, v.Y, v.Z));
                     CokgenEkle(noktalar, polyline3D.IsClosed, donusum, sonuc);
                     break;
                 }
 
                 case Face3D yuz:
-                    CokgenEkle(new List<(double X, double Y)>
+                    CokgenEkle(new List<(double X, double Y, double Z)>
                     {
-                        (yuz.FirstVertex.X, yuz.FirstVertex.Y),
-                        (yuz.SecondVertex.X, yuz.SecondVertex.Y),
-                        (yuz.ThirdVertex.X, yuz.ThirdVertex.Y),
-                        (yuz.FourthVertex.X, yuz.FourthVertex.Y)
+                        (yuz.FirstVertex.X, yuz.FirstVertex.Y, yuz.FirstVertex.Z),
+                        (yuz.SecondVertex.X, yuz.SecondVertex.Y, yuz.SecondVertex.Z),
+                        (yuz.ThirdVertex.X, yuz.ThirdVertex.Y, yuz.ThirdVertex.Z),
+                        (yuz.FourthVertex.X, yuz.FourthVertex.Y, yuz.FourthVertex.Z)
                     }, true, donusum, sonuc);
                     break;
 
                 case Solid katiUcgen:
-                    CokgenEkle(new List<(double X, double Y)>
+                    CokgenEkle(new List<(double X, double Y, double Z)>
                     {
-                        (katiUcgen.FirstVertex.X, katiUcgen.FirstVertex.Y),
-                        (katiUcgen.SecondVertex.X, katiUcgen.SecondVertex.Y),
-                        (katiUcgen.ThirdVertex.X, katiUcgen.ThirdVertex.Y),
-                        (katiUcgen.FourthVertex.X, katiUcgen.FourthVertex.Y)
+                        (katiUcgen.FirstVertex.X, katiUcgen.FirstVertex.Y, katiUcgen.Elevation),
+                        (katiUcgen.SecondVertex.X, katiUcgen.SecondVertex.Y, katiUcgen.Elevation),
+                        (katiUcgen.ThirdVertex.X, katiUcgen.ThirdVertex.Y, katiUcgen.Elevation),
+                        (katiUcgen.FourthVertex.X, katiUcgen.FourthVertex.Y, katiUcgen.Elevation)
                     }, true, donusum, sonuc);
                     break;
 
                 case Hatch tarama:
                     foreach (var yol in tarama.BoundaryPaths)
                     foreach (var kenar in yol.Edges)
-                        HatchKenariEkle(kenar, donusum, sonuc);
+                        HatchKenariEkle(kenar, tarama.Elevation, donusum, sonuc);
                     break;
 
                 case Insert eklenti:
@@ -173,15 +182,15 @@ namespace XmlToKtb.Cizim
             }
         }
 
-        private static void HatchKenariEkle(HatchBoundaryPath.Edge kenar, Donusum donusum, List<CizimNesnesi> sonuc)
+        private static void HatchKenariEkle(HatchBoundaryPath.Edge kenar, double elevation, Donusum donusum, List<CizimNesnesi> sonuc)
         {
             switch (kenar)
             {
                 case HatchBoundaryPath.Polyline kenarPolyline:
                 {
-                    var noktalar = new List<(double X, double Y)>(kenarPolyline.Vertexes.Length);
+                    var noktalar = new List<(double X, double Y, double Z)>(kenarPolyline.Vertexes.Length);
                     foreach (var v in kenarPolyline.Vertexes)
-                        noktalar.Add((v.X, v.Y));
+                        noktalar.Add((v.X, v.Y, elevation));
                     CokgenEkle(noktalar, kenarPolyline.IsClosed, donusum, sonuc);
                     break;
                 }
@@ -189,7 +198,8 @@ namespace XmlToKtb.Cizim
                 {
                     var (x1, y1) = donusum.Uygula(kenarCizgi.Start.X, kenarCizgi.Start.Y);
                     var (x2, y2) = donusum.Uygula(kenarCizgi.End.X, kenarCizgi.End.Y);
-                    sonuc.Add(new CizgiNesnesi { BaslangicX = x1, BaslangicY = y1, BitisX = x2, BitisY = y2 });
+                    var z = donusum.UygulaZ(elevation);
+                    sonuc.Add(new CizgiNesnesi { BaslangicX = x1, BaslangicY = y1, BaslangicZ = z, BitisX = x2, BitisY = y2, BitisZ = z });
                     break;
                 }
                 case HatchBoundaryPath.Arc kenarYay:
@@ -201,6 +211,7 @@ namespace XmlToKtb.Cizim
                     {
                         MerkezX = cx,
                         MerkezY = cy,
+                        MerkezZ = donusum.UygulaZ(elevation),
                         Yaricap = kenarYay.Radius * donusum.OlcekOrtalama,
                         BaslangicAcisi = baslangic + donusum.DonusDerece,
                         BitisAcisi = bitis + donusum.DonusDerece
@@ -221,6 +232,7 @@ namespace XmlToKtb.Cizim
             {
                 KonumX = x,
                 KonumY = y,
+                KonumZ = donusum.UygulaZ(konum.Z),
                 Metin = metin,
                 Yukseklik = (yukseklik > 0 ? yukseklik : 1.5) * donusum.OlcekOrtalama,
                 Donus = donusDerece + donusum.DonusDerece,
@@ -266,21 +278,24 @@ namespace XmlToKtb.Cizim
             }
         }
 
-        private static void CokgenEkle(IReadOnlyList<(double X, double Y)> noktalar, bool kapali, Donusum donusum, List<CizimNesnesi> sonuc)
+        private static void CokgenEkle(IReadOnlyList<(double X, double Y, double Z)> noktalar, bool kapali, Donusum donusum, List<CizimNesnesi> sonuc)
         {
             if (noktalar.Count < 2)
                 return;
 
-            var donusmusler = new List<(double X, double Y)>(noktalar.Count);
+            var donusmusler = new List<(double X, double Y, double Z)>(noktalar.Count);
             foreach (var n in noktalar)
-                donusmusler.Add(donusum.Uygula(n.X, n.Y));
+            {
+                var (x, y) = donusum.Uygula(n.X, n.Y);
+                donusmusler.Add((x, y, donusum.UygulaZ(n.Z)));
+            }
 
             var kenarSayisi = kapali ? donusmusler.Count : donusmusler.Count - 1;
             for (var i = 0; i < kenarSayisi; i++)
             {
                 var bas = donusmusler[i];
                 var bit = donusmusler[(i + 1) % donusmusler.Count];
-                sonuc.Add(new CizgiNesnesi { BaslangicX = bas.X, BaslangicY = bas.Y, BitisX = bit.X, BitisY = bit.Y });
+                sonuc.Add(new CizgiNesnesi { BaslangicX = bas.X, BaslangicY = bas.Y, BaslangicZ = bas.Z, BitisX = bit.X, BitisY = bit.Y, BitisZ = bit.Z });
             }
         }
 

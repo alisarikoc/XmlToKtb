@@ -586,34 +586,24 @@ namespace XmlToKtb
             }
             return tumsatirlar;
         }
-        private List<Array> GetirGSIData()
+        private List<Array> GetirGSIData(string dosyaYolu)
         {
-            OpenFileDialog file = new OpenFileDialog();
-            file.FilterIndex = 0;
-            file.DefaultExt = "gsi";
-            file.Title = "Nivelman GSI Dosyası Seçiniz..";
-            file.Filter = "GSI Dosyası |*.gsi";
-            if (file.ShowDialog() == DialogResult.OK)
-            {
-
-            }
-            StreamReader GsiIcerigi = new StreamReader(file.FileName);
             List<Array> tumsatirlar = new List<Array>();
-            //StreamReader lisIcerigi = new StreamReader(LisopenFileDialog.FileName);
-
-            while (!GsiIcerigi.EndOfStream)
+            using (StreamReader gsiOkuyucu = new StreamReader(dosyaYolu))
             {
-                char[] separator = { ' ', '\t' };
-                var veriSatir = GsiIcerigi.ReadLine();
-                if (veriSatir != null)
+                while (!gsiOkuyucu.EndOfStream)
                 {
-                    var veriKelimeleri = veriSatir.Split(separator, (StringSplitOptions) 1);
-                    tumsatirlar.Add(veriKelimeleri);
+                    char[] separator = { ' ', '\t' };
+                    var veriSatir = gsiOkuyucu.ReadLine();
+                    if (veriSatir != null)
+                    {
+                        var veriKelimeleri = veriSatir.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                        tumsatirlar.Add(veriKelimeleri);
+                    }
                 }
             }
 
             return tumsatirlar;
-
         }
         private List<Array> GetirKmListeDosyasi()
         {
@@ -644,9 +634,39 @@ namespace XmlToKtb
         }
         private void GSIoku_Click(object sender, EventArgs e)
         {
-            List<Array> GsiData = GetirGSIData();
-            // TODO yüklenen GSI dosyası text formatında boşlukla ayrılmış olarak kayıt edilecek..
-            // Buraya kod yazılacak pull için yazdım.tekas
+            OpenFileDialog file = new OpenFileDialog();
+            file.FilterIndex = 0;
+            file.DefaultExt = "gsi";
+            file.Title = "Nivelman GSI Dosyası Seçiniz.. (birden fazla dosya seçilebilir)";
+            file.Filter = "GSI Dosyası |*.gsi";
+            file.Multiselect = true;
+            if (file.ShowDialog() != DialogResult.OK)
+                return;
+
+            var basariliSayisi = 0;
+            var hatalar = new List<string>();
+            foreach (var gsiYolu in file.FileNames)
+            {
+                try
+                {
+                    List<Array> gsiData = GetirGSIData(gsiYolu);
+                    string liste = GsiIcerigi.Excellistesi(gsiData);
+                    string txtYolu = Path.ChangeExtension(gsiYolu, ".txt");
+                    File.WriteAllText(txtYolu, liste);
+                    basariliSayisi++;
+                }
+                catch (Exception ex)
+                {
+                    hatalar.Add(Path.GetFileName(gsiYolu) + ": " + ex.Message);
+                }
+            }
+
+            var mesaj = $"{basariliSayisi} dosya .txt olarak kaydedildi.";
+            if (hatalar.Count > 0)
+                mesaj += "\n\nHata alan dosyalar:\n" + string.Join("\n", hatalar);
+
+            MessageBox.Show(mesaj, "Nivelman GSI Dönüştürme",
+                MessageBoxButtons.OK, hatalar.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
         }
         private List<Array> GetirMdtData()
         {

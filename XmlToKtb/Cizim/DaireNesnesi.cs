@@ -13,13 +13,20 @@ namespace XmlToKtb.Cizim
         public override string Tip => "Daire";
 
         [DisplayName("Merkez X")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double MerkezX { get; set; }
 
         [DisplayName("Merkez Y")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double MerkezY { get; set; }
 
         [DisplayName("Yarıçap")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double Yaricap { get; set; }
+
+        [DisplayName("Merkez Z")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
+        public double MerkezZ { get; set; }
 
         public override void Ciz(Graphics grafik, CizimGorunum gorunum, int panelGenislik, int panelYukseklik)
         {

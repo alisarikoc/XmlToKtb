@@ -100,6 +100,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -113,6 +115,12 @@
     <Compile Include="Cizim\NoktaNesnesi.cs" />
     <Compile Include="Cizim\DaireNesnesi.cs" />
     <Compile Include="Cizim\YayNesnesi.cs" />
+    <Compile Include="Cizim\SpiralNesnesi.cs" />
+    <Compile Include="Cizim\SpiralHesaplayici.cs" />
+    <Compile Include="Cizim\GorunumAyarlari.cs" />
+    <Compile Include="Cizim\OndalikDegerConverter.cs" />
+    <Compile Include="Cizim\GoogleEarthAktarici.cs" />
+    <Compile Include="Cizim\GoogleEarthIceAktarici.cs" />
     <Compile Include="Cizim\DxfIceAktarici.cs" />
     <Compile Include="Cizim\NesneDonusumleri.cs" />
     <Compile Include="Cizim\Kesisimler.cs" />
@@ -144,6 +152,12 @@
     <Compile Include="OlcekFaktoruForm.Designer.cs">
       <DependentUpon>OlcekFaktoruForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GorunumAyarlariForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GorunumAyarlariForm.Designer.cs">
+      <DependentUpon>GorunumAyarlariForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dever.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -156,6 +170,7 @@
     <Compile Include="KmdenKoorHesapla.cs" />
     <Compile Include="KTBIcerigi.cs" />
     <Compile Include="MDT_icerigi.cs" />
+    <Compile Include="GsiIcerigi.cs" />
     <Compile Include="OfsetVeKoticerigi.cs" />
     <Compile Include="XMLdataEkle.cs" />
     <Compile Include="Tcddtekniktablo.cs" />

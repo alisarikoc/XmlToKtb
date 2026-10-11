@@ -8,7 +8,7 @@ namespace Common
         public T XmlDeserializer<T>(string xmlDosyaYolu)
         {
             var serializer = new XmlSerializer(typeof(T));
-            using (var fileStream = new FileStream(xmlDosyaYolu, FileMode.Open))
+            using (var fileStream = new FileStream(xmlDosyaYolu, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 return (T) serializer.Deserialize(fileStream);
             }

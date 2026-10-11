@@ -12,10 +12,16 @@ namespace XmlToKtb.Cizim
         public override string Tip => "Nokta";
 
         [DisplayName("X")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double X { get; set; }
 
         [DisplayName("Y")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
         public double Y { get; set; }
+
+        [DisplayName("Z")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
+        public double Z { get; set; }
 
         public override void Ciz(Graphics grafik, CizimGorunum gorunum, int panelGenislik, int panelYukseklik)
         {

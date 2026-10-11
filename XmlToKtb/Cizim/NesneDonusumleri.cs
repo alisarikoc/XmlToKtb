@@ -11,12 +11,17 @@ namespace XmlToKtb.Cizim
             switch (nesne)
             {
                 case CizgiNesnesi c:
-                    return new CizgiNesnesi { BaslangicX = c.BaslangicX, BaslangicY = c.BaslangicY, BitisX = c.BitisX, BitisY = c.BitisY };
+                    return new CizgiNesnesi
+                    {
+                        BaslangicX = c.BaslangicX, BaslangicY = c.BaslangicY, BaslangicZ = c.BaslangicZ,
+                        BitisX = c.BitisX, BitisY = c.BitisY, BitisZ = c.BitisZ
+                    };
                 case YaziNesnesi y:
                     return new YaziNesnesi
                     {
                         KonumX = y.KonumX,
                         KonumY = y.KonumY,
+                        KonumZ = y.KonumZ,
                         Metin = y.Metin,
                         Yukseklik = y.Yukseklik,
                         Donus = y.Donus,
@@ -24,17 +29,35 @@ namespace XmlToKtb.Cizim
                         HizaDikey = y.HizaDikey
                     };
                 case NoktaNesnesi n:
-                    return new NoktaNesnesi { X = n.X, Y = n.Y };
+                    return new NoktaNesnesi { X = n.X, Y = n.Y, Z = n.Z };
                 case DaireNesnesi d:
-                    return new DaireNesnesi { MerkezX = d.MerkezX, MerkezY = d.MerkezY, Yaricap = d.Yaricap };
+                    return new DaireNesnesi { MerkezX = d.MerkezX, MerkezY = d.MerkezY, MerkezZ = d.MerkezZ, Yaricap = d.Yaricap };
                 case YayNesnesi a:
                     return new YayNesnesi
                     {
                         MerkezX = a.MerkezX,
                         MerkezY = a.MerkezY,
+                        MerkezZ = a.MerkezZ,
                         Yaricap = a.Yaricap,
                         BaslangicAcisi = a.BaslangicAcisi,
                         BitisAcisi = a.BitisAcisi
+                    };
+                case SpiralNesnesi s:
+                    return new SpiralNesnesi
+                    {
+                        BaslangicX = s.BaslangicX,
+                        BaslangicY = s.BaslangicY,
+                        BaslangicZ = s.BaslangicZ,
+                        BitisX = s.BitisX,
+                        BitisY = s.BitisY,
+                        BitisZ = s.BitisZ,
+                        PiX = s.PiX,
+                        PiY = s.PiY,
+                        PiZ = s.PiZ,
+                        YaricapBaslangic = s.YaricapBaslangic,
+                        YaricapBitis = s.YaricapBitis,
+                        Uzunluk = s.Uzunluk,
+                        Yon = s.Yon
                     };
                 default:
                     return nesne;
@@ -60,6 +83,11 @@ namespace XmlToKtb.Cizim
                     break;
                 case YayNesnesi a:
                     a.MerkezX += dx; a.MerkezY += dy;
+                    break;
+                case SpiralNesnesi s:
+                    s.BaslangicX += dx; s.BaslangicY += dy;
+                    s.BitisX += dx; s.BitisY += dy;
+                    s.PiX += dx; s.PiY += dy;
                     break;
             }
         }
@@ -114,6 +142,16 @@ namespace XmlToKtb.Cizim
                     a.BitisAcisi += aciDerece;
                     break;
                 }
+                case SpiralNesnesi s:
+                {
+                    var bas = DonduruluenNokta(s.BaslangicX, s.BaslangicY);
+                    var bit = DonduruluenNokta(s.BitisX, s.BitisY);
+                    var pi = DonduruluenNokta(s.PiX, s.PiY);
+                    s.BaslangicX = bas.X; s.BaslangicY = bas.Y;
+                    s.BitisX = bit.X; s.BitisY = bit.Y;
+                    s.PiX = pi.X; s.PiY = pi.Y;
+                    break;
+                }
             }
         }
 
@@ -159,6 +197,20 @@ namespace XmlToKtb.Cizim
                     var merkezYeni = OlceklenmisNokta(a.MerkezX, a.MerkezY);
                     a.MerkezX = merkezYeni.X; a.MerkezY = merkezYeni.Y;
                     a.Yaricap *= Math.Abs(carpan);
+                    break;
+                }
+                case SpiralNesnesi s:
+                {
+                    var bas = OlceklenmisNokta(s.BaslangicX, s.BaslangicY);
+                    var bit = OlceklenmisNokta(s.BitisX, s.BitisY);
+                    var pi = OlceklenmisNokta(s.PiX, s.PiY);
+                    s.BaslangicX = bas.X; s.BaslangicY = bas.Y;
+                    s.BitisX = bit.X; s.BitisY = bit.Y;
+                    s.PiX = pi.X; s.PiY = pi.Y;
+                    var mutlakCarpan = Math.Abs(carpan);
+                    s.YaricapBaslangic *= mutlakCarpan;
+                    s.YaricapBitis *= mutlakCarpan;
+                    s.Uzunluk *= mutlakCarpan;
                     break;
                 }
             }

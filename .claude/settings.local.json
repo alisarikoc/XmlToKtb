@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/MSBuild.exe\" \"d:\\\\dev\\\\xmltoktb\\\\XmlToKtb.sln\" /t:XmlToKtb /p:Configuration=Debug /v:minimal /nologo)",
+      "PowerShell(& \"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\18\\\\Community\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\" \"d:\\\\dev\\\\xmltoktb\\\\XmlToKtb.sln\" /t:XmlToKtb /p:Configuration=Debug /v:minimal /nologo)",
+      "PowerShell(Start-Process -FilePath \"d:\\\\dev\\\\xmltoktb\\\\XmlToKtb\\\\bin\\\\Debug\\\\XmlToKtb.exe\")",
+      "PowerShell(Get-Process -Name XmlToKtb -ErrorAction SilentlyContinue)",
+      "Bash(git fetch *)",
+      "Bash(tasklist //FI \"IMAGENAME eq XmlToKtb.exe\")",
+      "Bash(taskkill //PID 11620 //F)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(taskkill //PID 468 //F)",
+      "Bash(exit 0)",
+      "Bash(grep -n \"Dxf\\\\\\\\\\\\\\\\DxfDocument\\\\|Dxf/DxfDocument\" XmlToKtb/XmlToKtb.csproj Common/Common.csproj)",
+      "Bash(taskkill //PID 16920 //F)",
+      "Read(//c/Users/Ali/Desktop/**)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe\" d:/dev/xmltoktb/XmlToKtb.sln //nologo //v:minimal //p:Configuration=Debug)",
+      "Bash(\"/c/Windows/Microsoft.NET/Framework64/v4.0.30319/MSBuild.exe\" d:/dev/xmltoktb/XmlToKtb.sln //nologo //v:minimal //p:Configuration=Debug)",
+      "Bash([ -f \"$vswhere_path\" ])",
+      "Bash('/c/Program Files \\(x86\\)/Microsoft Visual Studio/Installer/vswhere.exe' -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\\\\**\\\\Bin\\\\MSBuild.exe')",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft Visual Studio/Installer/vswhere.exe\" -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\\\\**\\\\Bin\\\\MSBuild.exe')",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/MSBuild.exe\" d:/dev/xmltoktb/XmlToKtb.sln //nologo //v:minimal //p:Configuration=Debug)",
+      "PowerShell(powershell -NoProfile -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\spiral_test.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\debug_spiral.ps1\")",
+      "Bash(sed -i 's/@\\(\\\\$spiralItem\\)/@\\([LandXMLAlignmentsAlignmentCoordGeomSpiral]$spiralItem\\)/' 'C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\debug_spiral3.ps1')",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\debug_spiral3.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\debug_spiral3.ps1\")",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/MSBuild.exe\" d:/dev/xmltoktb/XmlToKtb/XmlToKtb.csproj //nologo //v:minimal //p:Configuration=Debug)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\debug_spiral7.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\spiral_test.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\ondalik_test.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\kml_test.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\kml_roundtrip_test.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\kml_cografi_test.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\netdxf_api_check.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\z_kordinat_test.ps1\")"
+    ]
+  }
+}

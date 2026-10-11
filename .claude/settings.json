@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\gsi_test.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\gsi_dup_name_test.ps1\")",
+      "WebSearch",
+      "WebFetch(domain:www.opendesign.com)",
+      "Bash(curl -s \"https://api.nuget.org/v3-flatcontainer/acadsharp/index.json\")",
+      "Bash(find \"/c/Users/Ali/AppData/Local/Temp/claude/d--dev-xmltoktb/ec902155-cf05-41a5-9c1e-2a6431bdf494/scratchpad/acadsharp_extract/lib\" -maxdepth 2 2>&1)",
+      "Read(//c/Users/Ali/AppData/Local/Temp/claude/d--dev-xmltoktb/ec902155-cf05-41a5-9c1e-2a6431bdf494/scratchpad/acadsharp_extract/**)",
+      "Bash(mkdir -p \"/d/dev/xmltoktb/packages/ACadSharp.3.6.35\")",
+      "Bash(cp -r \"/c/Users/Ali/AppData/Local/Temp/claude/d--dev-xmltoktb/ec902155-cf05-41a5-9c1e-2a6431bdf494/scratchpad/acadsharp_extract/\"* \"/d/dev/xmltoktb/packages/ACadSharp.3.6.35/\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\acadsharp_api_check.ps1\")",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ali\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--dev-xmltoktb\\\\ec902155-cf05-41a5-9c1e-2a6431bdf494\\\\scratchpad\\\\filelock_test.ps1\")"
+    ]
+  }
+}

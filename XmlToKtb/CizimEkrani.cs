@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Windows.Forms;
 using Common;
@@ -24,7 +26,6 @@ namespace XmlToKtb
             InitializeComponent();
             cizimPaneli1.SecimDegisti += CizimPaneli1_SecimDegisti;
             cizimPaneli1.FareKonumuDegisti += CizimPaneli1_FareKonumuDegisti;
-            cizimPaneli1.AracDegisti += CizimPaneli1_AracDegisti;
         }
 
         private void CizimPaneli1_SecimDegisti(object sender, CizimNesnesi secilenNesne)
@@ -97,16 +98,6 @@ namespace XmlToKtb
 
             cizimPaneli1.TumObjeleriGoster();
             cizimPaneli1.Invalidate();
-        }
-
-        private void CizimPaneli1_AracDegisti(object sender, CizimAraci araci)
-        {
-            secAraciButton.Checked = araci == CizimAraci.Sec;
-        }
-
-        private void secAraciButton_Click(object sender, EventArgs e)
-        {
-            cizimPaneli1.AktifArac = CizimAraci.Sec;
         }
 
         private void cizgiCizMenuItem_Click(object sender, EventArgs e)
@@ -218,6 +209,22 @@ namespace XmlToKtb
             girisEkrani.Show();
         }
 
+        private void gorunumHassasiyetiMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new GorunumAyarlariForm(GorunumAyarlari.OndalikBasamakSayisi))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                GorunumAyarlari.OndalikBasamakSayisi = dlg.OndalikBasamakSayisi;
+
+                // Özellikler panelindeki hücreleri yeni hassasiyetle yeniden biçimlendirmek için gridi zorla yeniler.
+                var seciliNesne = ozellikGrid.SelectedObject;
+                ozellikGrid.SelectedObject = null;
+                ozellikGrid.SelectedObject = seciliNesne;
+            }
+        }
+
         private void dosyaAcMenuItem_Click(object sender, EventArgs e)
         {
             using (var dlg = new OpenFileDialog { Title = "DXF Dosyası Seçin", Filter = "DXF (*.dxf)|*.dxf" })
@@ -263,14 +270,14 @@ namespace XmlToKtb
                     if (nesne is CizgiNesnesi cizgi)
                     {
                         dxfBelge.Entities.Add(new Line(
-                            new Vector2(cizgi.BaslangicX, cizgi.BaslangicY),
-                            new Vector2(cizgi.BitisX, cizgi.BitisY)));
+                            new Vector3(cizgi.BaslangicX, cizgi.BaslangicY, cizgi.BaslangicZ),
+                            new Vector3(cizgi.BitisX, cizgi.BitisY, cizgi.BitisZ)));
                     }
                     else if (nesne is YaziNesnesi yazi && !string.IsNullOrEmpty(yazi.Metin))
                     {
                         // DXF TEXT tek satırlıdır; metindeki satır sonları dosya yapısını bozmasın diye boşlukla değiştirilir.
                         var dxfMetin = yazi.Metin.Replace("\r\n", " ").Replace('\n', ' ').Replace('\r', ' ');
-                        var metinNesnesi = new Text(dxfMetin, new Vector2(yazi.KonumX, yazi.KonumY), yazi.Yukseklik)
+                        var metinNesnesi = new Text(dxfMetin, new Vector3(yazi.KonumX, yazi.KonumY, yazi.KonumZ), yazi.Yukseklik)
                         {
                             Rotation = yazi.Donus
                         };
@@ -278,15 +285,22 @@ namespace XmlToKtb
                     }
                     else if (nesne is NoktaNesnesi nokta)
                     {
-                        dxfBelge.Entities.Add(new netDxf.Entities.Point(new Vector2(nokta.X, nokta.Y)));
+                        dxfBelge.Entities.Add(new netDxf.Entities.Point(new Vector3(nokta.X, nokta.Y, nokta.Z)));
                     }
                     else if (nesne is DaireNesnesi daire)
                     {
-                        dxfBelge.Entities.Add(new Circle(new Vector2(daire.MerkezX, daire.MerkezY), daire.Yaricap));
+                        dxfBelge.Entities.Add(new Circle(new Vector3(daire.MerkezX, daire.MerkezY, daire.MerkezZ), daire.Yaricap));
                     }
                     else if (nesne is YayNesnesi yay)
                     {
-                        dxfBelge.Entities.Add(new Arc(new Vector2(yay.MerkezX, yay.MerkezY), yay.Yaricap, yay.BaslangicAcisi, yay.BitisAcisi));
+                        dxfBelge.Entities.Add(new Arc(new Vector3(yay.MerkezX, yay.MerkezY, yay.MerkezZ), yay.Yaricap, yay.BaslangicAcisi, yay.BitisAcisi));
+                    }
+                    else if (nesne is SpiralNesnesi spiral)
+                    {
+                        // DXF'te klotoid için özel bir varlık yok; örneklenmiş noktalarla (gerçek Z'leriyle) 3B çizgi dizisi (Polyline3D) olarak yazılır.
+                        var vertices = spiral.OrnekNoktalariVeZGetir().Select(p => new Vector3(p.Nokta.X, p.Nokta.Y, p.Z)).ToList();
+                        if (vertices.Count >= 2)
+                            dxfBelge.Entities.Add(new Polyline3D(vertices, isClosed: false));
                     }
                 }
 
@@ -298,6 +312,87 @@ namespace XmlToKtb
                 {
                     MessageBox.Show("DXF dosyası kaydedilemedi: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+            }
+        }
+
+        private void googleEarthAktarMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_aktifSistem == ProjeksiyonSistemi.Tanimsiz)
+            {
+                MessageBox.Show(
+                    "Google Earth'e aktarmak için önce koordinat sistemini tanımlamanız gerekir (durum çubuğundaki 'Tanımsız' yazısına tıklayın).",
+                    "Koordinat Sistemi Tanımsız", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var kml = GoogleEarthAktarici.KmlOlustur(cizimPaneli1.Nesneler, _aktifSistem, _aktifDilim);
+            if (kml == null)
+            {
+                MessageBox.Show("Aktarılacak (koordinat sistemine göre dönüştürülebilir) obje bulunamadı.", "Google Earth'e Aktar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var dlg = new SaveFileDialog { Title = "Google Earth Olarak Kaydet", Filter = "KMZ (*.kmz)|*.kmz|KML (*.kml)|*.kml", FileName = "cizim.kmz" })
+            {
+                if (dlg.ShowDialog() != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    if (Path.GetExtension(dlg.FileName).Equals(".kmz", StringComparison.OrdinalIgnoreCase))
+                    {
+                        using (var dosyaAkisi = new FileStream(dlg.FileName, FileMode.Create))
+                        using (var arsiv = new ZipArchive(dosyaAkisi, ZipArchiveMode.Create))
+                        {
+                            var girdi = arsiv.CreateEntry("doc.kml");
+                            using (var yazici = new StreamWriter(girdi.Open(), new UTF8Encoding(false)))
+                                yazici.Write(kml);
+                        }
+                    }
+                    else
+                    {
+                        File.WriteAllText(dlg.FileName, kml, new UTF8Encoding(false));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Dosya kaydedilemedi: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void googleEarthIceAktarMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new OpenFileDialog { Title = "Google Earth Dosyası Seçin", Filter = "KML/KMZ (*.kml;*.kmz)|*.kml;*.kmz|KMZ (*.kmz)|*.kmz|KML (*.kml)|*.kml" })
+            {
+                if (dlg.ShowDialog() != DialogResult.OK)
+                    return;
+
+                List<CizimNesnesi> nesneler;
+                try
+                {
+                    // Mevcut koordinat sisteminden bağımsız olarak, KML/KMZ'deki enlem/boylam doğrudan çizim
+                    // ekranı koordinatı olarak alınır; içe aktarımdan sonra aktif sistem Coğrafi'ye ayarlanır.
+                    nesneler = GoogleEarthIceAktarici.DosyadanOku(dlg.FileName, ProjeksiyonSistemi.Cografi, null);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Dosya okunamadı: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (nesneler.Count == 0)
+                {
+                    MessageBox.Show("Dosyada aktarılabilecek bir obje bulunamadı.", "Google Earth İçe Aktar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                cizimPaneli1.Nesneler.AddRange(nesneler);
+                _aktifSistem = ProjeksiyonSistemi.Cografi;
+                _aktifDilim = null;
+                koordinatSistemiLabel.Text = ProjeksiyonBilgisi.GoruntuAdiGetir(_aktifSistem);
+                cizimPaneli1.TumObjeleriGoster();
+                cizimPaneli1.Invalidate();
             }
         }
 
