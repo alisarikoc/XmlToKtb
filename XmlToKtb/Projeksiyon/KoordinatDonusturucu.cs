@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace XmlToKtb.Projeksiyon
 {
@@ -21,7 +21,7 @@ namespace XmlToKtb.Projeksiyon
                 return false;
 
             double enlem, boylam;
-            if (kaynakSistem == ProjeksiyonSistemi.Cografi)
+            if (ProjeksiyonBilgisi.CografiMi(kaynakSistem))
             {
                 boylam = Radyana(kaynakSaga);
                 enlem = Radyana(kaynakYukari);
@@ -30,18 +30,18 @@ namespace XmlToKtb.Projeksiyon
             {
                 var kaynakElipsoid = ProjeksiyonBilgisi.ElipsoidGetir(kaynakSistem);
                 GaussKruger.Ters(kaynakSaga, kaynakYukari, Radyana(kaynakDilim.Value.MerkeziMeridyenDerece), kaynakElipsoid,
-                    ProjeksiyonBilgisi.OlcekFaktoruGetir(kaynakSistem), kaynakDilim.Value.SagaKaydirma, 0,
+                    kaynakDilim.Value.OlcekFaktoru, kaynakDilim.Value.SagaKaydirma, 0,
                     out enlem, out boylam);
             }
 
-            var kaynakEd50 = kaynakSistem == ProjeksiyonSistemi.Ed50;
-            var hedefEd50 = hedefSistem == ProjeksiyonSistemi.Ed50;
+            var kaynakEd50 = ProjeksiyonBilgisi.Ed50DatumuMu(kaynakSistem);
+            var hedefEd50 = ProjeksiyonBilgisi.Ed50DatumuMu(hedefSistem);
             if (kaynakEd50 && !hedefEd50)
                 DatumDonusumu.Ed50DenWgs84e(enlem, boylam, out enlem, out boylam);
             else if (!kaynakEd50 && hedefEd50)
                 DatumDonusumu.Wgs84DenEd50e(enlem, boylam, out enlem, out boylam);
 
-            if (hedefSistem == ProjeksiyonSistemi.Cografi)
+            if (ProjeksiyonBilgisi.CografiMi(hedefSistem))
             {
                 hedefSaga = Derece(boylam);
                 hedefYukari = Derece(enlem);
@@ -50,7 +50,7 @@ namespace XmlToKtb.Projeksiyon
             {
                 var hedefElipsoid = ProjeksiyonBilgisi.ElipsoidGetir(hedefSistem);
                 GaussKruger.Ileri(enlem, boylam, Radyana(hedefDilim.Value.MerkeziMeridyenDerece), hedefElipsoid,
-                    ProjeksiyonBilgisi.OlcekFaktoruGetir(hedefSistem), hedefDilim.Value.SagaKaydirma, 0,
+                    hedefDilim.Value.OlcekFaktoru, hedefDilim.Value.SagaKaydirma, 0,
                     out hedefSaga, out hedefYukari);
             }
 

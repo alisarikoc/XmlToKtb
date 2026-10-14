@@ -80,7 +80,8 @@ namespace XmlToKtb.Cizim
                 {
                     var olcum = grafik.MeasureString(Metin, font);
                     var yaziNoktasi = new PointF((float)-YatayOfset(olcum.Width), (float)-DikeyOfset(olcum.Height));
-                    grafik.DrawString(Metin, font, Secili ? Brushes.DodgerBlue : Brushes.Black, yaziNoktasi);
+                    using (var firca = new SolidBrush(Secili ? Color.DodgerBlue : CizimRengi(Color.Black)))
+                        grafik.DrawString(Metin, font, firca, yaziNoktasi);
                 }
             }
             finally

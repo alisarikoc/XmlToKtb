@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using netDxf;
@@ -52,18 +52,79 @@ namespace XmlToKtb.Cizim
             }
         }
 
+        // true iken çoklu doğrular (polyline) ve bloklar (INSERT) parçalanmaz; çoklu doğru ve blok objesi olarak alınır.
+        [ThreadStatic]
+        private static bool _yapiyiKoru;
+
+        /// <summary>
+        /// Varlıkları alır; yapiyiKoru true ise çoklu doğrular ve bloklar tek obje olarak kalır (sonradan Patlat ile
+        /// ayrılabilir), false ise doğru/yay parçalarına ayrılır.
+        /// </summary>
+        public static List<CizimNesnesi> Ayikla(DxfDocument belge, Func<netDxf.Tables.Layer, Tabaka> tabakaBul, bool yapiyiKoru)
+        {
+            _yapiyiKoru = yapiyiKoru;
+            try
+            {
+                return Ayikla(belge, tabakaBul);
+            }
+            finally
+            {
+                _yapiyiKoru = false;
+            }
+        }
+
         public static List<CizimNesnesi> Ayikla(DxfDocument belge)
+        {
+            return Ayikla(belge, null);
+        }
+
+        /// <summary>
+        /// tabakaBul verilirse her obje DXF'teki tabakasına (layer) yerleştirilir: fonksiyon, DXF tabakasının çizimdeki
+        /// karşılığını döner. Rengi "tabakaya göre" olmayan varlıkların kendi rengi de korunur.
+        /// </summary>
+        public static List<CizimNesnesi> Ayikla(DxfDocument belge, Func<netDxf.Tables.Layer, Tabaka> tabakaBul)
         {
             var sonuc = new List<CizimNesnesi>();
             foreach (var varlik in belge.Entities.All)
-                VarlikEkle(varlik, Donusum.Kimlik, sonuc, 0);
+                VarlikEkle(varlik, Donusum.Kimlik, sonuc, 0, tabakaBul);
             return sonuc;
         }
 
-        private static void VarlikEkle(EntityObject varlik, Donusum donusum, List<CizimNesnesi> sonuc, int derinlik)
+        /// <summary>DXF rengini çizim rengine çevirir. Beyaz, beyaz zeminde görünmeyeceği için siyaha çevrilir.</summary>
+        public static System.Drawing.Color RenkCevir(AciColor renk)
+        {
+            var c = renk.ToColor();
+            return c.R > 240 && c.G > 240 && c.B > 240 ? System.Drawing.Color.Black : System.Drawing.Color.FromArgb(c.R, c.G, c.B);
+        }
+
+        private static void VarlikEkle(EntityObject varlik, Donusum donusum, List<CizimNesnesi> sonuc, int derinlik,
+            Func<netDxf.Tables.Layer, Tabaka> tabakaBul)
         {
             if (derinlik > AzamiDerinlik)
                 return;
+
+            var oncekiSayi = sonuc.Count;
+            VarligiCevir(varlik, donusum, sonuc, derinlik, tabakaBul);
+
+            if (tabakaBul == null)
+                return;
+
+            // Blok içindeki "0" tabakalı varlık, AutoCAD'de olduğu gibi bloğun eklendiği tabakayı alır: burada boş
+            // bırakılır, bloğu (INSERT) işleyen üst çağrı kendi tabakasını verir.
+            var blokIcindeSifirTabakasi = derinlik > 0 && varlik.Layer != null && varlik.Layer.Name == "0";
+            for (var i = oncekiSayi; i < sonuc.Count; i++)
+            {
+                var nesne = sonuc[i];
+                if (nesne.Tabaka == null && !blokIcindeSifirTabakasi && varlik.Layer != null)
+                    nesne.Tabaka = tabakaBul(varlik.Layer);
+                if (nesne.OzelRenk == null && varlik.Color != null && !varlik.Color.IsByLayer && !varlik.Color.IsByBlock)
+                    nesne.OzelRenk = RenkCevir(varlik.Color);
+            }
+        }
+
+        private static void VarligiCevir(EntityObject varlik, Donusum donusum, List<CizimNesnesi> sonuc, int derinlik,
+            Func<netDxf.Tables.Layer, Tabaka> tabakaBul)
+        {
 
             switch (varlik)
             {
@@ -122,6 +183,46 @@ namespace XmlToKtb.Cizim
                     break;
                 }
 
+                case Polyline2D polyline2D when _yapiyiKoru:
+                {
+                    // Aynalı (eksi ölçekli) blok içinde yayların dönüş yönü tersine döner.
+                    var bulgeIsareti = donusum.OlcekX * donusum.OlcekY < 0 ? -1 : 1;
+                    var cokluDogru = new CokluDogruNesnesi { Kapali = polyline2D.IsClosed };
+                    foreach (var v in polyline2D.Vertexes)
+                    {
+                        var (x, y) = donusum.Uygula(v.Position.X, v.Position.Y);
+                        cokluDogru.Koseler.Add(new CokluDogruKosesi { X = x, Y = y, Z = donusum.UygulaZ(polyline2D.Elevation), Bulge = v.Bulge * bulgeIsareti });
+                    }
+                    if (cokluDogru.Koseler.Count > 0)
+                        sonuc.Add(cokluDogru);
+                    break;
+                }
+
+                case Polyline3D polyline3D when _yapiyiKoru:
+                {
+                    var cokluDogru = new CokluDogruNesnesi { Kapali = polyline3D.IsClosed };
+                    foreach (var v in polyline3D.Vertexes)
+                    {
+                        var (x, y) = donusum.Uygula(v.X, v.Y);
+                        cokluDogru.Koseler.Add(new CokluDogruKosesi { X = x, Y = y, Z = donusum.UygulaZ(v.Z) });
+                    }
+                    if (cokluDogru.Koseler.Count > 0)
+                        sonuc.Add(cokluDogru);
+                    break;
+                }
+
+                case Insert eklenti when _yapiyiKoru:
+                {
+                    var altDonusum = donusum.IceIceEkle(eklenti.Position, eklenti.Scale, eklenti.Rotation);
+                    var (bx, by) = donusum.Uygula(eklenti.Position.X, eklenti.Position.Y);
+                    var blok = new BlokNesnesi { Ad = eklenti.Block?.Name ?? "", KonumX = bx, KonumY = by };
+                    foreach (var altVarlik in eklenti.Block.Entities)
+                        VarlikEkle(altVarlik, altDonusum, blok.Ogeler, derinlik + 1, tabakaBul);
+                    if (blok.Ogeler.Count > 0)
+                        sonuc.Add(blok);
+                    break;
+                }
+
                 case Polyline2D polyline2D:
                 {
                     var noktalar = new List<(double X, double Y, double Z)>(polyline2D.Vertexes.Count);
@@ -170,14 +271,14 @@ namespace XmlToKtb.Cizim
                 {
                     var altDonusum = donusum.IceIceEkle(eklenti.Position, eklenti.Scale, eklenti.Rotation);
                     foreach (var altVarlik in eklenti.Block.Entities)
-                        VarlikEkle(altVarlik, altDonusum, sonuc, derinlik + 1);
+                        VarlikEkle(altVarlik, altDonusum, sonuc, derinlik + 1, tabakaBul);
                     break;
                 }
 
                 case Dimension olcu:
                     if (olcu.Block != null)
                         foreach (var altVarlik in olcu.Block.Entities)
-                            VarlikEkle(altVarlik, donusum, sonuc, derinlik + 1);
+                            VarlikEkle(altVarlik, donusum, sonuc, derinlik + 1, tabakaBul);
                     break;
             }
         }

@@ -11,6 +11,16 @@ namespace XmlToKtb.Cizim
         [ReadOnly(true)]
         public override string Tip => "Nokta";
 
+        /// <summary>Nokta numarası/adı. DXF gibi nokta numarası taşımayan kaynaklardan gelen noktalarda "0"dır.</summary>
+        [DisplayName("Nokta No")]
+        public string NoktaAdi { get; set; } = "0";
+
+        [DisplayName("Kod")]
+        public string Kod { get; set; } = "";
+
+        [DisplayName("Pafta")]
+        public string Pafta { get; set; } = "";
+
         [DisplayName("X")]
         [TypeConverter(typeof(OndalikDegerConverter))]
         public double X { get; set; }
@@ -27,7 +37,7 @@ namespace XmlToKtb.Cizim
         {
             const float yaricap = 3f;
             var ekran = gorunum.DunyadanEkrana(X, Y, panelGenislik, panelYukseklik);
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : Color.Black, 1.5f))
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), 1.5f))
             {
                 grafik.DrawLine(kalem, ekran.X - yaricap, ekran.Y, ekran.X + yaricap, ekran.Y);
                 grafik.DrawLine(kalem, ekran.X, ekran.Y - yaricap, ekran.X, ekran.Y + yaricap);

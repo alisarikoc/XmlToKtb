@@ -32,6 +32,7 @@ namespace XmlToKtb
             this.kesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.kopyalaMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.olcekleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.noktaEditoruMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cizimMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cizgiCizMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.daireCizMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -42,10 +43,19 @@ namespace XmlToKtb
             this.daireTegetUcObjeMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.yolMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.guzergahXmlCizMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ekranMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.guzergahEditoruMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yuzeyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yuzeyNoktalariniKaydetMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yuzeyOlusturMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yuzeyXmldenMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yuzeyDxftenMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yuzeyNoktalardanMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kesitEditoruMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ekranMenuItem =new System.Windows.Forms.ToolStripMenuItem();
             this.girisEkraniMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ayarlarMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gorunumHassasiyetiMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tabakaAyarlariMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.yakalamaAyraci = new System.Windows.Forms.ToolStripSeparator();
             this.noktaYakalaButton = new System.Windows.Forms.ToolStripButton();
@@ -73,6 +83,8 @@ namespace XmlToKtb
             this.cizimMenuItem,
             this.duzenleMenuItem,
             this.yolMenuItem,
+            this.yuzeyMenuItem,
+            this.kesitEditoruMenuItem,
             this.ekranMenuItem,
             this.ayarlarMenuItem});
             this.anaMenuStrip.Location = new System.Drawing.Point(0, 0);
@@ -151,7 +163,8 @@ namespace XmlToKtb
             this.dondurMenuItem,
             this.kesMenuItem,
             this.kopyalaMenuItem,
-            this.olcekleMenuItem});
+            this.olcekleMenuItem,
+            this.noktaEditoruMenuItem});
             this.duzenleMenuItem.Name = "duzenleMenuItem";
             this.duzenleMenuItem.Size = new System.Drawing.Size(64, 20);
             this.duzenleMenuItem.Text = "Düzenle";
@@ -190,6 +203,13 @@ namespace XmlToKtb
             this.olcekleMenuItem.Size = new System.Drawing.Size(180, 22);
             this.olcekleMenuItem.Text = "Ölçekle";
             this.olcekleMenuItem.Click += new System.EventHandler(this.olcekleMenuItem_Click);
+            //
+            // noktaEditoruMenuItem
+            //
+            this.noktaEditoruMenuItem.Name = "noktaEditoruMenuItem";
+            this.noktaEditoruMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.noktaEditoruMenuItem.Text = "Nokta Editörü...";
+            this.noktaEditoruMenuItem.Click += new System.EventHandler(this.noktaEditoruMenuItem_Click);
             //
             // cizimMenuItem
             //
@@ -257,7 +277,8 @@ namespace XmlToKtb
             // yolMenuItem
             //
             this.yolMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.guzergahXmlCizMenuItem});
+            this.guzergahXmlCizMenuItem,
+            this.guzergahEditoruMenuItem});
             this.yolMenuItem.Name = "yolMenuItem";
             this.yolMenuItem.Size = new System.Drawing.Size(42, 20);
             this.yolMenuItem.Text = "Yol";
@@ -268,6 +289,67 @@ namespace XmlToKtb
             this.guzergahXmlCizMenuItem.Size = new System.Drawing.Size(240, 22);
             this.guzergahXmlCizMenuItem.Text = "Xml Dosyasından Güzergah Çiz";
             this.guzergahXmlCizMenuItem.Click += new System.EventHandler(this.guzergahXmlCizMenuItem_Click);
+            //
+            // guzergahEditoruMenuItem
+            //
+            this.guzergahEditoruMenuItem.Name = "guzergahEditoruMenuItem";
+            this.guzergahEditoruMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.guzergahEditoruMenuItem.Text = "Güzergah Editörü...";
+            this.guzergahEditoruMenuItem.Click += new System.EventHandler(this.guzergahEditoruMenuItem_Click);
+            //
+            // yuzeyMenuItem
+            //
+            this.yuzeyMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.yuzeyNoktalariniKaydetMenuItem,
+            this.yuzeyOlusturMenuItem});
+            this.yuzeyMenuItem.Name = "yuzeyMenuItem";
+            this.yuzeyMenuItem.Size = new System.Drawing.Size(49, 20);
+            this.yuzeyMenuItem.Text = "Yüzey";
+            //
+            // yuzeyNoktalariniKaydetMenuItem
+            //
+            this.yuzeyNoktalariniKaydetMenuItem.Name = "yuzeyNoktalariniKaydetMenuItem";
+            this.yuzeyNoktalariniKaydetMenuItem.Size = new System.Drawing.Size(270, 22);
+            this.yuzeyNoktalariniKaydetMenuItem.Text = "Yüzeyin Noktalarını Farklı Kaydet...";
+            this.yuzeyNoktalariniKaydetMenuItem.Click += new System.EventHandler(this.yuzeyNoktalariniKaydetMenuItem_Click);
+            //
+            // yuzeyOlusturMenuItem
+            //
+            this.yuzeyOlusturMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.yuzeyXmldenMenuItem,
+            this.yuzeyDxftenMenuItem,
+            this.yuzeyNoktalardanMenuItem});
+            this.yuzeyOlusturMenuItem.Name = "yuzeyOlusturMenuItem";
+            this.yuzeyOlusturMenuItem.Size = new System.Drawing.Size(270, 22);
+            this.yuzeyOlusturMenuItem.Text = "Yüzey Oluştur";
+            //
+            // yuzeyXmldenMenuItem
+            //
+            this.yuzeyXmldenMenuItem.Name = "yuzeyXmldenMenuItem";
+            this.yuzeyXmldenMenuItem.Size = new System.Drawing.Size(300, 22);
+            this.yuzeyXmldenMenuItem.Text = "XML\'den Yükle ve Çiz...";
+            this.yuzeyXmldenMenuItem.Click += new System.EventHandler(this.yuzeyXmldenMenuItem_Click);
+            //
+            // yuzeyDxftenMenuItem
+            //
+            this.yuzeyDxftenMenuItem.Name = "yuzeyDxftenMenuItem";
+            this.yuzeyDxftenMenuItem.Size = new System.Drawing.Size(300, 22);
+            this.yuzeyDxftenMenuItem.Text = "DXF\'ten Yükle ve Çiz...";
+            this.yuzeyDxftenMenuItem.Click += new System.EventHandler(this.yuzeyDxftenMenuItem_Click);
+            //
+            // yuzeyNoktalardanMenuItem
+            //
+            this.yuzeyNoktalardanMenuItem.Name = "yuzeyNoktalardanMenuItem";
+            this.yuzeyNoktalardanMenuItem.Size = new System.Drawing.Size(300, 22);
+            this.yuzeyNoktalardanMenuItem.Text = "Nokta Dosyasından Üçgenle ve Çiz...";
+            this.yuzeyNoktalardanMenuItem.Click += new System.EventHandler(this.yuzeyNoktalardanMenuItem_Click);
+            //
+            // kesitEditoruMenuItem
+            //
+            this.kesitEditoruMenuItem.Name = "kesitEditoruMenuItem";
+            this.kesitEditoruMenuItem.Size = new System.Drawing.Size(87, 20);
+            this.kesitEditoruMenuItem.Text = "Kesit Editörü";
+            this.kesitEditoruMenuItem.Click += new System.EventHandler(this.kesitEditoruMenuItem_Click);
             //
             // ekranMenuItem
             //
@@ -287,7 +369,8 @@ namespace XmlToKtb
             // ayarlarMenuItem
             //
             this.ayarlarMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.gorunumHassasiyetiMenuItem});
+            this.gorunumHassasiyetiMenuItem,
+            this.tabakaAyarlariMenuItem});
             this.ayarlarMenuItem.Name = "ayarlarMenuItem";
             this.ayarlarMenuItem.Size = new System.Drawing.Size(63, 20);
             this.ayarlarMenuItem.Text = "Ayarlar";
@@ -298,6 +381,13 @@ namespace XmlToKtb
             this.gorunumHassasiyetiMenuItem.Size = new System.Drawing.Size(240, 22);
             this.gorunumHassasiyetiMenuItem.Text = "Görünüm Hassasiyeti...";
             this.gorunumHassasiyetiMenuItem.Click += new System.EventHandler(this.gorunumHassasiyetiMenuItem_Click);
+            //
+            // tabakaAyarlariMenuItem
+            //
+            this.tabakaAyarlariMenuItem.Name = "tabakaAyarlariMenuItem";
+            this.tabakaAyarlariMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.tabakaAyarlariMenuItem.Text = "Tabaka Ayarları...";
+            this.tabakaAyarlariMenuItem.Click += new System.EventHandler(this.tabakaAyarlariMenuItem_Click);
             //
             // toolStrip1
             //
@@ -484,6 +574,7 @@ namespace XmlToKtb
         private System.Windows.Forms.ToolStripMenuItem kesMenuItem;
         private System.Windows.Forms.ToolStripMenuItem kopyalaMenuItem;
         private System.Windows.Forms.ToolStripMenuItem olcekleMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem noktaEditoruMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cizimMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cizgiCizMenuItem;
         private System.Windows.Forms.ToolStripMenuItem daireCizMenuItem;
@@ -494,10 +585,19 @@ namespace XmlToKtb
         private System.Windows.Forms.ToolStripMenuItem daireTegetUcObjeMenuItem;
         private System.Windows.Forms.ToolStripMenuItem yolMenuItem;
         private System.Windows.Forms.ToolStripMenuItem guzergahXmlCizMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem guzergahEditoruMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yuzeyMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yuzeyNoktalariniKaydetMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yuzeyOlusturMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yuzeyXmldenMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yuzeyDxftenMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yuzeyNoktalardanMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem kesitEditoruMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ekranMenuItem;
         private System.Windows.Forms.ToolStripMenuItem girisEkraniMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ayarlarMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gorunumHassasiyetiMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tabakaAyarlariMenuItem;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripSeparator yakalamaAyraci;
         private System.Windows.Forms.ToolStripButton noktaYakalaButton;

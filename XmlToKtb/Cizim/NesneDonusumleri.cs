@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 
 namespace XmlToKtb.Cizim
@@ -7,6 +7,17 @@ namespace XmlToKtb.Cizim
     public static class NesneDonusumleri
     {
         public static CizimNesnesi Klonla(CizimNesnesi nesne)
+        {
+            var kopya = TipineGoreKlonla(nesne);
+            if (!ReferenceEquals(kopya, nesne))
+            {
+                kopya.Tabaka = nesne.Tabaka;
+                kopya.OzelRenk = nesne.OzelRenk;
+            }
+            return kopya;
+        }
+
+        private static CizimNesnesi TipineGoreKlonla(CizimNesnesi nesne)
         {
             switch (nesne)
             {
@@ -29,7 +40,7 @@ namespace XmlToKtb.Cizim
                         HizaDikey = y.HizaDikey
                     };
                 case NoktaNesnesi n:
-                    return new NoktaNesnesi { X = n.X, Y = n.Y, Z = n.Z };
+                    return new NoktaNesnesi { X = n.X, Y = n.Y, Z = n.Z, NoktaAdi = n.NoktaAdi, Kod = n.Kod, Pafta = n.Pafta };
                 case DaireNesnesi d:
                     return new DaireNesnesi { MerkezX = d.MerkezX, MerkezY = d.MerkezY, MerkezZ = d.MerkezZ, Yaricap = d.Yaricap };
                 case YayNesnesi a:
@@ -59,6 +70,16 @@ namespace XmlToKtb.Cizim
                         Uzunluk = s.Uzunluk,
                         Yon = s.Yon
                     };
+                case YuzeyNesnesi yuzey:
+                    return yuzey.Kopyala();
+                case GuzergahNesnesi guzergah:
+                    return guzergah.Kopyala();
+                case GuzergahEtiketNesnesi etiket:
+                    return etiket.Kopyala();
+                case CokluDogruNesnesi cokluDogru:
+                    return cokluDogru.Kopyala();
+                case BlokNesnesi blok:
+                    return blok.Kopyala();
                 default:
                     return nesne;
             }
@@ -88,6 +109,28 @@ namespace XmlToKtb.Cizim
                     s.BaslangicX += dx; s.BaslangicY += dy;
                     s.BitisX += dx; s.BitisY += dy;
                     s.PiX += dx; s.PiY += dy;
+                    break;
+                case YuzeyNesnesi yuzey:
+                    for (var i = 0; i < yuzey.X.Count; i++)
+                    {
+                        yuzey.X[i] += dx;
+                        yuzey.Y[i] += dy;
+                    }
+                    yuzey.KoordinatlarDegisti();
+                    break;
+                case GuzergahNesnesi guzergah:
+                    guzergah.BaslangicX += dx;
+                    guzergah.BaslangicY += dy;
+                    foreach (var parca in guzergah.Parcalar)
+                    {
+                        parca.SabitX += dx;
+                        parca.SabitY += dy;
+                    }
+                    guzergah.Hesapla();
+                    break;
+                case CokluDogruNesnesi _:
+                case BlokNesnesi _:
+                    Donusum.Oteleme(dx, dy).Uygula(nesne);
                     break;
             }
         }
@@ -152,6 +195,37 @@ namespace XmlToKtb.Cizim
                     s.PiX = pi.X; s.PiY = pi.Y;
                     break;
                 }
+                case YuzeyNesnesi yuzey:
+                {
+                    for (var i = 0; i < yuzey.X.Count; i++)
+                    {
+                        var nokta = DonduruluenNokta(yuzey.X[i], yuzey.Y[i]);
+                        yuzey.X[i] = nokta.X;
+                        yuzey.Y[i] = nokta.Y;
+                    }
+                    yuzey.KoordinatlarDegisti();
+                    break;
+                }
+                case GuzergahNesnesi guzergah:
+                {
+                    var baslangic = DonduruluenNokta(guzergah.BaslangicX, guzergah.BaslangicY);
+                    guzergah.BaslangicX = baslangic.X;
+                    guzergah.BaslangicY = baslangic.Y;
+                    guzergah.BaslangicAcisi += rad;
+                    foreach (var parca in guzergah.Parcalar)
+                    {
+                        var sabit = DonduruluenNokta(parca.SabitX, parca.SabitY);
+                        parca.SabitX = sabit.X;
+                        parca.SabitY = sabit.Y;
+                        parca.SabitAci += rad;
+                    }
+                    guzergah.Hesapla();
+                    break;
+                }
+                case CokluDogruNesnesi _:
+                case BlokNesnesi _:
+                    Donusum.Dondurme(merkez.X, merkez.Y, rad).Uygula(nesne);
+                    break;
             }
         }
 
@@ -213,6 +287,40 @@ namespace XmlToKtb.Cizim
                     s.Uzunluk *= mutlakCarpan;
                     break;
                 }
+                case YuzeyNesnesi yuzey:
+                {
+                    // Yalnızca yatay konum ölçeklenir; kotlar değişmez.
+                    for (var i = 0; i < yuzey.X.Count; i++)
+                    {
+                        var nokta = OlceklenmisNokta(yuzey.X[i], yuzey.Y[i]);
+                        yuzey.X[i] = nokta.X;
+                        yuzey.Y[i] = nokta.Y;
+                    }
+                    yuzey.KoordinatlarDegisti();
+                    break;
+                }
+                case GuzergahNesnesi guzergah:
+                {
+                    var baslangic = OlceklenmisNokta(guzergah.BaslangicX, guzergah.BaslangicY);
+                    guzergah.BaslangicX = baslangic.X;
+                    guzergah.BaslangicY = baslangic.Y;
+                    var mutlakCarpan = Math.Abs(carpan);
+                    foreach (var parca in guzergah.Parcalar)
+                    {
+                        var sabit = OlceklenmisNokta(parca.SabitX, parca.SabitY);
+                        parca.SabitX = sabit.X;
+                        parca.SabitY = sabit.Y;
+                        parca.Uzunluk *= mutlakCarpan;
+                        if (!double.IsInfinity(parca.YaricapBaslangic)) parca.YaricapBaslangic *= mutlakCarpan;
+                        if (!double.IsInfinity(parca.YaricapBitis)) parca.YaricapBitis *= mutlakCarpan;
+                    }
+                    guzergah.Hesapla();
+                    break;
+                }
+                case CokluDogruNesnesi _:
+                case BlokNesnesi _:
+                    Donusum.Olcekleme(merkez.X, merkez.Y, carpan).Uygula(nesne);
+                    break;
             }
         }
     }

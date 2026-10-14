@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace XmlToKtb.Cizim
@@ -19,7 +20,34 @@ namespace XmlToKtb.Cizim
         Daire3Nokta,
         Daire2NoktaYaricap,
         DaireTegetIkiObje,
-        DaireTegetUcObje
+        DaireTegetUcObje,
+        YuzeyCizgiEkle,
+        YuzeyCizgiSil,
+        YuzeyUcgenDondur,
+        YuzeyNoktaEkle,
+        YuzeyNoktaSil,
+        YuzeyNoktaDuzelt,
+        YuzeyNoktaTasi,
+        /// <summary>Başka bir pencere (ör. güzergah editörü) ekrandan nokta bekliyor; tıklamalar NoktaTiklandi ile bildirilir.</summary>
+        NoktaAl
+    }
+
+    /// <summary>
+    /// Seçiliyken tutamaçlarından (ör. güzergahın uçları ve some noktaları) fareyle sürüklenebilen obje.
+    /// </summary>
+    public interface ITutamacli
+    {
+        /// <summary>Sürüklenebilir tutamaçların dünya koordinatları ({x, y}); tutamaç yoksa boş liste.</summary>
+        IList<double[]> TutamaclariAl();
+        /// <summary>Tutamacı verilen yere taşır; yeni yer geçerli bir geometri vermiyorsa hiçbir şeyi değiştirmeden false döner.</summary>
+        bool TutamacTasi(int tutamac, double x, double y);
+    }
+
+    public enum TutamacAsamasi
+    {
+        Basladi,
+        Surukleniyor,
+        Bitti
     }
 
     /// <summary>Kaydır/Kopyala/Döndür/Ölçekle komutlarının çok adımlı akışındaki aşama.</summary>
@@ -86,6 +114,302 @@ namespace XmlToKtb.Cizim
         public event EventHandler<CizimNesnesi> SecimDegisti;
         public event EventHandler<PointF> FareKonumuDegisti;
         public event EventHandler<CizimAraci> AracDegisti;
+        /// <summary>Bir objenin koordinatı fareyle (uç tutamacı sürüklenerek) değiştirildiğinde tetiklenir.</summary>
+        public event EventHandler NesnelerGuncellendi;
+        /// <summary>Seç aracındayken Enter'a basıldığında ya da sağ tıklandığında tetiklenir: kullanıcı seçimini bitirdi.</summary>
+        public event EventHandler SecimOnaylandi;
+        /// <summary>Seç aracındayken Esc'ye basıldığında (seçim temizlenirken) tetiklenir.</summary>
+        public event EventHandler SecimIptalEdildi;
+        /// <summary>Objeler çizildikten sonra tetiklenir; ekranı kullanan form çizime ait olmayan (sanal) şekiller ekleyebilir.</summary>
+        public event PaintEventHandler UstCizim;
+
+        /// <summary>NoktaAl aracı açıkken ekrana sol tıklandığında, tıklanan yerin (yakalama uygulanmış) koordinatıyla tetiklenir.</summary>
+        public event Action<double, double> NoktaTiklandi;
+        /// <summary>NoktaAl aracından sağ tık ya da Esc ile çıkıldığında tetiklenir.</summary>
+        public event EventHandler NoktaAlmaBitti;
+        /// <summary>Tutamaçlı bir obje (ör. güzergah) tutamacından sürüklenirken, başlarken ve bırakılınca tetiklenir.</summary>
+        public event Action<CizimNesnesi, TutamacAsamasi> TutamacSuruklendi;
+
+        private CizimNesnesi _suruklenenNesne;
+        private int _suruklenenTutamac = -1;
+
+        // Fare konumunun çift hassasiyetli dünya koordinatı; bir noktaya yakalanmışsa o noktanın koordinatı.
+        private void HassasNoktaAl(Point ekranNoktasi, out double x, out double y)
+        {
+            var yakalanan = DunyaNoktasiHesaplaVeYakala(ekranNoktasi);
+            if (_yakalananDunyaNoktasi != null)
+                TamKoordinatAl(yakalanan, out x, out y);
+            else
+                Gorunum.EkrandanDunyayaHassas(ekranNoktasi, Width, Height, out x, out y);
+        }
+
+        // Tıklanan yer seçili (etkin) bir tutamaçlı objenin tutamacıysa sürüklemeyi başlatır.
+        private bool NesneTutamaciBaslat(Point ekranNoktasi)
+        {
+            for (var i = Nesneler.Count - 1; i >= 0; i--)
+            {
+                if (!(Nesneler[i] is ITutamacli tutamacli) || !Secilebilir(Nesneler[i]))
+                    continue;
+
+                var tutamaclar = tutamacli.TutamaclariAl();
+                for (var t = 0; t < tutamaclar.Count; t++)
+                {
+                    if (!TutamacaIsabetEttiMi(tutamaclar[t][0], tutamaclar[t][1], ekranNoktasi))
+                        continue;
+                    _suruklenenNesne = Nesneler[i];
+                    _suruklenenTutamac = t;
+                    TutamacSuruklendi?.Invoke(_suruklenenNesne, TutamacAsamasi.Basladi);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private const float TutamacToleransPiksel = 6f;
+        /// <summary>İki uç noktanın "aynı nokta" sayılacağı dünya mesafesi.</summary>
+        public const double UcEsitlikToleransi = 1e-3;
+
+        /// <summary>Açıksa, Seç aracında seçili çizginin uç tutamacı sürüklenerek çizgi sündürülebilir.</summary>
+        public bool TutamacSuruklemeAcik { get; set; }
+
+        /// <summary>Açıksa, bir çizginin ucu taşındığında aynı noktadaki diğer çizgi uçları da birlikte taşınır.</summary>
+        public bool OrtakUclariBirlikteTasi { get; set; }
+
+        /// <summary>
+        /// Verilirse, ortak uçlar yalnızca aynı gruptaki (ör. aynı kesite ait) çizgiler arasında birlikte taşınır;
+        /// üst üste çizilen farklı grupların çakışan uçları birbirini etkilemez.
+        /// </summary>
+        public Func<CizgiNesnesi, object> OrtakUcGrubu { get; set; }
+
+        private bool AyniUcGrubundaMi(CizgiNesnesi a, CizgiNesnesi b)
+        {
+            return OrtakUcGrubu == null || Equals(OrtakUcGrubu(a), OrtakUcGrubu(b));
+        }
+
+        /// <summary>Açıksa, fareyle verilen (bir uca yakalanmamış) yeni noktalar milimetreye yuvarlanır.</summary>
+        public bool YeniNoktalariMilimetreyeYuvarla { get; set; }
+
+        /// <summary>Açıksa (0,0) noktası renkli bir artı işaretiyle gösterilir ve Nokta/Uç yakalamada aday olur.</summary>
+        public bool ReferansNoktasiGoster { get; set; }
+
+        /// <summary>Açıksa çizimdeki değişiklikler (ekleme, silme, çizgi koordinatı) geri al/ilerle için kaydedilir.</summary>
+        public bool GeriAlAcik { get; set; }
+
+        /// <summary>Geri al/ilerle geçmişi değiştiğinde (ör. menü düğmelerini güncellemek için) tetiklenir.</summary>
+        public event EventHandler GecmisDegisti;
+
+        public bool GeriAlinabilir => _geriAlYigini.Count > 0;
+        public bool Ilerlenebilir => _ilerleYigini.Count > 0;
+
+        /// <summary>Çizimin bir andaki hali: objenin kendisi ve (çizgiyse) koordinatları.</summary>
+        private class DurumKaydi
+        {
+            public CizimNesnesi Nesne;
+            public double[] Degerler;
+        }
+
+        private List<DurumKaydi> _sonDurum = new List<DurumKaydi>();
+        private readonly Stack<List<DurumKaydi>> _geriAlYigini = new Stack<List<DurumKaydi>>();
+        private readonly Stack<List<DurumKaydi>> _ilerleYigini = new Stack<List<DurumKaydi>>();
+
+        private List<DurumKaydi> DurumAl()
+        {
+            var durum = new List<DurumKaydi>(Nesneler.Count);
+            foreach (var nesne in Nesneler)
+            {
+                var kayit = new DurumKaydi { Nesne = nesne };
+                if (nesne is CizgiNesnesi cizgi)
+                    kayit.Degerler = new[] { cizgi.BaslangicX, cizgi.BaslangicY, cizgi.BaslangicZ, cizgi.BitisX, cizgi.BitisY, cizgi.BitisZ };
+                durum.Add(kayit);
+            }
+            return durum;
+        }
+
+        private static bool DurumlarAyniMi(List<DurumKaydi> a, List<DurumKaydi> b)
+        {
+            if (a.Count != b.Count)
+                return false;
+
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (!ReferenceEquals(a[i].Nesne, b[i].Nesne))
+                    return false;
+                if (a[i].Degerler == null)
+                    continue;
+                for (var k = 0; k < a[i].Degerler.Length; k++)
+                {
+                    if (a[i].Degerler[k] != b[i].Degerler[k])
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        private void DurumYukle(List<DurumKaydi> durum)
+        {
+            // Yarım kalmış çizim/düzenleme adımı eski objelere bağlı kalmasın diye araç sıfırlanır.
+            if (AktifArac == CizimAraci.Sec)
+            {
+                _tutamacSurukleniyor = false;
+                _suruklenenUclar.Clear();
+            }
+            else
+            {
+                AktifArac = CizimAraci.Sec;
+            }
+
+            Nesneler.Clear();
+            foreach (var kayit in durum)
+            {
+                kayit.Nesne.Secili = false;
+                if (kayit.Nesne is CizgiNesnesi cizgi)
+                {
+                    cizgi.BaslangicX = kayit.Degerler[0];
+                    cizgi.BaslangicY = kayit.Degerler[1];
+                    cizgi.BaslangicZ = kayit.Degerler[2];
+                    cizgi.BitisX = kayit.Degerler[3];
+                    cizgi.BitisY = kayit.Degerler[4];
+                    cizgi.BitisZ = kayit.Degerler[5];
+                }
+                Nesneler.Add(kayit.Nesne);
+            }
+
+            _sonDurum = durum;
+            _yakalananDunyaNoktasi = null;
+            SecimBildir();
+            NesnelerGuncellendi?.Invoke(this, EventArgs.Empty);
+            GecmisDegisti?.Invoke(this, EventArgs.Empty);
+            Invalidate();
+        }
+
+        /// <summary>
+        /// Çizim son kayıttan beri değiştiyse önceki hali geri al geçmişine ekler. Çizimi değiştiren her işlemden
+        /// sonra çağrılır; değişiklik yoksa bir şey yapmaz.
+        /// </summary>
+        public void DegisiklikKaydet()
+        {
+            if (!GeriAlAcik)
+                return;
+
+            var durum = DurumAl();
+            if (DurumlarAyniMi(durum, _sonDurum))
+                return;
+
+            _geriAlYigini.Push(_sonDurum);
+            _ilerleYigini.Clear();
+            _sonDurum = durum;
+            GecmisDegisti?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>Kullanıcıya ait olmayan (programın yaptığı) bir düzeltmeyi geri al adımı saymadan son durum olarak kabul eder.</summary>
+        public void SonDurumuGuncelle()
+        {
+            if (GeriAlAcik)
+                _sonDurum = DurumAl();
+        }
+
+        /// <summary>Geçmişi siler; çizimin o anki hali başlangıç kabul edilir (ör. ekrana başka bir çizim yüklendiğinde).</summary>
+        public void GecmisiTemizle()
+        {
+            _geriAlYigini.Clear();
+            _ilerleYigini.Clear();
+            _sonDurum = DurumAl();
+            GecmisDegisti?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void GeriAl()
+        {
+            if (_geriAlYigini.Count == 0)
+                return;
+
+            _ilerleYigini.Push(DurumAl());
+            DurumYukle(_geriAlYigini.Pop());
+        }
+
+        public void Ilerle()
+        {
+            if (_ilerleYigini.Count == 0)
+                return;
+
+            _geriAlYigini.Push(DurumAl());
+            DurumYukle(_ilerleYigini.Pop());
+        }
+
+        /// <summary>Açıksa objeler tabakalara ayrılır: yeni objeler aktif tabakaya girer, kapalı tabakalar çizilmez.</summary>
+        public bool TabakalarAcik { get; set; }
+
+        public readonly List<Tabaka> Tabakalar = new List<Tabaka>();
+
+        private Tabaka _aktifTabaka;
+
+        /// <summary>Yeni çizilen objelerin gireceği tabaka. Hiç tabaka yoksa "0" tabakası oluşturulur.</summary>
+        public Tabaka AktifTabaka
+        {
+            get
+            {
+                if (_aktifTabaka == null || !Tabakalar.Contains(_aktifTabaka))
+                    _aktifTabaka = Tabakalar.Count > 0 ? Tabakalar[0] : TabakaBulVeyaEkle("0", Color.Black, true, false);
+                return _aktifTabaka;
+            }
+            set => _aktifTabaka = value;
+        }
+
+        /// <summary>Verilen adda tabaka varsa onu döner (ayarlarına dokunmadan); yoksa verilen ayarlarla ekler.</summary>
+        public Tabaka TabakaBulVeyaEkle(string ad, Color renk, bool gorunur, bool kilitli)
+        {
+            var tabaka = Tabakalar.Find(t => string.Equals(t.Ad, ad, StringComparison.OrdinalIgnoreCase));
+            if (tabaka != null)
+                return tabaka;
+
+            tabaka = new Tabaka { Ad = ad, Renk = renk, Gorunur = gorunur, Kilitli = kilitli, Liste = Tabakalar };
+            Tabakalar.Add(tabaka);
+            return tabaka;
+        }
+
+        /// <summary>Tabaka ayarları (görünürlük, kilit, renk) değiştikten sonra çağrılır: artık seçilemeyen objelerin seçimi kalkar, çizim yenilenir.</summary>
+        public void TabakalarDegisti()
+        {
+            var secimDegisti = false;
+            foreach (var nesne in Nesneler)
+            {
+                if (!nesne.Secili || Secilebilir(nesne))
+                    continue;
+                nesne.Secili = false;
+                secimDegisti = true;
+            }
+            if (secimDegisti)
+                SecimBildir();
+            Invalidate();
+        }
+
+        private static bool Gorunur(CizimNesnesi nesne)
+        {
+            return nesne.Tabaka == null || nesne.Tabaka.Gorunur;
+        }
+
+        // Kapalı ya da kilitli tabakadaki obje fareyle seçilemez ve düzenlenemez.
+        private static bool Secilebilir(CizimNesnesi nesne)
+        {
+            return nesne.Tabaka == null || (nesne.Tabaka.Gorunur && !nesne.Tabaka.Kilitli);
+        }
+
+        /// <summary>Yüzey düzenleme araçlarının (çizgi/nokta ekle-sil vb.) üzerinde çalıştığı yüzey.</summary>
+        public YuzeyNesnesi DuzenlenenYuzey { get; set; }
+
+        private const float YuzeySecimToleransPiksel = 8f;
+        // İki tıklamalı yüzey araçlarında (Çizgi Ekle, Nokta Taşı) ilk tıklamada seçilen noktanın indeksi; yoksa -1.
+        private int _yuzeyIlkNokta = -1;
+
+        public static bool YuzeyAraciMi(CizimAraci arac)
+        {
+            return arac >= CizimAraci.YuzeyCizgiEkle && arac <= CizimAraci.YuzeyNoktaTasi;
+        }
+
+        private bool _tutamacSurukleniyor;
+        // Sürüklenen uçlar: çizgi ve "başlangıç ucu mu" bilgisi.
+        private readonly List<KeyValuePair<CizgiNesnesi, bool>> _suruklenenUclar = new List<KeyValuePair<CizgiNesnesi, bool>>();
+        private double _beklemedekiBaslangicX;
+        private double _beklemedekiBaslangicY;
 
         public CizimAraci AktifArac
         {
@@ -96,13 +420,13 @@ namespace XmlToKtb.Cizim
                     return;
                 _aktifArac = value;
                 _beklemedekiBaslangic = null;
+                _yuzeyIlkNokta = -1;
                 _duzenlenecekNesneler.Clear();
                 _duzenlemeAsamasi = DuzenlemeAsamasi.ObjeSeciliyor;
                 _daireNoktalar.Clear();
                 _daireObjeleri.Clear();
                 _daireAdaylari = null;
                 _daireAsamasi = DaireAsamasi.GirdiBekleniyor;
-                Cursor = value == CizimAraci.Sec ? _secAraciImleci : Cursors.Default;
 
                 if (DuzenlemeAraciMi(value))
                 {
@@ -115,6 +439,7 @@ namespace XmlToKtb.Cizim
                         _duzenlemeAsamasi = DuzenlemeAsamasi.TabanNoktasiBekleniyor;
                 }
 
+                ImleciGuncelle();
                 AracDegisti?.Invoke(this, _aktifArac);
                 Invalidate();
             }
@@ -152,15 +477,63 @@ namespace XmlToKtb.Cizim
         }
 
         private readonly Cursor _secAraciImleci;
+        // NoktaAl aracında obje mi seçiliyor (kare imleç) yoksa nokta mı veriliyor (artı imleç)?
+        private bool _noktaAlNesneSecer;
+        private bool _secimBekleniyor;
 
+        /// <summary>
+        /// Bir komut, devam etmek için obje seçimi bekliyor mu? Bekliyorsa Seç aracında da imleç kare olur
+        /// (boş ekrandaki ok yerine).
+        /// </summary>
+        public bool SecimBekleniyor
+        {
+            get => _secimBekleniyor;
+            set
+            {
+                _secimBekleniyor = value;
+                ImleciGuncelle();
+            }
+        }
+
+        /// <summary>
+        /// İmleç: boş ekranda (Seç aracı) ok; obje seçilmesi beklenirken (yüzey çizgi sil/üçgen döndür, kes, teğet
+        /// daire objeleri, kaydır/kopyala/döndür/ölçekle için obje seçimi, obje seçen dış komutlar) kare; nokta
+        /// verilirken artı.
+        /// </summary>
+        private void ImleciGuncelle()
+        {
+            var arac = _aktifArac;
+            var secim = arac == CizimAraci.YuzeyCizgiSil || arac == CizimAraci.YuzeyUcgenDondur || arac == CizimAraci.Kes
+                        || arac == CizimAraci.DaireTegetIkiObje || arac == CizimAraci.DaireTegetUcObje
+                        || (DuzenlemeAraciMi(arac) && _duzenlemeAsamasi == DuzenlemeAsamasi.ObjeSeciliyor)
+                        || (arac == CizimAraci.NoktaAl && _noktaAlNesneSecer);
+            secim |= arac == CizimAraci.Sec && _secimBekleniyor;
+            Cursor = secim ? _secAraciImleci : arac == CizimAraci.Sec ? Cursors.Default : Cursors.Cross;
+        }
+
+        /// <summary>
+        /// Dış bir komut için NoktaAl aracını açar. Komut ekrandan obje seçiyorsa imleç kare, nokta istiyorsa artı olur.
+        /// </summary>
+        public void NoktaAlmayaBasla(bool nesneSecilecek)
+        {
+            _noktaAlNesneSecer = nesneSecilecek;
+            AktifArac = CizimAraci.NoktaAl;
+            ImleciGuncelle();
+        }
         public CizimPaneli()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
             BackColor = Color.White;
             TabStop = true;
             _secAraciImleci = KareImleciOlustur(MilimetreyiPikselYap(2.0));
-            Cursor = _secAraciImleci;
+            Cursor = Cursors.Default;
             KeyDown += CizimPaneli_KeyDown;
+        }
+
+        // Enter normalde formun varsayılan düğmesine gider; seçim onayı için panele gelmesi sağlanır.
+        protected override bool IsInputKey(Keys keyData)
+        {
+            return keyData == Keys.Enter || base.IsInputKey(keyData);
         }
 
         private void CizimPaneli_KeyDown(object sender, KeyEventArgs e)
@@ -168,6 +541,12 @@ namespace XmlToKtb.Cizim
             if (e.KeyCode == Keys.Delete && AktifArac == CizimAraci.Sec)
             {
                 SeciliNesneleriSil();
+                DegisiklikKaydet();
+                e.Handled = true;
+            }
+            else if (e.KeyCode == Keys.Enter && AktifArac == CizimAraci.Sec)
+            {
+                SecimOnaylandi?.Invoke(this, EventArgs.Empty);
                 e.Handled = true;
             }
             else if (e.KeyCode == Keys.Escape)
@@ -195,6 +574,7 @@ namespace XmlToKtb.Cizim
 
                 if (degisiklikVar)
                     SecimBildir();
+                SecimIptalEdildi?.Invoke(this, EventArgs.Empty);
                 Invalidate();
             }
             else
@@ -203,7 +583,10 @@ namespace XmlToKtb.Cizim
                     nesne.Secili = false;
                 foreach (var nesne in _daireObjeleri)
                     nesne.Secili = false;
+                var noktaAliniyordu = AktifArac == CizimAraci.NoktaAl;
                 AktifArac = CizimAraci.Sec;
+                if (noktaAliniyordu)
+                    NoktaAlmaBitti?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -222,11 +605,20 @@ namespace XmlToKtb.Cizim
             foreach (var nesne in silinecekler)
                 Nesneler.Remove(nesne);
 
+            // Güzergahı silinen kilometre etiketleri de silinir (bağlı oldukları güzergah olmadan anlamsızdırlar).
+            Nesneler.RemoveAll(n => n is GuzergahEtiketNesnesi etiket && !Nesneler.Contains(etiket.Guzergah));
+
             SecimBildir();
             Invalidate();
         }
 
         /// <summary>Seçili obje sayısına göre Properties panelini günceller (tek obje seçiliyse onu, aksi halde boşu bildirir).</summary>
+        /// <summary>Seçim dışarıdan (ör. seçim menüsü komutlarıyla) değiştirildiğinde SecimDegisti olayını tetikler.</summary>
+        public void SecimDegistiBildir()
+        {
+            SecimBildir();
+        }
+
         private void SecimBildir()
         {
             CizimNesnesi tekObje = null;
@@ -272,7 +664,25 @@ namespace XmlToKtb.Cizim
             GridCiz(e.Graphics);
 
             foreach (var nesne in Nesneler)
-                nesne.Ciz(e.Graphics, Gorunum, Width, Height);
+            {
+                // Tabakası belli olmayan (yeni çizilmiş, kopyalanmış...) obje aktif tabakaya girer.
+                if (TabakalarAcik && nesne.Tabaka == null)
+                    nesne.Tabaka = AktifTabaka;
+                if (Gorunur(nesne))
+                    nesne.Ciz(e.Graphics, Gorunum, Width, Height);
+            }
+
+            if (ReferansNoktasiGoster)
+                ReferansNoktasiCiz(e.Graphics);
+
+            if (YuzeyAraciMi(AktifArac) && _yuzeyIlkNokta >= 0 && DuzenlenenYuzey != null && _yuzeyIlkNokta < DuzenlenenYuzey.X.Count)
+            {
+                var ilk = Gorunum.DunyadanEkrana(DuzenlenenYuzey.X[_yuzeyIlkNokta], DuzenlenenYuzey.Y[_yuzeyIlkNokta], Width, Height);
+                using (var kalem = new Pen(Color.Red, 1.5f) { DashStyle = DashStyle.Dash })
+                    e.Graphics.DrawLine(kalem, ilk, _sonFareEkranKonumu);
+                using (var kalem = new Pen(Color.Red, 2f))
+                    e.Graphics.DrawRectangle(kalem, ilk.X - 5, ilk.Y - 5, 10, 10);
+            }
 
             if (AktifArac == CizimAraci.Cizgi && _beklemedekiBaslangic != null)
             {
@@ -300,6 +710,20 @@ namespace XmlToKtb.Cizim
 
             if (_secimKutusuSurukleniyor)
                 SecimKutusuCiz(e.Graphics);
+
+            UstCizim?.Invoke(this, e);
+        }
+
+        private void ReferansNoktasiCiz(Graphics grafik)
+        {
+            const float kol = 12f;
+            var merkez = Gorunum.DunyadanEkrana(0, 0, Width, Height);
+            using (var kalem = new Pen(Color.Red, 2f))
+            {
+                grafik.DrawLine(kalem, merkez.X - kol, merkez.Y, merkez.X + kol, merkez.Y);
+                grafik.DrawLine(kalem, merkez.X, merkez.Y - kol, merkez.X, merkez.Y + kol);
+                grafik.DrawEllipse(kalem, merkez.X - kol / 2, merkez.Y - kol / 2, kol, kol);
+            }
         }
 
         private void SecimKutusuCiz(Graphics grafik)
@@ -386,7 +810,8 @@ namespace XmlToKtb.Cizim
             }
         }
 
-        private static void YakalamaIsaretiCiz(Graphics grafik, PointF ekranNoktasi, YakalamaModu turu)
+        /// <summary>Yakalama türünün ekrandaki işaretini çizer (menülerdeki simgeler de bununla çizilir).</summary>
+        public static void YakalamaIsaretiCiz(Graphics grafik, PointF ekranNoktasi, YakalamaModu turu)
         {
             const float yaricap = 6f;
 
@@ -419,11 +844,45 @@ namespace XmlToKtb.Cizim
                     grafik.DrawLine(kalem, ekranNoktasi.X, ekranNoktasi.Y - 2f, ekranNoktasi.X, ekranNoktasi.Y + 2f);
                 }
             }
+            else if (turu == YakalamaModu.Nokta)
+            {
+                // Nokta: çarpı (uçtan ayırt edilsin diye).
+                using (var kalem = new Pen(Color.DarkViolet, 2f))
+                {
+                    grafik.DrawLine(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y - yaricap, ekranNoktasi.X + yaricap, ekranNoktasi.Y + yaricap);
+                    grafik.DrawLine(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y + yaricap, ekranNoktasi.X + yaricap, ekranNoktasi.Y - yaricap);
+                }
+            }
             else
             {
                 using (var kalem = new Pen(Color.Magenta, 2f))
                     grafik.DrawRectangle(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y - yaricap, yaricap * 2, yaricap * 2);
             }
+        }
+
+        /// <summary>Yakalama türünün 16x16 simgesi.</summary>
+        public static Bitmap YakalamaSimgesi(YakalamaModu turu)
+        {
+            var simge = new Bitmap(16, 16);
+            using (var g = Graphics.FromImage(simge))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                if (turu == YakalamaModu.Dik)
+                {
+                    // Ekrandaki dik işareti küçük olduğu için simgede daha belirgin bir dik açı çizilir.
+                    using (var kalem = new Pen(Color.OrangeRed, 2f))
+                    {
+                        g.DrawLine(kalem, 1, 14, 15, 14);
+                        g.DrawLine(kalem, 6, 14, 6, 1);
+                        g.DrawRectangle(kalem, 6, 9, 5, 5);
+                    }
+                }
+                else
+                {
+                    YakalamaIsaretiCiz(g, new PointF(8, 8), turu);
+                }
+            }
+            return simge;
         }
 
         private void GridCiz(Graphics grafik)
@@ -512,6 +971,40 @@ namespace XmlToKtb.Cizim
 
             foreach (var nesne in Nesneler)
             {
+                // Kapalı tabakadaki objeye yakalanılmaz.
+                if (!Gorunur(nesne))
+                    continue;
+
+                // Sürüklenen çizgi kendi ucuna yakalanmasın.
+                if (_tutamacSurukleniyor && _suruklenenUclar.Any(u => ReferenceEquals(u.Key, nesne)))
+                    continue;
+                if (ReferenceEquals(nesne, _suruklenenNesne))
+                    continue;
+
+                // Yüzeyin yüz binlerce noktası olabilir; hepsini aday listesine koymak yerine en yakın nokta doğrudan sorulur.
+                if (nesne is YuzeyNesnesi yuzey)
+                {
+                    if ((_aktifYakalamaModu & (YakalamaModu.Nokta | YakalamaModu.Uc)) == 0)
+                        continue;
+
+                    Gorunum.EkrandanDunyayaHassas(ekranNoktasi, Width, Height, out var fareX, out var fareY);
+                    var yakinNokta = yuzey.EnYakinNokta(fareX, fareY, YakalamaToleransPiksel / Gorunum.Olcek);
+                    if (yakinNokta < 0)
+                        continue;
+
+                    var noktaEkran = Gorunum.DunyadanEkrana(yuzey.X[yakinNokta], yuzey.Y[yakinNokta], Width, Height);
+                    var farkX = noktaEkran.X - ekranNoktasi.X;
+                    var farkY = noktaEkran.Y - ekranNoktasi.Y;
+                    var uzaklikKare = (double)farkX * farkX + (double)farkY * farkY;
+                    if (uzaklikKare < enYakinMesafeKare)
+                    {
+                        enYakinMesafeKare = uzaklikKare;
+                        enYakinDunya = new PointF((float)yuzey.X[yakinNokta], (float)yuzey.Y[yakinNokta]);
+                        bulunanTur = YakalamaModu.Nokta;
+                    }
+                    continue;
+                }
+
                 var adaylar = new List<YakalamaAdayi>();
 
                 if ((_aktifYakalamaModu & (YakalamaModu.Nokta | YakalamaModu.Uc)) != 0)
@@ -557,6 +1050,19 @@ namespace XmlToKtb.Cizim
                 }
             }
 
+            if (ReferansNoktasiGoster && (_aktifYakalamaModu & (YakalamaModu.Nokta | YakalamaModu.Uc)) != 0)
+            {
+                var referansEkran = Gorunum.DunyadanEkrana(0, 0, Width, Height);
+                var dx = referansEkran.X - ekranNoktasi.X;
+                var dy = referansEkran.Y - ekranNoktasi.Y;
+                var mesafeKare = (double)dx * dx + (double)dy * dy;
+                if (mesafeKare <= YakalamaToleransPiksel * YakalamaToleransPiksel && mesafeKare < enYakinMesafeKare)
+                {
+                    enYakinDunya = new PointF(0, 0);
+                    bulunanTur = YakalamaModu.Nokta;
+                }
+            }
+
             return enYakinDunya;
         }
 
@@ -597,15 +1103,34 @@ namespace XmlToKtb.Cizim
 
             if (e.Button == MouseButtons.Right)
             {
-                if (AktifArac == CizimAraci.Cizgi || AktifArac == CizimAraci.Kes)
+                if (AktifArac == CizimAraci.NoktaAl)
                 {
                     AktifArac = CizimAraci.Sec;
+                    NoktaAlmaBitti?.Invoke(this, EventArgs.Empty);
+                }
+                else if (AktifArac == CizimAraci.Cizgi || AktifArac == CizimAraci.Kes)
+                {
+                    AktifArac = CizimAraci.Sec;
+                }
+                else if (YuzeyAraciMi(AktifArac))
+                {
+                    // İlk nokta seçilmişse sağ tık yalnızca onu bırakır; seçilmemişse araçtan çıkılır.
+                    if (_yuzeyIlkNokta >= 0)
+                    {
+                        _yuzeyIlkNokta = -1;
+                        Invalidate();
+                    }
+                    else
+                    {
+                        AktifArac = CizimAraci.Sec;
+                    }
                 }
                 else if (DuzenlemeAraciMi(AktifArac))
                 {
                     if (_duzenlemeAsamasi == DuzenlemeAsamasi.ObjeSeciliyor && _duzenlenecekNesneler.Count > 0)
                     {
                         _duzenlemeAsamasi = DuzenlemeAsamasi.TabanNoktasiBekleniyor;
+                        ImleciGuncelle();
                         Invalidate();
                     }
                     else
@@ -621,32 +1146,58 @@ namespace XmlToKtb.Cizim
                         nesne.Secili = false;
                     AktifArac = CizimAraci.Sec;
                 }
+                else if (AktifArac == CizimAraci.Sec)
+                {
+                    SecimOnaylandi?.Invoke(this, EventArgs.Empty);
+                }
                 return;
             }
 
             if (e.Button != MouseButtons.Left)
                 return;
 
+            if (AktifArac == CizimAraci.NoktaAl)
+            {
+                HassasNoktaAl(e.Location, out var tikX, out var tikY);
+                NoktaTiklandi?.Invoke(tikX, tikY);
+                Invalidate();
+                return;
+            }
+
+            if (AktifArac == CizimAraci.YuzeyCizgiSil)
+            {
+                // Çizgi Sil'de tek tıklama mı pencere mi olduğu fare bırakılınca belli olur (bkz. OnMouseUp).
+                _secimKutusuBekleniyor = true;
+                _secimKutusuSurukleniyor = false;
+                _secimKutusuBaslangicEkran = e.Location;
+                return;
+            }
+
+            if (YuzeyAraciMi(AktifArac))
+            {
+                YuzeyDuzenleTikla(e.Location);
+                return;
+            }
+
             var dunyaNoktasi = DunyaNoktasiHesaplaVeYakala(e.Location);
 
             if (AktifArac == CizimAraci.Cizgi)
             {
-                if (_beklemedekiBaslangic == null)
-                {
-                    _beklemedekiBaslangic = dunyaNoktasi;
-                }
-                else
+                TamKoordinatAl(dunyaNoktasi, out var tamX, out var tamY);
+                if (_beklemedekiBaslangic != null)
                 {
                     var yeniCizgi = new CizgiNesnesi
                     {
-                        BaslangicX = _beklemedekiBaslangic.Value.X,
-                        BaslangicY = _beklemedekiBaslangic.Value.Y,
-                        BitisX = dunyaNoktasi.X,
-                        BitisY = dunyaNoktasi.Y
+                        BaslangicX = _beklemedekiBaslangicX,
+                        BaslangicY = _beklemedekiBaslangicY,
+                        BitisX = tamX,
+                        BitisY = tamY
                     };
                     Nesneler.Add(yeniCizgi);
-                    _beklemedekiBaslangic = dunyaNoktasi;
                 }
+                _beklemedekiBaslangic = dunyaNoktasi;
+                _beklemedekiBaslangicX = tamX;
+                _beklemedekiBaslangicY = tamY;
                 Invalidate();
             }
             else if (AktifArac == CizimAraci.Kes)
@@ -665,15 +1216,293 @@ namespace XmlToKtb.Cizim
             {
                 SecAraciMouseDown(dunyaNoktasi, e.Location);
             }
+
+            DegisiklikKaydet();
+        }
+
+        /// <summary>
+        /// Fareden gelen (float hassasiyetli) dünya noktasını çift hassasiyetli koordinata çevirir. Nokta bir çizgi
+        /// ucuna yakalanmışsa o ucun tam koordinatı döner; böylece birleşen uçlar birebir aynı değeri taşır.
+        /// </summary>
+        private void TamKoordinatAl(PointF dunyaNoktasi, out double x, out double y)
+        {
+            if (_yakalananDunyaNoktasi != null)
+            {
+                foreach (var nesne in Nesneler)
+                {
+                    if (!(nesne is CizgiNesnesi cizgi))
+                        continue;
+
+                    if ((float)cizgi.BaslangicX == dunyaNoktasi.X && (float)cizgi.BaslangicY == dunyaNoktasi.Y)
+                    {
+                        x = cizgi.BaslangicX;
+                        y = cizgi.BaslangicY;
+                        return;
+                    }
+
+                    if ((float)cizgi.BitisX == dunyaNoktasi.X && (float)cizgi.BitisY == dunyaNoktasi.Y)
+                    {
+                        x = cizgi.BitisX;
+                        y = cizgi.BitisY;
+                        return;
+                    }
+                }
+            }
+
+            x = dunyaNoktasi.X;
+            y = dunyaNoktasi.Y;
+            if (YeniNoktalariMilimetreyeYuvarla)
+            {
+                x = Math.Round(x, 3);
+                y = Math.Round(y, 3);
+            }
+        }
+
+        private static bool UclarAyniMi(double x1, double y1, double x2, double y2)
+        {
+            return Math.Abs(x1 - x2) <= UcEsitlikToleransi && Math.Abs(y1 - y2) <= UcEsitlikToleransi;
+        }
+
+        /// <summary>Tıklanan yer seçili bir çizginin uç tutamacıysa o ucu (ve istenirse aynı noktadaki diğer uçları) sürüklemeye başlar.</summary>
+        private bool TutamacSuruklemeBaslat(Point ekranNoktasi)
+        {
+            for (var i = Nesneler.Count - 1; i >= 0; i--)
+            {
+                if (!Nesneler[i].Secili || !(Nesneler[i] is CizgiNesnesi cizgi))
+                    continue;
+
+                bool baslangicMi;
+                if (TutamacaIsabetEttiMi(cizgi.BaslangicX, cizgi.BaslangicY, ekranNoktasi))
+                    baslangicMi = true;
+                else if (TutamacaIsabetEttiMi(cizgi.BitisX, cizgi.BitisY, ekranNoktasi))
+                    baslangicMi = false;
+                else
+                    continue;
+
+                var ucX = baslangicMi ? cizgi.BaslangicX : cizgi.BitisX;
+                var ucY = baslangicMi ? cizgi.BaslangicY : cizgi.BitisY;
+
+                _suruklenenUclar.Clear();
+                _suruklenenUclar.Add(new KeyValuePair<CizgiNesnesi, bool>(cizgi, baslangicMi));
+                if (OrtakUclariBirlikteTasi)
+                {
+                    foreach (var nesne in Nesneler)
+                    {
+                        if (!(nesne is CizgiNesnesi diger) || ReferenceEquals(diger, cizgi) || !AyniUcGrubundaMi(diger, cizgi))
+                            continue;
+                        if (UclarAyniMi(diger.BaslangicX, diger.BaslangicY, ucX, ucY))
+                            _suruklenenUclar.Add(new KeyValuePair<CizgiNesnesi, bool>(diger, true));
+                        if (UclarAyniMi(diger.BitisX, diger.BitisY, ucX, ucY))
+                            _suruklenenUclar.Add(new KeyValuePair<CizgiNesnesi, bool>(diger, false));
+                    }
+                }
+
+                _tutamacSurukleniyor = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TutamacaIsabetEttiMi(double dunyaX, double dunyaY, Point ekranNoktasi)
+        {
+            var ekran = Gorunum.DunyadanEkrana(dunyaX, dunyaY, Width, Height);
+            return Math.Abs(ekran.X - ekranNoktasi.X) <= TutamacToleransPiksel && Math.Abs(ekran.Y - ekranNoktasi.Y) <= TutamacToleransPiksel;
+        }
+
+        /// <summary>
+        /// Bir çizginin ucu (ör. Özellikler panelinden) değiştirildikten sonra, eski noktayı paylaşan diğer çizgi
+        /// uçlarını yeni noktaya taşır.
+        /// </summary>
+        public void OrtakUclariGuncelle(CizgiNesnesi kaynak, double eskiX, double eskiY, double yeniX, double yeniY)
+        {
+            foreach (var nesne in Nesneler)
+            {
+                if (!(nesne is CizgiNesnesi diger) || ReferenceEquals(diger, kaynak) || !AyniUcGrubundaMi(diger, kaynak))
+                    continue;
+
+                if (UclarAyniMi(diger.BaslangicX, diger.BaslangicY, eskiX, eskiY))
+                {
+                    diger.BaslangicX = yeniX;
+                    diger.BaslangicY = yeniY;
+                }
+
+                if (UclarAyniMi(diger.BitisX, diger.BitisY, eskiX, eskiY))
+                {
+                    diger.BitisX = yeniX;
+                    diger.BitisY = yeniY;
+                }
+            }
+
+            Invalidate();
+        }
+
+        /// <summary>
+        /// Özellikler panelinden bir obje değeri değiştirildikten sonra çağrılır: değişen bir çizgi ucuysa (ve ortak
+        /// uç taşıma açıksa) eski noktayı paylaşan komşu çizgi ucunu da taşır, değişikliği geri al geçmişine yazar.
+        /// </summary>
+        public void OzellikDegisti(object nesne, string ozellikAdi, object eskiDeger)
+        {
+            if (OrtakUclariBirlikteTasi && nesne is CizgiNesnesi cizgi && eskiDeger is double eski)
+            {
+                switch (ozellikAdi)
+                {
+                    case nameof(CizgiNesnesi.BaslangicX):
+                        OrtakUclariGuncelle(cizgi, eski, cizgi.BaslangicY, cizgi.BaslangicX, cizgi.BaslangicY);
+                        break;
+                    case nameof(CizgiNesnesi.BaslangicY):
+                        OrtakUclariGuncelle(cizgi, cizgi.BaslangicX, eski, cizgi.BaslangicX, cizgi.BaslangicY);
+                        break;
+                    case nameof(CizgiNesnesi.BitisX):
+                        OrtakUclariGuncelle(cizgi, eski, cizgi.BitisY, cizgi.BitisX, cizgi.BitisY);
+                        break;
+                    case nameof(CizgiNesnesi.BitisY):
+                        OrtakUclariGuncelle(cizgi, cizgi.BitisX, eski, cizgi.BitisX, cizgi.BitisY);
+                        break;
+                }
+            }
+
+            DegisiklikKaydet();
+            Invalidate();
+        }
+
+        /// <summary>
+        /// Çizgi Sil komutunda sürüklenen pencereyle çizgileri toplu siler. Seç aracındaki gibi: soldan sağa çekilen
+        /// pencere yalnızca tamamı içinde kalan çizgileri, sağdan sola çekilen pencere değdiği bütün çizgileri seçer.
+        /// </summary>
+        private void YuzeyPencereyleCizgiSil(Point baslangicEkran, Point bitisEkran)
+        {
+            var yuzey = DuzenlenenYuzey;
+            if (yuzey == null || !Nesneler.Contains(yuzey))
+            {
+                AktifArac = CizimAraci.Sec;
+                return;
+            }
+
+            Gorunum.EkrandanDunyayaHassas(baslangicEkran, Width, Height, out var x1, out var y1);
+            Gorunum.EkrandanDunyayaHassas(bitisEkran, Width, Height, out var x2, out var y2);
+            var kesenlerDahil = bitisEkran.X < baslangicEkran.X;
+
+            if (yuzey.CizgileriSil(Math.Min(x1, x2), Math.Min(y1, y2), Math.Max(x1, x2), Math.Max(y1, y2), kesenlerDahil) > 0)
+                NesnelerGuncellendi?.Invoke(this, EventArgs.Empty);
+            Invalidate();
+        }
+
+        /// <summary>Aktif yüzey düzenleme aracını, tıklanan ekran noktasında DuzenlenenYuzey üzerinde uygular.</summary>
+        private void YuzeyDuzenleTikla(Point ekranNoktasi)
+        {
+            var yuzey = DuzenlenenYuzey;
+            if (yuzey == null || !Nesneler.Contains(yuzey))
+            {
+                AktifArac = CizimAraci.Sec;
+                return;
+            }
+
+            Gorunum.EkrandanDunyayaHassas(ekranNoktasi, Width, Height, out var x, out var y);
+            var tolerans = YuzeySecimToleransPiksel / Gorunum.Olcek;
+            string hata = null;
+            var degisti = false;
+
+            switch (AktifArac)
+            {
+                case CizimAraci.YuzeyCizgiEkle:
+                {
+                    var nokta = yuzey.EnYakinNokta(x, y, tolerans);
+                    if (nokta < 0)
+                        break;
+                    if (_yuzeyIlkNokta < 0)
+                    {
+                        _yuzeyIlkNokta = nokta;
+                    }
+                    else if (nokta != _yuzeyIlkNokta)
+                    {
+                        degisti = yuzey.CizgiEkle(_yuzeyIlkNokta, nokta, out hata);
+                        _yuzeyIlkNokta = -1;
+                    }
+                    break;
+                }
+
+                case CizimAraci.YuzeyCizgiSil:
+                    if (yuzey.EnYakinKenar(x, y, tolerans, out var silA, out var silB))
+                        degisti = yuzey.CizgiSil(silA, silB);
+                    break;
+
+                case CizimAraci.YuzeyUcgenDondur:
+                    if (yuzey.EnYakinKenar(x, y, tolerans, out var donA, out var donB))
+                        degisti = yuzey.UcgenDondur(donA, donB, out hata);
+                    break;
+
+                case CizimAraci.YuzeyNoktaEkle:
+                    using (var dlg = new YuzeyNoktaForm("Nokta Ekle", yuzey.SonrakiNoktaNo(), x, y, yuzey.KotHesapla(x, y)))
+                    {
+                        if (dlg.ShowDialog(FindForm()) == DialogResult.OK)
+                        {
+                            yuzey.NoktaEkle(dlg.No, dlg.Y, dlg.X, dlg.Z);
+                            degisti = true;
+                        }
+                    }
+                    break;
+
+                case CizimAraci.YuzeyNoktaSil:
+                {
+                    var nokta = yuzey.EnYakinNokta(x, y, tolerans);
+                    if (nokta >= 0)
+                    {
+                        yuzey.NoktaSil(nokta);
+                        degisti = true;
+                    }
+                    break;
+                }
+
+                case CizimAraci.YuzeyNoktaDuzelt:
+                {
+                    var nokta = yuzey.EnYakinNokta(x, y, tolerans);
+                    if (nokta < 0)
+                        break;
+                    using (var dlg = new YuzeyNoktaForm("Nokta Düzelt", yuzey.Nolar[nokta], yuzey.X[nokta], yuzey.Y[nokta], yuzey.Z[nokta]))
+                    {
+                        if (dlg.ShowDialog(FindForm()) == DialogResult.OK)
+                        {
+                            yuzey.NoktaDuzelt(nokta, dlg.No, dlg.Y, dlg.X, dlg.Z);
+                            degisti = true;
+                        }
+                    }
+                    break;
+                }
+
+                case CizimAraci.YuzeyNoktaTasi:
+                    if (_yuzeyIlkNokta < 0)
+                    {
+                        _yuzeyIlkNokta = yuzey.EnYakinNokta(x, y, tolerans);
+                    }
+                    else
+                    {
+                        yuzey.NoktaTasi(_yuzeyIlkNokta, x, y);
+                        _yuzeyIlkNokta = -1;
+                        degisti = true;
+                    }
+                    break;
+            }
+
+            if (hata != null)
+                MessageBox.Show(hata, "Yüzey Düzenle", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (degisti)
+                NesnelerGuncellendi?.Invoke(this, EventArgs.Empty);
+            Invalidate();
         }
 
         private void SecAraciMouseDown(PointF dunyaNoktasi, Point ekranNoktasi)
         {
+            if (TutamacSuruklemeAcik && TutamacSuruklemeBaslat(ekranNoktasi))
+                return;
+            if (NesneTutamaciBaslat(ekranNoktasi))
+                return;
+
             var toleransDunya = SecimToleransPiksel / Gorunum.Olcek;
             CizimNesnesi bulunan = null;
             for (var i = Nesneler.Count - 1; i >= 0; i--)
             {
-                if (Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
+                if (Secilebilir(Nesneler[i]) && Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
                 {
                     bulunan = Nesneler[i];
                     break;
@@ -709,7 +1538,7 @@ namespace XmlToKtb.Cizim
             CizimNesnesi hedef = null;
             for (var i = Nesneler.Count - 1; i >= 0; i--)
             {
-                if ((Nesneler[i] is CizgiNesnesi || Nesneler[i] is YayNesnesi || Nesneler[i] is DaireNesnesi) && Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
+                if ((Nesneler[i] is CizgiNesnesi || Nesneler[i] is YayNesnesi || Nesneler[i] is DaireNesnesi) && Secilebilir(Nesneler[i]) && Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
                 {
                     hedef = Nesneler[i];
                     break;
@@ -719,9 +1548,18 @@ namespace XmlToKtb.Cizim
             if (hedef == null)
                 return;
 
-            var parcalar = Kesisimler.Kirp(hedef, dunyaNoktasi, Nesneler);
+            // Seçili objeler varsa yalnızca onlar kesici sayılır; seçim yoksa bütün objeler kesicidir.
+            var kesiciler = Nesneler.Where(n => n.Secili && !ReferenceEquals(n, hedef) && Gorunur(n)).ToList();
+            var parcalar = Kesisimler.Kirp(hedef, dunyaNoktasi, kesiciler.Count > 0 ? kesiciler : Nesneler);
             if (parcalar == null)
                 return;
+
+            // Kesilen objenin parçaları onun tabakasında ve renginde kalır.
+            foreach (var parca in parcalar)
+            {
+                parca.Tabaka = hedef.Tabaka;
+                parca.OzelRenk = hedef.OzelRenk;
+            }
 
             Nesneler.Remove(hedef);
             Nesneler.AddRange(parcalar);
@@ -738,7 +1576,7 @@ namespace XmlToKtb.Cizim
                     CizimNesnesi bulunan = null;
                     for (var i = Nesneler.Count - 1; i >= 0; i--)
                     {
-                        if (Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
+                        if (Secilebilir(Nesneler[i]) && Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
                         {
                             bulunan = Nesneler[i];
                             break;
@@ -923,7 +1761,7 @@ namespace XmlToKtb.Cizim
             CizimNesnesi bulunan = null;
             for (var i = Nesneler.Count - 1; i >= 0; i--)
             {
-                if (DaireTegetObjesiOlabilirMi(Nesneler[i]) && Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
+                if (DaireTegetObjesiOlabilirMi(Nesneler[i]) && Secilebilir(Nesneler[i]) && Nesneler[i].IsabetEttiMi(dunyaNoktasi, toleransDunya))
                 {
                     bulunan = Nesneler[i];
                     break;
@@ -1039,6 +1877,38 @@ namespace XmlToKtb.Cizim
                 return;
             }
 
+            if (_suruklenenNesne != null)
+            {
+                HassasNoktaAl(e.Location, out var tutamacX, out var tutamacY);
+                FareKonumuDegisti?.Invoke(this, new PointF((float)tutamacX, (float)tutamacY));
+                if (((ITutamacli)_suruklenenNesne).TutamacTasi(_suruklenenTutamac, tutamacX, tutamacY))
+                    TutamacSuruklendi?.Invoke(_suruklenenNesne, TutamacAsamasi.Surukleniyor);
+                Invalidate();
+                return;
+            }
+
+            if (_tutamacSurukleniyor)
+            {
+                var tutamacNoktasi = DunyaNoktasiHesaplaVeYakala(e.Location);
+                FareKonumuDegisti?.Invoke(this, tutamacNoktasi);
+                TamKoordinatAl(tutamacNoktasi, out var yeniX, out var yeniY);
+                foreach (var uc in _suruklenenUclar)
+                {
+                    if (uc.Value)
+                    {
+                        uc.Key.BaslangicX = yeniX;
+                        uc.Key.BaslangicY = yeniY;
+                    }
+                    else
+                    {
+                        uc.Key.BitisX = yeniX;
+                        uc.Key.BitisY = yeniY;
+                    }
+                }
+                Invalidate();
+                return;
+            }
+
             if (_secimKutusuBekleniyor)
             {
                 var dx = e.Location.X - _secimKutusuBaslangicEkran.X;
@@ -1053,6 +1923,9 @@ namespace XmlToKtb.Cizim
             var dunyaNoktasi = DunyaNoktasiHesaplaVeYakala(e.Location);
             FareKonumuDegisti?.Invoke(this, dunyaNoktasi);
 
+            if (YuzeyAraciMi(AktifArac) && _yuzeyIlkNokta >= 0)
+                Invalidate();
+
             if ((AktifArac == CizimAraci.Cizgi && _beklemedekiBaslangic != null) || _aktifYakalamaModu != YakalamaModu.Yok
                 || (DuzenlemeAraciMi(AktifArac) && _duzenlemeAsamasi == DuzenlemeAsamasi.IkinciNoktaBekleniyor)
                 || (DaireAraciMi(AktifArac) && _daireAsamasi == DaireAsamasi.GirdiBekleniyor && _daireNoktalar.Count > 0))
@@ -1064,6 +1937,42 @@ namespace XmlToKtb.Cizim
             base.OnMouseUp(e);
             if (e.Button == MouseButtons.Middle)
                 _panSurukleniyor = false;
+
+            if (e.Button == MouseButtons.Left && _suruklenenNesne != null)
+            {
+                var birakilan = _suruklenenNesne;
+                _suruklenenNesne = null;
+                _suruklenenTutamac = -1;
+                _yakalananDunyaNoktasi = null;
+                DegisiklikKaydet();
+                TutamacSuruklendi?.Invoke(birakilan, TutamacAsamasi.Bitti);
+                NesnelerGuncellendi?.Invoke(this, EventArgs.Empty);
+                Invalidate();
+                return;
+            }
+
+            if (e.Button == MouseButtons.Left && _tutamacSurukleniyor)
+            {
+                _tutamacSurukleniyor = false;
+                _suruklenenUclar.Clear();
+                _yakalananDunyaNoktasi = null;
+                DegisiklikKaydet();
+                NesnelerGuncellendi?.Invoke(this, EventArgs.Empty);
+                Invalidate();
+                return;
+            }
+
+            if (e.Button == MouseButtons.Left && _secimKutusuBekleniyor && AktifArac == CizimAraci.YuzeyCizgiSil)
+            {
+                var pencereyle = _secimKutusuSurukleniyor;
+                _secimKutusuBekleniyor = false;
+                _secimKutusuSurukleniyor = false;
+                if (pencereyle)
+                    YuzeyPencereyleCizgiSil(_secimKutusuBaslangicEkran, e.Location);
+                else
+                    YuzeyDuzenleTikla(e.Location);
+                return;
+            }
 
             if (e.Button == MouseButtons.Left && _secimKutusuBekleniyor)
             {
@@ -1106,6 +2015,9 @@ namespace XmlToKtb.Cizim
 
             foreach (var nesne in Nesneler)
             {
+                if (!Secilebilir(nesne))
+                    continue;
+
                 var uygun = gecisSecimi ? NesneKutuyuKesiyorMu(nesne, kutu) : TumUcNoktalarKutuIcindeMi(nesne, kutu);
                 if (!uygun)
                     continue;
@@ -1147,6 +2059,10 @@ namespace XmlToKtb.Cizim
                     return DaireKutuyuKesiyorMu(yay.MerkezX, yay.MerkezY, yay.Yaricap, kutu);
                 case SpiralNesnesi spiral:
                     return SpiralKutuyuKesiyorMu(spiral, kutu);
+                case CokluDogruNesnesi _:
+                case BlokNesnesi _:
+                case GuzergahNesnesi _:
+                    return GeometriIslemleri.KutuyuKesiyorMu(nesne, kutu.Left, kutu.Top, kutu.Right, kutu.Bottom);
                 default:
                     return false;
             }
@@ -1219,6 +2135,10 @@ namespace XmlToKtb.Cizim
 
             foreach (var nesne in Nesneler)
             {
+                // Kapalı tabakalar ekrana sığdırmada hesaba katılmaz.
+                if (!Gorunur(nesne))
+                    continue;
+
                 foreach (var nokta in nesne.UcNoktalariAl())
                 {
                     noktaBulundu = true;

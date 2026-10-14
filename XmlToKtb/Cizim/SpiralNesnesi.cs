@@ -92,7 +92,7 @@ namespace XmlToKtb.Cizim
             for (var i = 0; i < noktalar.Count; i++)
                 ekranNoktalari[i] = gorunum.DunyadanEkrana(noktalar[i].X, noktalar[i].Y, panelGenislik, panelYukseklik);
 
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : Color.Black, Secili ? 2f : 1f))
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : 1f))
             {
                 grafik.DrawLines(kalem, ekranNoktalari);
             }

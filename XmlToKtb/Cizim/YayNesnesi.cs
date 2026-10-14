@@ -33,6 +33,20 @@ namespace XmlToKtb.Cizim
         [TypeConverter(typeof(OndalikDegerConverter))]
         public double BitisAcisi { get; set; }
 
+        /// <summary>Başlangıç açısından bitiş açısına saat yönünün tersine ölçülen yay boyu.</summary>
+        [DisplayName("Uzunluk")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
+        public double Uzunluk
+        {
+            get
+            {
+                var aci = (BitisAcisi - BaslangicAcisi) % 360.0;
+                if (aci <= 0)
+                    aci += 360.0;
+                return Yaricap * aci * Math.PI / 180.0;
+            }
+        }
+
         [DisplayName("Merkez Z")]
         [TypeConverter(typeof(OndalikDegerConverter))]
         public double MerkezZ { get; set; }
@@ -48,7 +62,7 @@ namespace XmlToKtb.Cizim
             var gdiBaslangic = -BaslangicAcisi;
             var gdiSupurme = -dunyaSupurme;
 
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : Color.Black, Secili ? 2f : 1f))
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : 1f))
             {
                 grafik.DrawArc(kalem, ekranMerkez.X - pikselYaricap, ekranMerkez.Y - pikselYaricap,
                     pikselYaricap * 2, pikselYaricap * 2, (float)gdiBaslangic, (float)gdiSupurme);

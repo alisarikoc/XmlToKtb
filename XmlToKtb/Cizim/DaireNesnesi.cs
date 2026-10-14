@@ -24,6 +24,10 @@ namespace XmlToKtb.Cizim
         [TypeConverter(typeof(OndalikDegerConverter))]
         public double Yaricap { get; set; }
 
+        [DisplayName("Çevre Uzunluğu")]
+        [TypeConverter(typeof(OndalikDegerConverter))]
+        public double Uzunluk => 2 * Math.PI * Yaricap;
+
         [DisplayName("Merkez Z")]
         [TypeConverter(typeof(OndalikDegerConverter))]
         public double MerkezZ { get; set; }
@@ -35,7 +39,7 @@ namespace XmlToKtb.Cizim
             if (pikselYaricap < 0.5f)
                 return;
 
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : Color.Black, Secili ? 2f : 1f))
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : 1f))
             {
                 grafik.DrawEllipse(kalem, ekranMerkez.X - pikselYaricap, ekranMerkez.Y - pikselYaricap, pikselYaricap * 2, pikselYaricap * 2);
             }

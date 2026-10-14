@@ -26,6 +26,16 @@ namespace XmlToKtb.Cizim
             return new PointF((float)dunyaX, (float)dunyaY);
         }
 
+        /// <summary>
+        /// EkrandanDunyaya ile aynı dönüşüm, ama çift hassasiyetle: PointF büyük koordinatlarda (ör. 4 400 000)
+        /// yarım metreye kadar yuvarladığından, hassas konum gereken yerlerde bu kullanılır.
+        /// </summary>
+        public void EkrandanDunyayaHassas(PointF ekranNoktasi, int panelGenislik, int panelYukseklik, out double dunyaX, out double dunyaY)
+        {
+            dunyaX = OfsetX + (ekranNoktasi.X - panelGenislik / 2.0) / Olcek;
+            dunyaY = OfsetY - (ekranNoktasi.Y - panelYukseklik / 2.0) / Olcek;
+        }
+
         public void ImlecUzerindeYakinlastir(PointF ekranNoktasi, int panelGenislik, int panelYukseklik, double carpan)
         {
             var dunyaNoktasi = EkrandanDunyaya(ekranNoktasi, panelGenislik, panelYukseklik);

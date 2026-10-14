@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace XmlToKtb.Cizim
 {
@@ -9,6 +10,11 @@ namespace XmlToKtb.Cizim
     {
         public static List<PointF> Bul(CizimNesnesi a, CizimNesnesi b)
         {
+            // Çoklu doğru ve blok, parçalarına ayrılarak kesiştirilir.
+            if (a is CokluDogruNesnesi || a is BlokNesnesi)
+                return GeometriIslemleri.Patlat(a, false).SelectMany(p => Bul(p, b)).ToList();
+            if (b is CokluDogruNesnesi || b is BlokNesnesi)
+                return GeometriIslemleri.Patlat(b, false).SelectMany(p => Bul(a, p)).ToList();
             if (a is CizgiNesnesi ca && b is CizgiNesnesi cb) return DogruDogru(ca, cb);
             if (a is CizgiNesnesi ca2 && b is YayNesnesi yb) return DogruYay(ca2, yb);
             if (a is YayNesnesi ya && b is CizgiNesnesi cb2) return DogruYay(cb2, ya);
