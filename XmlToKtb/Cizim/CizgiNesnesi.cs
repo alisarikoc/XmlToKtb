@@ -42,12 +42,16 @@ namespace XmlToKtb.Cizim
         [TypeConverter(typeof(OndalikDegerConverter))]
         public double BitisZ { get; set; }
 
+        /// <summary>Çizginin seçili değilkenki rengi.</summary>
+        [Browsable(false)]
+        public Color Renk { get; set; } = Color.Black;
+
         public override void Ciz(Graphics grafik, CizimGorunum gorunum, int panelGenislik, int panelYukseklik)
         {
             var bas = gorunum.DunyadanEkrana(BaslangicX, BaslangicY, panelGenislik, panelYukseklik);
             var bit = gorunum.DunyadanEkrana(BitisX, BitisY, panelGenislik, panelYukseklik);
 
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : Color.Black, Secili ? 2.5f : 1.5f))
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Renk), Secili ? 2.5f : 1.5f))
             {
                 grafik.DrawLine(kalem, bas, bit);
             }

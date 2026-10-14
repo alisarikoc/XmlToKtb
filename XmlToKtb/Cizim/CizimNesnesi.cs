@@ -10,6 +10,34 @@ namespace XmlToKtb.Cizim
         [Browsable(false)]
         public bool Secili { get; set; }
 
+        /// <summary>Objenin tabakası. Tabaka kullanmayan çizim ekranlarında null'dır.</summary>
+        [Browsable(false)]
+        public Tabaka Tabaka { get; set; }
+
+        /// <summary>Objenin kendine ait rengi; null ise obje tabakasının rengiyle çizilir.</summary>
+        [Browsable(false)]
+        public Color? OzelRenk { get; set; }
+
+        /// <summary>Özellikler panelinde objenin tabakasını gösterir ve çizimdeki başka bir tabakaya almayı sağlar.</summary>
+        [DisplayName("Tabaka")]
+        [TypeConverter(typeof(TabakaAdiConverter))]
+        public string TabakaAdi
+        {
+            get => Tabaka?.Ad ?? "";
+            set
+            {
+                var yeni = Tabaka?.Liste?.Find(t => t.Ad == value);
+                if (yeni != null)
+                    Tabaka = yeni;
+            }
+        }
+
+        /// <summary>Seçili olmayan objenin çizileceği renk: kendi rengi, yoksa tabakasının rengi, o da yoksa verilen varsayılan.</summary>
+        protected Color CizimRengi(Color varsayilan)
+        {
+            return OzelRenk ?? Tabaka?.Renk ?? varsayilan;
+        }
+
         /// <summary>Properties panelinde gösterilecek, kullanıcıya yönelik obje tipi adı (ör. "Çizgi", "Yazı").</summary>
         [DisplayName("Tip")]
         [ReadOnly(true)]

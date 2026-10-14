@@ -48,7 +48,7 @@ namespace XmlToKtb.Cizim
             var gdiBaslangic = -BaslangicAcisi;
             var gdiSupurme = -dunyaSupurme;
 
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : Color.Black, Secili ? 2f : 1f))
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : 1f))
             {
                 grafik.DrawArc(kalem, ekranMerkez.X - pikselYaricap, ekranMerkez.Y - pikselYaricap,
                     pikselYaricap * 2, pikselYaricap * 2, (float)gdiBaslangic, (float)gdiSupurme);

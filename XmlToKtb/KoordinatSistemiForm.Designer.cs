@@ -1,4 +1,4 @@
-namespace XmlToKtb
+﻿namespace XmlToKtb
 {
     partial class KoordinatSistemiForm
     {
@@ -40,7 +40,7 @@ namespace XmlToKtb
             this.sistemCombo.FormattingEnabled = true;
             this.sistemCombo.Location = new System.Drawing.Point(90, 12);
             this.sistemCombo.Name = "sistemCombo";
-            this.sistemCombo.Size = new System.Drawing.Size(200, 21);
+            this.sistemCombo.Size = new System.Drawing.Size(330, 21);
             this.sistemCombo.TabIndex = 1;
             this.sistemCombo.SelectedIndexChanged += new System.EventHandler(this.sistemCombo_SelectedIndexChanged);
             //
@@ -59,12 +59,12 @@ namespace XmlToKtb
             this.dilimCombo.FormattingEnabled = true;
             this.dilimCombo.Location = new System.Drawing.Point(90, 42);
             this.dilimCombo.Name = "dilimCombo";
-            this.dilimCombo.Size = new System.Drawing.Size(200, 21);
+            this.dilimCombo.Size = new System.Drawing.Size(330, 21);
             this.dilimCombo.TabIndex = 3;
             //
             // tamamButton
             //
-            this.tamamButton.Location = new System.Drawing.Point(134, 78);
+            this.tamamButton.Location = new System.Drawing.Point(264, 78);
             this.tamamButton.Name = "tamamButton";
             this.tamamButton.Size = new System.Drawing.Size(75, 27);
             this.tamamButton.TabIndex = 4;
@@ -75,7 +75,7 @@ namespace XmlToKtb
             // iptalButton
             //
             this.iptalButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.iptalButton.Location = new System.Drawing.Point(215, 78);
+            this.iptalButton.Location = new System.Drawing.Point(345, 78);
             this.iptalButton.Name = "iptalButton";
             this.iptalButton.Size = new System.Drawing.Size(75, 27);
             this.iptalButton.TabIndex = 5;
@@ -88,7 +88,7 @@ namespace XmlToKtb
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.iptalButton;
-            this.ClientSize = new System.Drawing.Size(302, 117);
+            this.ClientSize = new System.Drawing.Size(432, 117);
             this.Controls.Add(this.iptalButton);
             this.Controls.Add(this.tamamButton);
             this.Controls.Add(this.dilimCombo);

@@ -126,6 +126,34 @@
     <Compile Include="Cizim\Kesisimler.cs" />
     <Compile Include="Cizim\DaireInsaHesaplari.cs" />
     <Compile Include="Cizim\GuzergahCizici.cs" />
+    <Compile Include="Cizim\KseDosyasi.cs" />
+    <Compile Include="Cizim\DxfDisaAktarici.cs" />
+    <Compile Include="Cizim\YuzeyNesnesi.cs" />
+    <Compile Include="Cizim\EsYukseklikAyarlari.cs" />
+    <Compile Include="Cizim\Tabaka.cs" />
+    <Compile Include="Cizim\GuzergahNesnesi.cs" />
+    <Compile Include="Cizim\GuzergahSomeleri.cs" />
+    <Compile Include="Cizim\CizimAyarlari.cs" />
+    <Compile Include="Cizim\GuzergahEtiketNesnesi.cs" />
+    <Compile Include="Cizim\DuseyGeometri.cs" />
+    <Compile Include="DuseyEditoruForm.cs" />
+    <Compile Include="DilimHaritasiForm.cs" />
+    <Compile Include="Las\LasBulutu.cs" />
+    <Compile Include="Las\KoordinatSistemi.cs" />
+    <Compile Include="Las\KoordinatSistemiForm.cs" />
+    <Compile Include="Las\LasEnkesit.cs" />
+    <Compile Include="Las\LasGoruntuleyiciForm.cs" />
+    <Compile Include="GuzergahEditoruForm.cs" />
+    <Compile Include="TabakaAyarlariForm.cs" />
+    <Compile Include="NcnDosyasi.cs" />
+    <Compile Include="NoktaSecimForm.cs" />
+    <Compile Include="NoktaEditoruForm.cs" />
+    <Compile Include="Cizim\Delaunay.cs" />
+    <Compile Include="TipKesitEkrani.cs" />
+    <Compile Include="ProjeKesitiForm.cs" />
+    <Compile Include="DeverTablosu.cs" />
+    <Compile Include="YuzeyNoktalari.cs" />
+    <Compile Include="YuzeyNoktaForm.cs" />
     <Compile Include="Cizim\CizimPaneli.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -139,6 +167,12 @@
     </Compile>
     <Compile Include="CizimEkrani.Designer.cs">
       <DependentUpon>CizimEkrani.cs</DependentUpon>
+    </Compile>
+    <Compile Include="KesitEditoruEkrani.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="KesitEditoruEkrani.Designer.cs">
+      <DependentUpon>KesitEditoruEkrani.cs</DependentUpon>
     </Compile>
     <Compile Include="KoordinatSistemiForm.cs">
       <SubType>Form</SubType>
@@ -193,6 +227,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="YuzeyXML.cs" />
+    <EmbeddedResource Include="Veri\Iller.txt" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

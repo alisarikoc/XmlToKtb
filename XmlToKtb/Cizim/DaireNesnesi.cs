@@ -35,7 +35,7 @@ namespace XmlToKtb.Cizim
             if (pikselYaricap < 0.5f)
                 return;
 
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : Color.Black, Secili ? 2f : 1f))
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : 1f))
             {
                 grafik.DrawEllipse(kalem, ekranMerkez.X - pikselYaricap, ekranMerkez.Y - pikselYaricap, pikselYaricap * 2, pikselYaricap * 2);
             }

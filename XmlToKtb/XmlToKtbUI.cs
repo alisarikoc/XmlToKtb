@@ -327,9 +327,26 @@ namespace XmlToKtb
                     List<Nokta> nokList = new List<Nokta>();
                     List<Ucgen> ucgenList = new List<Ucgen>();
                     int noktano = 2;
+
+                    // AutoCAD'den çıkan üçgen modellerde her üçgen hem 3DFACE (gerçek kotlarıyla) hem de çevresini
+                    // çizen, kotu 0 olan bir POLYLINE olarak bulunabilir. 3DFACE varsa polyline'lar üçgen sayılmaz;
+                    // yoksa aynı üçgen ikinci kez, 0 kotuyla eklenir.
+                    bool ucgenYuzuVar = false;
+                    foreach (DXFLib.DXFEntity varlik in doc.Entities)
+                    {
+                        if (varlik.EntityType == "3DFACE")
+                        {
+                            ucgenYuzuVar = true;
+                            break;
+                        }
+                    }
+
                     foreach (DXFLib.DXFEntity entity in doc.Entities)
                     {
-                        if (entity.EntityType == "DXFPolyLine")
+                        // Üç köşesi olmayan polyline (ör. iki noktalı çizgi) üçgen değildir; atlanır.
+                        bool ucgenPolyline = !ucgenYuzuVar && entity is DXFLib.DXFPolyLine && ((DXFLib.DXFPolyLine) entity).Children.Count >= 3;
+
+                        if (entity.EntityType == "DXFPolyLine" && ucgenPolyline)
                         {
 
                             DXFLib.DXFVertex vertex0 = new DXFLib.DXFVertex();
@@ -348,7 +365,7 @@ namespace XmlToKtb
                             nokList.Add(new Nokta { Numara = noktano + 1, X = vertex1.Location.Y, Y = vertex1.Location.X, Z = vertex1.Location.Z });
                             nokList.Add(new Nokta { Numara = noktano + 2, X = vertex2.Location.Y, Y = vertex2.Location.X, Z = vertex2.Location.Z });
                         }
-                        if (entity.EntityType == "POLYLINE")
+                        if (entity.EntityType == "POLYLINE" && ucgenPolyline)
                         {
 
                             DXFLib.DXFVertex vertex0 = new DXFLib.DXFVertex();
