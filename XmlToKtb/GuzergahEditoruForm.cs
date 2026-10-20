@@ -55,8 +55,16 @@ namespace XmlToKtb
             /// <summary>Sona kurp: önce bitiş noktası, sonra kurbun üzerinden geçeceği nokta tıklanır.</summary>
             KurpUcNokta,
             /// <summary>Tıklanan kurbun girişine/çıkışına spiral eklenir.</summary>
-            SpiralKurbaEkle
+            SpiralKurbaEkle,
+            /// <summary>Ekrandan tıklanan objelerden güzergah oluşturulur.</summary>
+            ObjedenOlustur,
+            /// <summary>Tıklanan objenin doğrultusu alınır, tıklanan yere kadar o doğrultuda sona doğru eklenir.</summary>
+            DogrultudanCiz
         }
+
+        // Doğrultudan Çiz: tıklanan objeden alınan doğrultu (radyan) ve objenin üzerindeki tıklanan nokta.
+        private double? _dogrultuAci;
+        private double[] _dogrultuNoktasi;
 
         // Yarıçapı önceden verilen kurp komutunun yarıçapı ve üç noktalı kurpta tıklanan bitiş noktası.
         private double _komutYaricapi;
@@ -95,53 +103,69 @@ namespace XmlToKtb
 
             // --- üst menü: ekranda çizen/düzenleyen komutlar ---
             var menu = new MenuStrip();
+            ToolStripMenuItem Oge(ToolStripMenuItem ust, string metin, string simge, Action eylem)
+            {
+                var oge = new ToolStripMenuItem(metin, Arayuz.GuzergahSimgeleri.Al(simge), (s, e) => eylem());
+                ust.DropDownItems.Add(oge);
+                return oge;
+            }
             var dogruMenu = new ToolStripMenuItem("Doğru");
-            dogruMenu.DropDownItems.Add("Some Noktalarıyla Çiz (ekrandan)", null, (s, e) => KomutuBaslat(EkranKomutu.SomeCiz));
-            dogruMenu.DropDownItems.Add("Tıklanan Yere Some Ekle (ekrandan)", null, (s, e) => KomutuBaslat(EkranKomutu.SomeEkle));
-            dogruMenu.DropDownItems.Add("Some Sil (ekrandan)", null, (s, e) => KomutuBaslat(EkranKomutu.SomeSil));
+            Oge(dogruMenu, "Some Noktalarıyla Çiz (ekrandan)", "SomeCiz", () => KomutuBaslat(EkranKomutu.SomeCiz));
+            Oge(dogruMenu, "Tıklanan Yere Some Ekle (ekrandan)", "SomeEkle", () => KomutuBaslat(EkranKomutu.SomeEkle));
+            Oge(dogruMenu, "Some Sil (ekrandan)", "SomeSil", () => KomutuBaslat(EkranKomutu.SomeSil));
+            Oge(dogruMenu, "Doğrultudan Çiz: objeyi tıkla, sonra doğrunun biteceği yeri tıkla", "DogrultudanCiz", () => KomutuBaslat(EkranKomutu.DogrultudanCiz));
+            dogruMenu.DropDownItems.Add(new ToolStripSeparator());
+            Oge(dogruMenu, "Seçilen Objelerden Güzergah Oluştur (çizgi, yay, çoklu doğru)", "ObjedenOlustur", ObjedenOlusturBaslat);
             var kurpMenu = new ToolStripMenuItem("Kurp");
-            kurpMenu.DropDownItems.Add("Someye Kurp Yerleştir / Değiştir (ekrandan)", null, (s, e) => KomutuBaslat(EkranKomutu.KurpYerlestir));
+            Oge(kurpMenu, "Someye Kurp Yerleştir / Değiştir (ekrandan)", "KurpYerlestir", () => KomutuBaslat(EkranKomutu.KurpYerlestir));
             kurpMenu.DropDownItems.Add(new ToolStripSeparator());
-            kurpMenu.DropDownItems.Add("Sona Kurp Ekle: Teğet, bitiş noktasını tıkla (yarıçap hesaplanır)", null, (s, e) => KomutuBaslat(EkranKomutu.KurpTegetNokta));
-            kurpMenu.DropDownItems.Add("Sona Kurp Ekle: Teğet, yarıçap ver, bitiş yönünü tıkla", null, (s, e) => KomutuBaslat(EkranKomutu.KurpYaricapNokta));
-            kurpMenu.DropDownItems.Add("Sona Kurp Ekle: Bitiş noktası ve üzerinden geçeceği nokta (3 nokta)", null, (s, e) => KomutuBaslat(EkranKomutu.KurpUcNokta));
-            kurpMenu.DropDownItems.Add("Sona Kurp Ekle: Yarıçap, boy ve yön gir...", null, (s, e) => SonaKurpDegerleEkle());
+            Oge(kurpMenu, "Sona Kurp Ekle: Teğet, bitiş noktasını tıkla (yarıçap hesaplanır)", "KurpTeget", () => KomutuBaslat(EkranKomutu.KurpTegetNokta));
+            Oge(kurpMenu, "Sona Kurp Ekle: Teğet, yarıçap ver, bitiş yönünü tıkla", "KurpYaricap", () => KomutuBaslat(EkranKomutu.KurpYaricapNokta));
+            Oge(kurpMenu, "Sona Kurp Ekle: Bitiş noktası ve üzerinden geçeceği nokta (3 nokta)", "KurpUcNokta", () => KomutuBaslat(EkranKomutu.KurpUcNokta));
+            Oge(kurpMenu, "Sona Kurp Ekle: Yarıçap, boy ve yön gir...", "KurpDeger", SonaKurpDegerleEkle);
             var sadeSpiralMenu = new ToolStripMenuItem("Spiral");
-            sadeSpiralMenu.DropDownItems.Add("Sona Spiral Ekle: Boy ve yarıçap (ya da A) gir...", null, (s, e) => SonaSpiralEkle());
-            sadeSpiralMenu.DropDownItems.Add("Kurba Giriş/Çıkış Spirali Ekle (ekrandan kurp tıkla)", null, (s, e) => KomutuBaslat(EkranKomutu.SpiralKurbaEkle));
+            Oge(sadeSpiralMenu, "Sona Spiral Ekle: Boy ve yarıçap (ya da A) gir...", "SpiralEkle", SonaSpiralEkle);
+            Oge(sadeSpiralMenu, "Kurba Giriş/Çıkış Spirali Ekle (ekrandan kurp tıkla)", "SpiralKurba", () => KomutuBaslat(EkranKomutu.SpiralKurbaEkle));
             var spiralMenu = new ToolStripMenuItem("Geçiş Eğrili Kurp");
-            spiralMenu.DropDownItems.Add("Someye Geçiş Eğrili Kurp Yerleştir / Değiştir (ekrandan)", null, (s, e) => KomutuBaslat(EkranKomutu.SpiralliKurpYerlestir));
+            Oge(spiralMenu, "Someye Geçiş Eğrili Kurp Yerleştir / Değiştir (ekrandan)", "SpiralliKurp", () => KomutuBaslat(EkranKomutu.SpiralliKurpYerlestir));
             var silMenu = new ToolStripMenuItem("Parça Sil");
-            silMenu.DropDownItems.Add("Parça Sil (ekrandan)", null, (s, e) => KomutuBaslat(EkranKomutu.ParcaSil));
-            silMenu.DropDownItems.Add("Seçili Satırları Sil", null, (s, e) => SecilenleriCikar(false));
+            Oge(silMenu, "Parça Sil (ekrandan)", "ParcaSil", () => KomutuBaslat(EkranKomutu.ParcaSil));
+            Oge(silMenu, "Seçili Satırları Sil", "SatirSil", () => SecilenleriCikar(false));
+            silMenu.DropDownItems.Add(new ToolStripSeparator());
+            Oge(silMenu, "Kopuk Parçaları Güzergaha Bağla", "KopukBagla", KopuklariBagla);
+            Oge(silMenu, "Kopuk Parçaları Sil", "KopukSil", KopuklariSil);
             menu.Items.AddRange(new ToolStripItem[] { dogruMenu, kurpMenu, sadeSpiralMenu, spiralMenu, silMenu });
 
             // --- en alttaki araç çubuğu: parça işlemleri ---
             var araclar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Bottom };
-            ToolStripButton Dugme(string metin, string ipucu, EventHandler tiklama)
+            ToolStripButton Dugme(string metin, string simge, string ipucu, EventHandler tiklama)
             {
-                var dugme = new ToolStripButton(metin) { DisplayStyle = ToolStripItemDisplayStyle.Text, ToolTipText = ipucu };
+                var resim = Arayuz.GuzergahSimgeleri.Al(simge);
+                var dugme = new ToolStripButton(metin, resim)
+                {
+                    DisplayStyle = resim != null ? ToolStripItemDisplayStyle.ImageAndText : ToolStripItemDisplayStyle.Text, ToolTipText = ipucu
+                };
                 dugme.Click += tiklama;
                 araclar.Items.Add(dugme);
                 return dugme;
             }
 
-            var ekle = new ToolStripDropDownButton("Ekle") { ToolTipText = "Seçili parçadan sonra yeni parça ekler" };
-            ekle.DropDownItems.Add("Doğru", null, (s, e) => ParcaEkle(GuzergahParcaTipi.Dogru));
-            ekle.DropDownItems.Add("Kurp", null, (s, e) => ParcaEkle(GuzergahParcaTipi.Kurp));
-            ekle.DropDownItems.Add("Spiral", null, (s, e) => ParcaEkle(GuzergahParcaTipi.Spiral));
+            var ekle = new ToolStripDropDownButton("Ekle", Arayuz.GuzergahSimgeleri.Al("Ekle")) { ToolTipText = "Seçili parçadan sonra yeni parça ekler" };
+            ekle.DropDownItems.Add("Doğru", Arayuz.GuzergahSimgeleri.Al("Dogru"), (s, e) => ParcaEkle(GuzergahParcaTipi.Dogru));
+            ekle.DropDownItems.Add("Kurp", Arayuz.GuzergahSimgeleri.Al("Kurp"), (s, e) => ParcaEkle(GuzergahParcaTipi.Kurp));
+            ekle.DropDownItems.Add("Spiral", Arayuz.GuzergahSimgeleri.Al("Spiral"), (s, e) => ParcaEkle(GuzergahParcaTipi.Spiral));
             araclar.Items.Add(ekle);
-            Dugme("Çıkar", "Seçili parçaları güzergahtan çıkarır", (s, e) => SecilenleriCikar(false));
+            Dugme("Çıkar", "Cikar", "Seçili parçaları güzergahtan çıkarır", (s, e) => SecilenleriCikar(false));
             araclar.Items.Add(new ToolStripSeparator());
-            Dugme("Kes", "Seçili parçaları çıkarır ve panoya alır", (s, e) => SecilenleriCikar(true));
-            Dugme("Kopyala", "Seçili parçaları panoya kopyalar", (s, e) => SecilenleriKopyala());
-            _yapistirDugmesi = Dugme("Yapıştır", "Panodaki parçaları seçili parçadan sonra ekler", (s, e) => Yapistir());
+            Dugme("Kes", "Kes", "Seçili parçaları çıkarır ve panoya alır", (s, e) => SecilenleriCikar(true));
+            Dugme("Kopyala", "Kopyala", "Seçili parçaları panoya kopyalar", (s, e) => SecilenleriKopyala());
+            _yapistirDugmesi = Dugme("Yapıştır", "Yapistir", "Panodaki parçaları seçili parçadan sonra ekler", (s, e) => Yapistir());
             araclar.Items.Add(new ToolStripSeparator());
-            Dugme("Uzat", "Seçili parçanın uzunluğunu verilen miktar kadar artırır (kısaltmak için eksi)", (s, e) => Uzat());
-            Dugme("Yukarı", "Seçili parçayı bir sıra öne alır", (s, e) => SiraDegistir(-1));
-            Dugme("Aşağı", "Seçili parçayı bir sıra sona alır", (s, e) => SiraDegistir(1));
+            Dugme("Uzat", "Uzat", "Seçili parçanın uzunluğunu verilen miktar kadar artırır (kısaltmak için eksi)", (s, e) => Uzat());
+            Dugme("Yukarı", "Yukari", "Seçili parçayı bir sıra öne alır", (s, e) => SiraDegistir(-1));
+            Dugme("Aşağı", "Asagi", "Seçili parçayı bir sıra sona alır", (s, e) => SiraDegistir(1));
             araclar.Items.Add(new ToolStripSeparator());
-            _geriAlDugmesi = Dugme("Geri Al", "Son değişikliği geri alır", (s, e) => GeriAl());
+            _geriAlDugmesi = Dugme("Geri Al", "GeriAl", "Son değişikliği geri alır", (s, e) => GeriAl());
 
             // --- başlangıç değerleri ---
             var baslangicPaneli = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 34, Padding = new Padding(6, 6, 0, 0), WrapContents = false };
@@ -344,7 +368,10 @@ namespace XmlToKtb
         private void DurumuGuncelle()
         {
             _ozetLabel.Text = _guzergah.Parcalar.Count + " parça   |   Uzunluk: " + Sayi(_guzergah.ToplamUzunluk) +
-                              " m   |   Km " + Sayi(_guzergah.BaslangicKm) + " - " + Sayi(_guzergah.BitisKm);
+                              " m   |   Km " + Sayi(_guzergah.BaslangicKm) + " - " + Sayi(_guzergah.BitisKm) +
+                              (_guzergah.KopukParcalar.Count > 0
+                                  ? "   |   " + _guzergah.KopukParcalar.Count + " kopuk parça (kilometresiz, açıklık " + Sayi(_guzergah.KopuklukAcikligi) + " m)"
+                                  : "");
             _geriAlDugmesi.Enabled = _geriAlListesi.Count > 0;
             _yapistirDugmesi.Enabled = _pano.Count > 0;
             _panel.Invalidate();
@@ -387,6 +414,8 @@ namespace XmlToKtb
             _guzergah.BaslangicAcisi = hal.BaslangicAcisi;
             _guzergah.Parcalar.Clear();
             _guzergah.Parcalar.AddRange(hal.Parcalar.Select(p => p.Kopyala(true)));
+            _guzergah.KopukParcalar.Clear();
+            _guzergah.KopukParcalar.AddRange(hal.KopukParcalar.Select(p => p.Kopyala(true)));
         }
 
         private void GeriAl()
@@ -491,6 +520,28 @@ namespace XmlToKtb
             parca.Tip = onceki.Tip; parca.Uzunluk = onceki.Uzunluk; parca.YaricapBaslangic = onceki.YaricapBaslangic; parca.YaricapBitis = onceki.YaricapBitis; parca.Yon = onceki.Yon;
             GeriAlKaydet();
             parca.Tip = simdiki.Tip; parca.Uzunluk = simdiki.Uzunluk; parca.YaricapBaslangic = simdiki.YaricapBaslangic; parca.YaricapBitis = simdiki.YaricapBitis; parca.Yon = simdiki.Yon;
+
+            // Bir somedeki kurp/spiralin yarıçapı ya da boyu değişince some noktaları ve doğrultular yerinde kalır:
+            // kurp boyu, teğet boyları ve bağlı doğruların boyları yeniden hesaplanır.
+            var someParcasi = (e.ColumnIndex == UzunlukKolon || e.ColumnIndex == YaricapBasKolon || e.ColumnIndex == YaricapBitKolon)
+                              && parca.Tip != GuzergahParcaTipi.Dogru && _guzergah.Someler.Any(s => s.ParcaSiralari.Contains(e.RowIndex));
+            if (someParcasi)
+            {
+                var satir = e.RowIndex;
+                if (_guzergah.SomeParcasiniDegistir(satir, simdiki, e.ColumnIndex == UzunlukKolon, out var someHatasi))
+                {
+                    _panel.Invalidate();
+                    BeginInvoke((Action)(() => Doldur(satir)));
+                    return;
+                }
+                // Doğrultular değişmeden yapılamıyorsa değişiklik uygulanmaz.
+                parca.Tip = onceki.Tip; parca.Uzunluk = onceki.Uzunluk; parca.YaricapBaslangic = onceki.YaricapBaslangic; parca.YaricapBitis = onceki.YaricapBitis; parca.Yon = onceki.Yon;
+                _geriAlListesi.RemoveAt(_geriAlListesi.Count - 1);
+                MessageBox.Show(someHatasi + "\n\nDeğişiklik doğrultular korunarak yapılamadığı için uygulanmadı.",
+                                "Güzergah Editörü", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                BeginInvoke((Action)DegerlerDegisti);
+                return;
+            }
 
             // Kurbun yarıçapı ya da yönü değişince ona bağlanan spirallerin kurp tarafındaki yarıçapı ve yönü de
             // değişir; yoksa birleşim yerinde eğrilik sıçrar.
@@ -611,11 +662,70 @@ namespace XmlToKtb
                 _pano.AddRange(satirlar.Select(i => _guzergah.Parcalar[i].Kopyala()));
             }
 
+            // Yalnızca kurp/spiral satırları seçiliyse: somelerin kurp grupları kaldırılır, someler yerinde kalır.
+            if (satirlar.All(i => _guzergah.Parcalar[i].Tip != GuzergahParcaTipi.Dogru))
+            {
+                var onceki = _guzergah.Kopyala();
+                if (SomeKurplariniKaldir(satirlar, out var hata))
+                {
+                    _geriAlListesi.Add(onceki);
+                    Doldur(satirlar[0]);
+                    return;
+                }
+                if (hata != null)
+                {
+                    MessageBox.Show(hata, "Güzergah Editörü", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
+            // Silinen parçalardan sonra kalanlar yerlerinde kopuk parça olarak kalır (kilometre almaz).
             GeriAlKaydet();
-            _guzergah.SabitleriBirak(satirlar[0]);
-            for (var k = satirlar.Count - 1; k >= 0; k--)
-                _guzergah.Parcalar.RemoveAt(satirlar[k]);
+            _guzergah.ParcaSilKopukBirak(satirlar);
             Doldur(satirlar[0]);
+        }
+
+        private void KopuklariBagla()
+        {
+            if (_guzergah.KopukParcalar.Count == 0)
+            {
+                MessageBox.Show("Kopuk parça yok.", "Güzergah Editörü", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            var aciklik = _guzergah.KopuklukAcikligi;
+            if (aciklik > GuzergahNesnesi.KopuklukToleransi &&
+                MessageBox.Show("Güzergahın sonu ile kopuk parçaların başı arasında " + Sayi(aciklik) + " m açıklık var.\n\n" +
+                                "Kopuk parçalar yerlerinde kalarak güzergaha katılsın mı? Kilometre güzergahın sonundan devam eder " +
+                                "(açıklık kilometreye katılmaz).", "Güzergah Editörü", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+            GeriAlKaydet();
+            _guzergah.KopuklariBagla();
+            Doldur(_guzergah.Parcalar.Count - 1);
+        }
+
+        private void KopuklariSil()
+        {
+            if (_guzergah.KopukParcalar.Count == 0)
+                return;
+            GeriAlKaydet();
+            _guzergah.KopuklariSil();
+            Doldur(_tablo.CurrentCell?.RowIndex ?? 0);
+        }
+
+        /// <summary>
+        /// Verilen parçaların (kurp/spiral) ait olduğu somelerin kurp gruplarını kaldırır: someler yerinde kalır, güzergah
+        /// some noktalarından geçen doğrular olur. Parçalar bir somenin grubunda değilse (some modeli yoksa) hata null
+        /// olarak false döner; kurulamazsa hata mesajıyla false döner.
+        /// </summary>
+        private bool SomeKurplariniKaldir(IEnumerable<int> parcaSiralari, out string hata)
+        {
+            hata = null;
+            var someler = parcaSiralari.Select(p => _guzergah.Someler.FindIndex(s => s.ParcaSiralari.Contains(p))).Distinct().ToList();
+            if (someler.Count == 0 || someler.Contains(-1) || !_guzergah.SomeModeliAl(out var noktalar, out var gruplar))
+                return false;
+            foreach (var some in someler)
+                gruplar[some] = new List<GuzergahParcasi>();
+            return _guzergah.SomeModelindenKur(noktalar, gruplar, out hata);
         }
 
         private void Yapistir()
@@ -707,7 +817,7 @@ namespace XmlToKtb
         private void KomutuBaslat(EkranKomutu komut)
         {
             _tablo.EndEdit();
-            if (komut != EkranKomutu.SomeCiz && _guzergah.Parcalar.Count == 0)
+            if (komut != EkranKomutu.SomeCiz && komut != EkranKomutu.DogrultudanCiz && _guzergah.Parcalar.Count == 0)
             {
                 MessageBox.Show("Güzergah boş. Önce Doğru menüsündeki \"Some Noktalarıyla Çiz\" ile güzergahı çizin.", "Güzergah Editörü", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -719,7 +829,7 @@ namespace XmlToKtb
                     return;
                 _komutYaricapi = _sonYaricap = degerler[0];
             }
-            if (!sonaEkleme && komut != EkranKomutu.SomeCiz && komut != EkranKomutu.ParcaSil && !_guzergah.SomeModeliGecerli)
+            if (!sonaEkleme && komut != EkranKomutu.SomeCiz && komut != EkranKomutu.ParcaSil && komut != EkranKomutu.DogrultudanCiz && !_guzergah.SomeModeliGecerli)
             {
                 MessageBox.Show("Bu güzergahta doğrultuları kesişmeyen (paralel ya da 180°'den fazla dönen) bir kurp grubu var; some noktalarıyla düzenlenemiyor. Tablodan düzenleyin.",
                     "Güzergah Editörü", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -729,8 +839,11 @@ namespace XmlToKtb
             _komut = komut;
             _ilkNokta = null;
             _araNokta = null;
+            _dogrultuAci = null;
+            _dogrultuNoktasi = null;
             switch (komut)
             {
+                case EkranKomutu.DogrultudanCiz: _komutLabel.Text = DogrultudanCizIpucu(); break;
                 case EkranKomutu.SomeCiz:
                     _komutLabel.Text = _guzergah.Parcalar.Count == 0
                         ? "Güzergahın başlangıç noktasını, sonra sırayla some noktalarını tıklayın. Bitirmek için sağ tık ya da Esc."
@@ -754,7 +867,7 @@ namespace XmlToKtb
                 _guzergah.VurguluParca = Math.Max(0, _tablo.CurrentCell?.RowIndex ?? 0);
             // Some, parça ya da kurp tıklatan komutlarda imleç kare (obje seçimi), nokta verilenlerde artıdır.
             _panel.NoktaAlmayaBasla(komut == EkranKomutu.SomeSil || komut == EkranKomutu.KurpYerlestir || komut == EkranKomutu.SpiralliKurpYerlestir
-                                    || komut == EkranKomutu.ParcaSil || komut == EkranKomutu.SpiralKurbaEkle);
+                                    || komut == EkranKomutu.ParcaSil || komut == EkranKomutu.SpiralKurbaEkle || komut == EkranKomutu.DogrultudanCiz);
             _panel.Focus();
             _panel.Invalidate();
         }
@@ -763,8 +876,13 @@ namespace XmlToKtb
         {
             if (_komut == EkranKomutu.Yok)
                 return;
+            foreach (var obje in _secilenObjeler)
+                obje.Secili = false;
+            _secilenObjeler.Clear();
             _komut = EkranKomutu.Yok;
             _ilkNokta = null;
+            _dogrultuAci = null;
+            _dogrultuNoktasi = null;
             _komutLabel.Visible = false;
             _ozetLabel.Visible = true;
             _panel.Invalidate();
@@ -772,13 +890,123 @@ namespace XmlToKtb
 
         private void Panel_NoktaAlmaBitti(object sender, EventArgs e)
         {
+            if (_komut == EkranKomutu.ObjedenOlustur && _secilenObjeler.Count > 0)
+            {
+                var objeler = new List<CizimNesnesi>(_secilenObjeler);
+                var ilkTiklama = _ilkTiklama;
+                KomutuBitir();
+                ObjelerdenOlustur(objeler, ilkTiklama);
+                return;
+            }
             KomutuBitir();
+        }
+
+        // ------------------------------------------------------------------ seçilen objelerden güzergah
+
+        private readonly List<CizimNesnesi> _secilenObjeler = new List<CizimNesnesi>();
+        private double[] _ilkTiklama;
+
+        private static bool GuzergahaCevrilebilir(CizimNesnesi n) => n is CizgiNesnesi || n is YayNesnesi || n is CokluDogruNesnesi;
+
+        /// <summary>
+        /// Çizimde seçili çizgi/yay/çoklu doğru varsa onlardan hemen güzergah oluşturur; yoksa objelerin ekrandan
+        /// tek tek tıklanması istenir (sağ tıkla bitirilir).
+        /// </summary>
+        private void ObjedenOlusturBaslat()
+        {
+            _tablo.EndEdit();
+            KomutuBitir();
+            var secili = _panel.Nesneler.Where(n => n.Secili && !ReferenceEquals(n, _guzergah) && GuzergahaCevrilebilir(n)).ToList();
+            if (secili.Count > 0)
+            {
+                ObjelerdenOlustur(secili, null);
+                return;
+            }
+
+            _komut = EkranKomutu.ObjedenOlustur;
+            _secilenObjeler.Clear();
+            _ilkTiklama = null;
+            _komutLabel.Text = "Güzergah olacak çizgi, yay ya da çoklu doğruları tıklayın (güzergah ilk tıkladığınız uca yakın taraftan başlar). Bitirince sağ tık; vazgeçmek için Esc.";
+            _komutLabel.Visible = true;
+            _ozetLabel.Visible = false;
+            _panel.NoktaAlmayaBasla(true);
+            _panel.Focus();
+        }
+
+        private void ObjeSecimiTikla(double x, double y)
+        {
+            var tolerans = 6 / _panel.Gorunum.Olcek;
+            var nokta = new PointF((float)x, (float)y);
+            var obje = _panel.Nesneler.LastOrDefault(n => GuzergahaCevrilebilir(n) && (n.Tabaka == null || n.Tabaka.Gorunur) && n.IsabetEttiMi(nokta, tolerans));
+            if (obje == null)
+                return;
+            if (_secilenObjeler.Remove(obje))
+            {
+                obje.Secili = false;
+            }
+            else
+            {
+                _secilenObjeler.Add(obje);
+                obje.Secili = true;
+                if (_ilkTiklama == null)
+                    _ilkTiklama = new[] { x, y };
+            }
+            _komutLabel.Text = _secilenObjeler.Count + " obje seçildi. Başka obje tıklayın (tekrar tıklamak seçimden çıkarır) ya da sağ tıkla güzergahı oluşturun.";
+            _panel.Invalidate();
+        }
+
+        // Objeleri uç uca zincirleyip güzergaha çevirir; zincir tek parça değilse uyarır.
+        private void ObjelerdenOlustur(List<CizimNesnesi> objeler, double[] ilkTiklama)
+        {
+            foreach (var obje in objeler)
+                obje.Secili = false;
+            _panel.Invalidate();
+
+            var zincirler = GeometriIslemleri.CokluDogruyaBirlestir(objeler, out _);
+            if (zincirler.Count == 0)
+            {
+                MessageBox.Show("Seçimde güzergaha çevrilebilecek obje yok (çizgi, yay ya da açık/kapalı çoklu doğru seçin).", "Güzergah Editörü", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if (zincirler.Count > 1)
+            {
+                MessageBox.Show("Seçilen objeler uç uca tek bir zincir oluşturmuyor (" + zincirler.Count + " ayrı parça çıktı). Uçları birleşen objeleri seçin.",
+                    "Güzergah Editörü", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var zincir = zincirler[0];
+            // Güzergah, ilk tıklanan yere yakın uçtan başlar.
+            if (ilkTiklama != null && !zincir.Kapali)
+            {
+                CokluDogruKosesi bas = zincir.Koseler[0], son = zincir.Koseler[zincir.Koseler.Count - 1];
+                double basUzaklik = Math.Pow(bas.X - ilkTiklama[0], 2) + Math.Pow(bas.Y - ilkTiklama[1], 2);
+                double sonUzaklik = Math.Pow(son.X - ilkTiklama[0], 2) + Math.Pow(son.Y - ilkTiklama[1], 2);
+                if (sonUzaklik < basUzaklik)
+                    GeometriIslemleri.CokluDogruyuTersCevir(zincir);
+            }
+
+            if (_guzergah.Parcalar.Count > 0 &&
+                MessageBox.Show("Güzergahın mevcut " + _guzergah.Parcalar.Count + " parçası silinip seçilen objelerden yeniden oluşturulsun mu?", "Güzergah Editörü",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+
+            GeriAlKaydet();
+            GeometriIslemleri.CokluDogruyuGuzergahaCevir(zincir, _guzergah);
+            _guzergah.SabitleriBirak(0);
+            Doldur(0);
+            if (_guzergah.VurguluParca < 0)
+                _guzergah.VurguluParca = 0;
+            _panel.Invalidate();
+            var kirikSayisi = _guzergah.Parcalar.Count(p => Math.Abs(p.KirikAcisi) > 1e-9);
+            _ozetLabel.Text = _guzergah.Parcalar.Count + " parçalı güzergah oluşturuldu" + (kirikSayisi > 0 ? " (" + kirikSayisi + " birleşim teğet değil; kurpsuz some olarak kaldı)" : "") +
+                              ". Uzunluk: " + Sayi(_guzergah.ToplamUzunluk) + " m";
         }
 
         private void Panel_MouseMove(object sender, MouseEventArgs e)
         {
             // Çizim sırasında son noktadan fareye giden lastik çizgi güncellensin.
-            if (_komut == EkranKomutu.SomeCiz)
+            if (_komut == EkranKomutu.SomeCiz || (_komut == EkranKomutu.DogrultudanCiz && _dogrultuAci != null))
                 _panel.Invalidate();
         }
 
@@ -788,6 +1016,11 @@ namespace XmlToKtb
             if (_komut != EkranKomutu.Yok && _panel.AktifArac != CizimAraci.NoktaAl)
             {
                 BeginInvoke((Action)KomutuBitir);
+                return;
+            }
+            if (_komut == EkranKomutu.DogrultudanCiz)
+            {
+                DogrultudanCizOnizleme(e.Graphics);
                 return;
             }
             if (_komut != EkranKomutu.SomeCiz)
@@ -836,6 +1069,16 @@ namespace XmlToKtb
         {
             if (_komut == EkranKomutu.Yok)
                 return;
+            if (_komut == EkranKomutu.ObjedenOlustur)
+            {
+                ObjeSecimiTikla(x, y);
+                return;
+            }
+            if (_komut == EkranKomutu.DogrultudanCiz)
+            {
+                DogrultudanCizTikla(x, y);
+                return;
+            }
 
             var onceki = _guzergah.Kopyala();
             string hata = null;
@@ -1057,22 +1300,37 @@ namespace XmlToKtb
 
                 case EkranKomutu.ParcaSil:
                 {
-                    var parcaNo = _guzergah.ParcaBul(x, y, parcaToleransi);
+                    // Kurp ya da spiral (ya da kurbu olan somenin üçgeni) tıklandıysa o somenin bütün kurp parçaları
+                    // kaldırılır; some yerinde kalır, güzergah some noktasından geçen iki doğru olur. Doğruyla birleşim
+                    // ucunda iki parça da yakınsa kurp/spiral tercih edilir.
+                    var parcaNo = _guzergah.ParcaBul(x, y, parcaToleransi, p => p.Tip != GuzergahParcaTipi.Dogru);
+                    var tiklananSome = SomeBul(x, y);
+                    if (parcaNo < 0 && tiklananSome >= 0 && _guzergah.Someler[tiklananSome].ParcaSiralari.Count > 0)
+                        parcaNo = _guzergah.Someler[tiklananSome].ParcaSiralari[0];
                     if (parcaNo < 0)
-                        break;
-
-                    // Kurp ya da spiral tıklandıysa o somenin bütün kurp parçaları kaldırılır; some yerinde kurpsuz kalır.
-                    var some = _guzergah.Someler.FindIndex(sm => sm.ParcaSiralari.Contains(parcaNo));
-                    if (_guzergah.Parcalar[parcaNo].Tip != GuzergahParcaTipi.Dogru && some >= 0 && _guzergah.SomeModeliAl(out var noktalar, out var gruplar))
+                        parcaNo = _guzergah.ParcaBul(x, y, parcaToleransi);
+                    if (parcaNo < 0)
                     {
-                        gruplar[some] = new List<GuzergahParcasi>();
-                        degisti = _guzergah.SomeModelindenKur(noktalar, gruplar, out hata);
+                        // Kopuk bir parça tıklandıysa yalnızca o silinir; diğer kopuklar yerinde kalır.
+                        var kopukNo = _guzergah.KopukParcaBul(x, y, parcaToleransi);
+                        if (kopukNo >= 0)
+                        {
+                            _guzergah.KopukParcalar.RemoveAt(kopukNo);
+                            _guzergah.Hesapla();
+                            degisti = true;
+                        }
                         break;
                     }
 
-                    _guzergah.SabitleriBirak(parcaNo);
-                    _guzergah.Parcalar.RemoveAt(parcaNo);
-                    _guzergah.Hesapla();
+                    if (_guzergah.Parcalar[parcaNo].Tip != GuzergahParcaTipi.Dogru)
+                    {
+                        degisti = SomeKurplariniKaldir(new[] { parcaNo }, out hata);
+                        if (degisti || hata != null)
+                            break;
+                    }
+
+                    // Silinen parçadan sonrakiler koordinatları değişmeden kopuk kalır; kilometre orada biter.
+                    _guzergah.ParcaSilKopukBirak(new[] { parcaNo });
                     degisti = true;
                     break;
                 }
@@ -1092,6 +1350,232 @@ namespace XmlToKtb
                     _komutLabel.Text = "Güzergahın sonuna eklenecek noktaları sırayla tıklayın. Bitirmek için sağ tık ya da Esc.";
             }
             _panel.Invalidate();
+        }
+
+        // ------------------------------------------------------------------ doğrultudan çiz
+
+        private string DogrultudanCizIpucu()
+        {
+            return _dogrultuAci == null
+                ? "Doğrultusu alınacak objeyi, doğrultusu alınacak ucuna yakın yerinden tıklayın (çizgi, çoklu doğru, yay ya da güzergah). Bitirmek için sağ tık ya da Esc."
+                : "Doğrultu " + SemtGrad(_dogrultuAci.Value).ToString("0.0000", CultureInfo.InvariantCulture) + "g. Doğrunun biteceği yeri tıklayın" +
+                  (_guzergah.Parcalar.Count > 0 ? " (güzergahın sonundan bu doğrultuda eklenir)." : " (doğru, objenin ucundan başlar).") + " Bitirmek için sağ tık ya da Esc.";
+        }
+
+        /// <summary>
+        /// Tıklanan objenin son noktası ve oradaki doğrultusu (radyan): objenin tıklanan yere yakın serbest ucu
+        /// (çizginin, çoklu doğrunun, yayın, güzergahın ya da kopuk parçaların ucu) ve o uçta objeden dışarı, devam
+        /// yönündeki doğrultu. Serbest ucu olmayan kapalı objelerde (daire, kapalı çoklu doğru) tıklanan noktadaki
+        /// doğrultu alınır. Tolerans içinde obje yoksa false.
+        /// </summary>
+        private bool ObjeDogrultusuBul(double x, double y, out double aci, out double[] nokta)
+        {
+            if (!TiklananDogrultu(x, y, out aci, out nokta, out var nesne))
+                return false;
+
+            // Objenin bütün parçalarının uçları; başka bir parçanın ucuyla çakışmayan uçlar serbest uçtur.
+            var uclar = new List<double[]>(); // {x, y, dışarı doğrultu}
+            foreach (var p in GeometriIslemleri.Primitifler(nesne))
+            {
+                if (!p.YayMi)
+                {
+                    if (Math.Abs(p.X2 - p.X1) + Math.Abs(p.Y2 - p.Y1) < 1e-12)
+                        continue;
+                    uclar.Add(new[] { p.X1, p.Y1, Math.Atan2(p.Y1 - p.Y2, p.X1 - p.X2) });
+                    uclar.Add(new[] { p.X2, p.Y2, Math.Atan2(p.Y2 - p.Y1, p.X2 - p.X1) });
+                }
+                else
+                {
+                    // Tam daire kapalıdır, ucu yoktur.
+                    if (Math.Abs(p.Supurme) >= 2 * Math.PI - 1e-9)
+                        continue;
+                    var yon = p.Supurme >= 0 ? Math.PI / 2 : -Math.PI / 2;
+                    // Başta dışarı yön süpürmenin tersi, sonda süpürme yönündeki teğet.
+                    uclar.Add(new[] { p.X1, p.Y1, p.BasAci + yon + Math.PI });
+                    uclar.Add(new[] { p.X2, p.Y2, p.BasAci + p.Supurme + yon });
+                }
+            }
+            const double cakisma = 1e-4;
+            double[] enYakinUc = null;
+            var enKucuk = double.MaxValue;
+            for (var i = 0; i < uclar.Count; i++)
+            {
+                var serbest = true;
+                for (var j = 0; j < uclar.Count && serbest; j++)
+                {
+                    if (i / 2 != j / 2 && Math.Abs(uclar[i][0] - uclar[j][0]) < cakisma && Math.Abs(uclar[i][1] - uclar[j][1]) < cakisma)
+                        serbest = false;
+                }
+                if (!serbest)
+                    continue;
+                var d = (uclar[i][0] - x) * (uclar[i][0] - x) + (uclar[i][1] - y) * (uclar[i][1] - y);
+                if (d < enKucuk)
+                {
+                    enKucuk = d;
+                    enYakinUc = uclar[i];
+                }
+            }
+            if (enYakinUc != null)
+            {
+                nokta = new[] { enYakinUc[0], enYakinUc[1] };
+                aci = AciFarki(enYakinUc[2]);
+            }
+            return true;
+        }
+
+        // Tıklanan yere en yakın obje, onun üzerindeki en yakın nokta ve o noktadaki doğrultu.
+        private bool TiklananDogrultu(double x, double y, out double aci, out double[] nokta, out CizimNesnesi bulunan)
+        {
+            aci = 0;
+            nokta = null;
+            bulunan = null;
+            var tolerans = 8 / _panel.Gorunum.Olcek;
+            var enKucuk = tolerans * tolerans;
+            foreach (var nesne in _panel.Nesneler)
+            {
+                if (nesne.Tabaka != null && !nesne.Tabaka.Gorunur)
+                    continue;
+                foreach (var p in GeometriIslemleri.Primitifler(nesne))
+                {
+                    double px, py, dogrultu;
+                    if (!p.YayMi)
+                    {
+                        double dx = p.X2 - p.X1, dy = p.Y2 - p.Y1, l2 = dx * dx + dy * dy;
+                        if (l2 < 1e-12)
+                            continue;
+                        var t = Math.Max(0, Math.Min(1, ((x - p.X1) * dx + (y - p.Y1) * dy) / l2));
+                        px = p.X1 + t * dx;
+                        py = p.Y1 + t * dy;
+                        dogrultu = Math.Atan2(dy, dx);
+                    }
+                    else
+                    {
+                        var a = Math.Atan2(y - p.My, x - p.Mx);
+                        if (!p.AciIcindeMi(a))
+                            continue;
+                        px = p.Mx + p.R * Math.Cos(a);
+                        py = p.My + p.R * Math.Sin(a);
+                        // Teğet, yayın süpürme yönünde.
+                        dogrultu = a + (p.Supurme >= 0 ? Math.PI / 2 : -Math.PI / 2);
+                    }
+                    var d = (px - x) * (px - x) + (py - y) * (py - y);
+                    if (d > enKucuk)
+                        continue;
+                    enKucuk = d;
+                    aci = dogrultu;
+                    nokta = new[] { px, py };
+                    bulunan = nesne;
+                }
+            }
+            return nokta != null;
+        }
+
+        // Doğrunun başlangıcı ve doğrultusu: güzergahın sonundan (boşsa objenin üzerindeki noktadan), tıklanan yere doğru
+        // bakan yönde. Tıklanan yer başlangıçla aynı hizadaysa (boy sıfır) false.
+        private bool DogrultudanDogru(double x, double y, out double[] baslangic, out double aci, out double boy)
+        {
+            aci = _dogrultuAci ?? 0;
+            boy = 0;
+            if (_guzergah.Parcalar.Count > 0)
+            {
+                var son = _guzergah.Parcalar[_guzergah.Parcalar.Count - 1];
+                baslangic = new[] { son.BitisX, son.BitisY };
+            }
+            else
+            {
+                baslangic = _dogrultuNoktasi;
+            }
+            if (_dogrultuAci == null || baslangic == null)
+                return false;
+            boy = (x - baslangic[0]) * Math.Cos(aci) + (y - baslangic[1]) * Math.Sin(aci);
+            if (boy < 0)
+            {
+                // Obje doğrultusunun iki yönü de geçerlidir: tıklanan yere bakan yön alınır.
+                aci = AciFarki(aci + Math.PI);
+                boy = -boy;
+            }
+            return boy > 1e-6;
+        }
+
+        private void DogrultudanCizTikla(double x, double y)
+        {
+            if (_dogrultuAci == null)
+            {
+                if (!ObjeDogrultusuBul(x, y, out var aci, out var nokta))
+                    return;
+                _dogrultuAci = aci;
+                _dogrultuNoktasi = nokta;
+                _komutLabel.Text = DogrultudanCizIpucu();
+                // Şimdi nokta bekleniyor: imleç artı olur.
+                _panel.NoktaAlmayaBasla(false);
+                _panel.Invalidate();
+                return;
+            }
+
+            if (!DogrultudanDogru(x, y, out var baslangic, out var dogrultu, out var boy))
+            {
+                MessageBox.Show("Tıklanan yer başlangıç noktasının hizasında; doğrunun boyu sıfır oluyor.", "Güzergah Editörü", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var onceki = _guzergah.Kopyala();
+            var dogru = new GuzergahParcasi { Tip = GuzergahParcaTipi.Dogru, Uzunluk = boy };
+            if (_guzergah.Parcalar.Count == 0)
+            {
+                _guzergah.BaslangicX = baslangic[0];
+                _guzergah.BaslangicY = baslangic[1];
+                _guzergah.BaslangicAcisi = dogrultu;
+            }
+            else
+            {
+                // Güzergahın sonundaki doğrultudan farklıysa birleşim kurpsuz bir some (kırıklık) olur.
+                dogru.KirikAcisi = AciFarki(dogrultu - _guzergah.Parcalar[_guzergah.Parcalar.Count - 1].BitisAcisi);
+                if (Math.Abs(dogru.KirikAcisi) < 1e-12)
+                    dogru.KirikAcisi = 0;
+            }
+            if (!SonaParcaEkle(dogru))
+                return;
+
+            _geriAlListesi.Add(onceki);
+            Doldur(_guzergah.Parcalar.Count - 1);
+            if (_guzergah.VurguluParca < 0)
+                _guzergah.VurguluParca = 0;
+
+            // Komut sürer: yeni doğru için yeniden obje tıklanır.
+            _dogrultuAci = null;
+            _dogrultuNoktasi = null;
+            _komutLabel.Text = DogrultudanCizIpucu();
+            _panel.NoktaAlmayaBasla(true);
+            _panel.Invalidate();
+        }
+
+        private void DogrultudanCizOnizleme(Graphics grafik)
+        {
+            if (_dogrultuAci == null)
+                return;
+            int w = _panel.Width, h = _panel.Height;
+            var fare = _panel.PointToClient(Cursor.Position);
+            _panel.Gorunum.EkrandanDunyayaHassas(fare, w, h, out var fx, out var fy);
+            using (var kalem = new Pen(Color.Firebrick, 1.4f) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+            {
+                // Alınan doğrultu, objenin üzerindeki noktadan iki yana uzanan ince çizgiyle gösterilir.
+                var uzun = Math.Max(w, h) / _panel.Gorunum.Olcek;
+                double c = Math.Cos(_dogrultuAci.Value), s = Math.Sin(_dogrultuAci.Value);
+                using (var ince = new Pen(Color.FromArgb(120, Color.Firebrick), 1f) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dot })
+                    grafik.DrawLine(ince,
+                        _panel.Gorunum.DunyadanEkrana(_dogrultuNoktasi[0] - c * uzun, _dogrultuNoktasi[1] - s * uzun, w, h),
+                        _panel.Gorunum.DunyadanEkrana(_dogrultuNoktasi[0] + c * uzun, _dogrultuNoktasi[1] + s * uzun, w, h));
+
+                if (!DogrultudanDogru(fx, fy, out var baslangic, out var aci, out var boy))
+                    return;
+                var bas = _panel.Gorunum.DunyadanEkrana(baslangic[0], baslangic[1], w, h);
+                var son = _panel.Gorunum.DunyadanEkrana(baslangic[0] + boy * Math.Cos(aci), baslangic[1] + boy * Math.Sin(aci), w, h);
+                grafik.DrawLine(kalem, bas, son);
+                grafik.DrawRectangle(kalem, bas.X - 4, bas.Y - 4, 8, 8);
+                using (var yazi = new Font("Segoe UI", 8.5f))
+                using (var firca = new SolidBrush(Color.Firebrick))
+                    grafik.DrawString("L=" + Sayi(boy), yazi, firca, son.X + 8, son.Y + 4);
+            }
         }
 
         private static double AciFarki(double aci)

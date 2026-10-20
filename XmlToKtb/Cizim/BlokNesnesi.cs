@@ -63,6 +63,11 @@ namespace XmlToKtb.Cizim
                 yield return nokta;
         }
 
+        public override IEnumerable<double[]> OrtaNoktalari()
+        {
+            return Ogeler.SelectMany(o => o.OrtaNoktalari());
+        }
+
         public BlokNesnesi Kopyala()
         {
             var kopya = new BlokNesnesi { Ad = Ad, KonumX = KonumX, KonumY = KonumY };

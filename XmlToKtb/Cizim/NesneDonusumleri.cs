@@ -13,6 +13,7 @@ namespace XmlToKtb.Cizim
             {
                 kopya.Tabaka = nesne.Tabaka;
                 kopya.OzelRenk = nesne.OzelRenk;
+                kopya.CizgiKalinligi = nesne.CizgiKalinligi;
             }
             return kopya;
         }
@@ -80,6 +81,10 @@ namespace XmlToKtb.Cizim
                     return cokluDogru.Kopyala();
                 case BlokNesnesi blok:
                     return blok.Kopyala();
+                case OlcuNesnesi olcu:
+                    return olcu.Kopyala();
+                case KilavuzNesnesi kilavuz:
+                    return kilavuz.Kopyala();
                 default:
                     return nesne;
             }
@@ -121,7 +126,7 @@ namespace XmlToKtb.Cizim
                 case GuzergahNesnesi guzergah:
                     guzergah.BaslangicX += dx;
                     guzergah.BaslangicY += dy;
-                    foreach (var parca in guzergah.Parcalar)
+                    foreach (var parca in guzergah.TumParcalar)
                     {
                         parca.SabitX += dx;
                         parca.SabitY += dy;
@@ -130,6 +135,8 @@ namespace XmlToKtb.Cizim
                     break;
                 case CokluDogruNesnesi _:
                 case BlokNesnesi _:
+                case OlcuNesnesi _:
+                case KilavuzNesnesi _:
                     Donusum.Oteleme(dx, dy).Uygula(nesne);
                     break;
             }
@@ -212,7 +219,7 @@ namespace XmlToKtb.Cizim
                     guzergah.BaslangicX = baslangic.X;
                     guzergah.BaslangicY = baslangic.Y;
                     guzergah.BaslangicAcisi += rad;
-                    foreach (var parca in guzergah.Parcalar)
+                    foreach (var parca in guzergah.TumParcalar)
                     {
                         var sabit = DonduruluenNokta(parca.SabitX, parca.SabitY);
                         parca.SabitX = sabit.X;
@@ -224,6 +231,8 @@ namespace XmlToKtb.Cizim
                 }
                 case CokluDogruNesnesi _:
                 case BlokNesnesi _:
+                case OlcuNesnesi _:
+                case KilavuzNesnesi _:
                     Donusum.Dondurme(merkez.X, merkez.Y, rad).Uygula(nesne);
                     break;
             }
@@ -305,7 +314,7 @@ namespace XmlToKtb.Cizim
                     guzergah.BaslangicX = baslangic.X;
                     guzergah.BaslangicY = baslangic.Y;
                     var mutlakCarpan = Math.Abs(carpan);
-                    foreach (var parca in guzergah.Parcalar)
+                    foreach (var parca in guzergah.TumParcalar)
                     {
                         var sabit = OlceklenmisNokta(parca.SabitX, parca.SabitY);
                         parca.SabitX = sabit.X;
@@ -319,6 +328,8 @@ namespace XmlToKtb.Cizim
                 }
                 case CokluDogruNesnesi _:
                 case BlokNesnesi _:
+                case OlcuNesnesi _:
+                case KilavuzNesnesi _:
                     Donusum.Olcekleme(merkez.X, merkez.Y, carpan).Uygula(nesne);
                     break;
             }

@@ -100,6 +100,10 @@ namespace XmlToKtb.Cizim
             }
         }
 
+        /// <summary>Kapalı çoklu doğrunun (alan/parsel) adı; Görünüm > Etiket Ayarları > Alan Adları açıkken ortasına yazılır.</summary>
+        [DisplayName("Alan Adı")]
+        public string AlanAdi { get; set; } = "";
+
         [Browsable(false)]
         public int ParcaSayisi => Koseler.Count < 2 ? 0 : Kapali ? Koseler.Count : Koseler.Count - 1;
 
@@ -167,7 +171,7 @@ namespace XmlToKtb.Cizim
 
         public CokluDogruNesnesi Kopyala()
         {
-            var kopya = new CokluDogruNesnesi { Kapali = Kapali };
+            var kopya = new CokluDogruNesnesi { Kapali = Kapali, AlanAdi = AlanAdi };
             kopya.Koseler.AddRange(Koseler.Select(k => k.Kopyala()));
             return kopya;
         }
@@ -178,13 +182,15 @@ namespace XmlToKtb.Cizim
             if (noktalar.Count < 2)
                 return;
             var ekran = noktalar.Select(p => gorunum.DunyadanEkrana(p[0], p[1], panelGenislik, panelYukseklik)).ToArray();
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : 1f))
+            var renk = Secili ? Color.DodgerBlue : CizimRengi(Color.Black);
+            using (var kalem = new Pen(renk, Secili ? 2f : KalemKalinligi(1f)))
             {
                 if (Kapali)
                     grafik.DrawPolygon(kalem, ekran);
                 else
                     grafik.DrawLines(kalem, ekran);
             }
+            EtiketleriCiz(grafik, gorunum, panelGenislik, panelYukseklik, ekran, renk);
 
             if (Secili)
             {
@@ -196,6 +202,60 @@ namespace XmlToKtb.Cizim
                         grafik.FillRectangle(firca, p.X - 3, p.Y - 3, 6, 6);
                     }
                 }
+            }
+        }
+
+        private void EtiketleriCiz(Graphics grafik, CizimGorunum gorunum, int panelGenislik, int panelYukseklik, PointF[] ekran, Color renk)
+        {
+            var secenekler = CizimBaglami.Secenekler;
+            if (secenekler == null)
+                return;
+
+            // Çizgi kotu: bütün köşeler aynı (sıfır olmayan) kottaysa en uzun parçanın ortasına, parça doğrultusunda.
+            if (secenekler.CizgiKotlari && Koseler.Count > 1 && Koseler[0].Z != 0 && Koseler.All(k => Math.Abs(k.Z - Koseler[0].Z) < 0.0005))
+            {
+                var enUzun = 0;
+                float enUzunBoy = -1;
+                for (var i = 0; i + 1 < ekran.Length; i++)
+                {
+                    var boy = (ekran[i + 1].X - ekran[i].X) * (ekran[i + 1].X - ekran[i].X) + (ekran[i + 1].Y - ekran[i].Y) * (ekran[i + 1].Y - ekran[i].Y);
+                    if (boy > enUzunBoy)
+                    {
+                        enUzunBoy = boy;
+                        enUzun = i;
+                    }
+                }
+                PointF a = ekran[enUzun], b = ekran[enUzun + 1];
+                CizimBaglami.EtiketYaz(grafik, gorunum, CizimBaglami.KotMetni(Koseler[0].Z), new PointF((a.X + b.X) / 2, (a.Y + b.Y) / 2), renk, 0, -0.7f, CizimBaglami.OkunurAci(a, b), true);
+            }
+
+            // Alan adı: kapalı çoklu doğrunun ağırlık merkezine.
+            if (secenekler.AlanAdlari && Kapali && !string.IsNullOrWhiteSpace(AlanAdi) && Koseler.Count >= 3)
+            {
+                double a2 = 0, cx = 0, cy = 0;
+                for (var i = 0; i < Koseler.Count; i++)
+                {
+                    var p = Koseler[i];
+                    var q = Koseler[(i + 1) % Koseler.Count];
+                    // Büyük koordinatlarda hassasiyet için ilk köşeye göre.
+                    double px = p.X - Koseler[0].X, py = p.Y - Koseler[0].Y, qx = q.X - Koseler[0].X, qy = q.Y - Koseler[0].Y;
+                    var c = px * qy - qx * py;
+                    a2 += c;
+                    cx += (px + qx) * c;
+                    cy += (py + qy) * c;
+                }
+                double mx, my;
+                if (Math.Abs(a2) > 1e-12)
+                {
+                    mx = Koseler[0].X + cx / (3 * a2);
+                    my = Koseler[0].Y + cy / (3 * a2);
+                }
+                else
+                {
+                    mx = Koseler.Average(k => k.X);
+                    my = Koseler.Average(k => k.Y);
+                }
+                CizimBaglami.EtiketYaz(grafik, gorunum, AlanAdi, gorunum.DunyadanEkrana(mx, my, panelGenislik, panelYukseklik), renk, 0, 0, 0, true);
             }
         }
 
@@ -238,6 +298,22 @@ namespace XmlToKtb.Cizim
         {
             foreach (var kose in Koseler)
                 yield return new PointF((float)kose.X, (float)kose.Y);
+        }
+
+        /// <summary>Her parçanın ortası: düz parçada kirişin ortası, yay parçasında yayın ortası.</summary>
+        public override IEnumerable<double[]> OrtaNoktalari()
+        {
+            for (var i = 0; i < ParcaSayisi; i++)
+            {
+                ParcaUclari(i, out var a, out var b);
+                if (Math.Abs(a.Bulge) < 1e-9)
+                {
+                    yield return new[] { (a.X + b.X) / 2, (a.Y + b.Y) / 2 };
+                    continue;
+                }
+                YayBilgisi(a, b, out var mx, out var my, out var r, out var bas, out var sup);
+                yield return new[] { mx + r * Math.Cos(bas + sup / 2), my + r * Math.Sin(bas + sup / 2) };
+            }
         }
 
         public override PointF? DikNoktaAl(PointF referansDunyaNoktasi)

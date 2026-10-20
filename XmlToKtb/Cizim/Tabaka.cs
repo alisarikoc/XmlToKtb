@@ -15,6 +15,8 @@ namespace XmlToKtb.Cizim
         public Color Renk = Color.Black;
         public bool Gorunur = true;
         public bool Kilitli;
+        /// <summary>Tabakanın çizgi kalınlığı (mm); 0 ise varsayılan kalınlık.</summary>
+        public double CizgiKalinligi;
 
         /// <summary>Tabakanın ait olduğu çizimin tabaka listesi (Özellikler panelinde tabaka seçimi için).</summary>
         public List<Tabaka> Liste;

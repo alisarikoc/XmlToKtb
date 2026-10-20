@@ -81,6 +81,8 @@ namespace XmlToKtb
 
             var durumStrip = new StatusStrip();
             durumStrip.Items.Add(_konumDurumLabel);
+            var komutDurumLabel = new ToolStripStatusLabel { ForeColor = Color.Firebrick };
+            durumStrip.Items.Add(komutDurumLabel);
 
             var menu = MenuOlustur();
             var aracCubugu = YakalamaCubuguOlustur();
@@ -108,6 +110,13 @@ namespace XmlToKtb
             _cizimPaneli.YeniNoktalariMilimetreyeYuvarla = true;
             _cizimPaneli.ReferansNoktasiGoster = true;
             _cizimPaneli.GeriAlAcik = true;
+
+            // Sağ tık menüsü (son komutlar, pano, hızlı seçim, bul/değiştir...) ve Boşluk ile komut tekrarı.
+            new PanelKomutMenusu(_cizimPaneli, this)
+            {
+                Degisti = () => _ozellikGrid.Refresh(),
+                Ipucu = metin => komutDurumLabel.Text = string.IsNullOrEmpty(metin) ? "" : "   " + metin
+            };
 
             if (mevcutNesneler != null)
                 _cizimPaneli.Nesneler.AddRange(mevcutNesneler.Select(NesneDonusumleri.Klonla));
@@ -283,14 +292,15 @@ namespace XmlToKtb
             var cubuk = new ToolStrip();
             cubuk.Items.Add(new ToolStripSeparator { Alignment = ToolStripItemAlignment.Right });
 
-            // Sıra YakalamaModunuGuncelle ile eşleşir: Nokta, Uç, Orta, Dik, Merkez.
+            // Sıra YakalamaModunuGuncelle ile eşleşir: Nokta, Uç, Orta, Dik, Merkez, Kesişim.
             var tanimlar = new[]
             {
                 new[] { "Nokta", "Nokta Yakala" },
                 new[] { "Uç", "Doğru Ucu Yakala" },
                 new[] { "Orta", "Doğru Ortası Yakala" },
                 new[] { "Dik", "Objeye Dik Yakala" },
-                new[] { "Merkez", "Daire/Yay Merkezi Yakala" }
+                new[] { "Merkez", "Daire/Yay Merkezi Yakala" },
+                new[] { "Kesişim", "Kesişim Yakala" }
             };
 
             foreach (var tanim in tanimlar)
@@ -318,6 +328,7 @@ namespace XmlToKtb
             if (_yakalamaButonlari[2].Checked) mod |= YakalamaModu.Orta;
             if (_yakalamaButonlari[3].Checked) mod |= YakalamaModu.Dik;
             if (_yakalamaButonlari[4].Checked) mod |= YakalamaModu.Merkez;
+            if (_yakalamaButonlari[5].Checked) mod |= YakalamaModu.Kesisim;
             _cizimPaneli.AktifYakalamaModu = mod;
         }
 

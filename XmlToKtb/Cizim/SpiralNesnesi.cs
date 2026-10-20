@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -92,7 +92,7 @@ namespace XmlToKtb.Cizim
             for (var i = 0; i < noktalar.Count; i++)
                 ekranNoktalari[i] = gorunum.DunyadanEkrana(noktalar[i].X, noktalar[i].Y, panelGenislik, panelYukseklik);
 
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : 1f))
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : KalemKalinligi(1f)))
             {
                 grafik.DrawLines(kalem, ekranNoktalari);
             }
@@ -108,6 +108,19 @@ namespace XmlToKtb.Cizim
                     return true;
             }
             return false;
+        }
+
+        public override IEnumerable<double[]> OrtaNoktalari()
+        {
+            // Örnek noktalar boy boyunca eşit aralıklıdır; ortadaki örnek (çift sayıda ise iki ortancanın ortası).
+            var noktalar = OrnekNoktalariGetir(200);
+            if (noktalar.Count == 0)
+                yield break;
+            var i = noktalar.Count / 2;
+            if (noktalar.Count % 2 == 1)
+                yield return new double[] { noktalar[i].X, noktalar[i].Y };
+            else
+                yield return new double[] { (noktalar[i - 1].X + noktalar[i].X) / 2.0, (noktalar[i - 1].Y + noktalar[i].Y) / 2.0 };
         }
 
         public override IEnumerable<PointF> UcNoktalariAl()

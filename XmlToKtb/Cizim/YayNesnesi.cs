@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
 
 namespace XmlToKtb.Cizim
 {
@@ -62,7 +63,7 @@ namespace XmlToKtb.Cizim
             var gdiBaslangic = -BaslangicAcisi;
             var gdiSupurme = -dunyaSupurme;
 
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : 1f))
+            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), Secili ? 2f : KalemKalinligi(1f)))
             {
                 grafik.DrawArc(kalem, ekranMerkez.X - pikselYaricap, ekranMerkez.Y - pikselYaricap,
                     pikselYaricap * 2, pikselYaricap * 2, (float)gdiBaslangic, (float)gdiSupurme);
@@ -89,6 +90,19 @@ namespace XmlToKtb.Cizim
             yield return AcidaNokta(BaslangicAcisi);
             yield return AcidaNokta(BitisAcisi);
             yield return AcidaNokta((BaslangicAcisi + BitisAcisi) / 2);
+        }
+
+        public override IEnumerable<double[]> OrtaNoktalari()
+        {
+            // Yayın ortası: başlangıçtan süpürme açısının yarısı kadar ötesi.
+            var rad = (BaslangicAcisi + NormalizeSupurme(BitisAcisi - BaslangicAcisi) / 2) * Math.PI / 180.0;
+            yield return new[] { MerkezX + Yaricap * Math.Cos(rad), MerkezY + Yaricap * Math.Sin(rad) };
+        }
+
+        public override PointF? OrtaNoktaAl()
+        {
+            var orta = OrtaNoktalari().First();
+            return new PointF((float)orta[0], (float)orta[1]);
         }
 
         public override PointF? MerkezNoktaAl()

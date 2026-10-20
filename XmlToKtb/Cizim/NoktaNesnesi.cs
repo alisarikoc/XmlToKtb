@@ -37,11 +37,31 @@ namespace XmlToKtb.Cizim
         {
             const float yaricap = 3f;
             var ekran = gorunum.DunyadanEkrana(X, Y, panelGenislik, panelYukseklik);
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Color.Black), 1.5f))
+            var renk = Secili ? Color.DodgerBlue : CizimRengi(Color.Black);
+            using (var kalem = new Pen(renk, 1.5f))
             {
                 grafik.DrawLine(kalem, ekran.X - yaricap, ekran.Y, ekran.X + yaricap, ekran.Y);
                 grafik.DrawLine(kalem, ekran.X, ekran.Y - yaricap, ekran.X, ekran.Y + yaricap);
             }
+
+            // Etiketler noktanın sağında alt alta: ad, kot, kod (yalnızca açık olanlar).
+            var secenekler = CizimBaglami.Secenekler;
+            if (secenekler == null)
+                return;
+            var satir = 0;
+            void Yaz(string metin)
+            {
+                if (string.IsNullOrWhiteSpace(metin))
+                    return;
+                CizimBaglami.EtiketYaz(grafik, gorunum, metin, ekran, renk, 0.4f, -0.6f + 1.15f * satir);
+                satir++;
+            }
+            if (secenekler.NoktaAdlari)
+                Yaz(NoktaAdi);
+            if (secenekler.NoktaKotlari)
+                Yaz(CizimBaglami.KotMetni(Z));
+            if (secenekler.NoktaKodlari)
+                Yaz(Kod);
         }
 
         public override bool IsabetEttiMi(PointF dunyaNoktasi, double toleransDunya)

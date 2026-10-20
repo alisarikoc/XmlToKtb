@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using netDxf;
+using netDxf.Blocks;
 using netDxf.Entities;
 using netDxf.Tables;
 
@@ -13,6 +15,7 @@ namespace XmlToKtb.Cizim
         {
             var dxfBelge = new DxfDocument();
             var katmanlar = new Dictionary<Tabaka, Layer>();
+            var olcuStilleri = new Dictionary<OlcuStili, DimensionStyle>();
 
             // Varlığı, objenin tabakasında ve (varsa) kendi rengiyle belgeye ekler.
             void Ekle(EntityObject varlik, CizimNesnesi nesne)
@@ -30,6 +33,16 @@ namespace XmlToKtb.Cizim
 
                 if (nesne.OzelRenk != null)
                     varlik.Color = new AciColor(nesne.OzelRenk.Value);
+
+                // DXF yalnızca belirli kalınlıkları tanır: en yakını seçilir.
+                if (nesne.CizgiKalinligi > 0)
+                {
+                    var yuzdeMm = nesne.CizgiKalinligi * 100;
+                    varlik.Lineweight = ((Lineweight[])Enum.GetValues(typeof(Lineweight)))
+                        .Where(k => (short)k >= 0)
+                        .OrderBy(k => Math.Abs((short)k - yuzdeMm))
+                        .First();
+                }
 
                 dxfBelge.Entities.Add(varlik);
             }
@@ -150,12 +163,142 @@ namespace XmlToKtb.Cizim
                         oge.Tabaka = eskiTabaka;
                     }
                 }
+                else if (nesne is OlcuNesnesi olcu)
+                {
+                    var varlik = OlcuVarligi(olcu, olcuStilleri);
+                    if (varlik != null)
+                        Ekle(varlik, nesne);
+                }
+                else if (nesne is KilavuzNesnesi kilavuz && kilavuz.Koseler.Count >= 2)
+                {
+                    // Kılavuz çizgi LEADER olarak yazılır; yazısı MText (satır sonları \P).
+                    var stil = kilavuz.Stil ?? OlcuStili.Varsayilan;
+                    if (!olcuStilleri.TryGetValue(stil, out var ds))
+                        olcuStilleri[stil] = ds = StilOlustur(stil);
+                    // İniş çizgisi LEADER'a son köşe olarak yazılır (içe aktarırken stile uyan yatay son parça tekrar
+                    // iniş çizgisi sayılır); netDxf'in kendi hookline köşesi kapatılır.
+                    var koseler = kilavuz.Koseler.Select(k => new Vector2(k[0], k[1])).ToList();
+                    if (kilavuz.Inis)
+                    {
+                        var son = koseler[koseler.Count - 1];
+                        koseler.Add(new Vector2(son.X + kilavuz.InisYonu * kilavuz.InisBoyu, son.Y));
+                    }
+                    var metin = (kilavuz.Metin ?? "").Replace("\r\n", "\n").Replace("\n", "\\P");
+                    try
+                    {
+                        var lider = metin.Length > 0 ? new Leader(metin, koseler, ds) : new Leader(koseler, ds);
+                        lider.HasHookline = false;
+                        Ekle(lider, nesne);
+                    }
+                    catch (ArgumentException)
+                    {
+                        // Çakışan köşeler gibi geçersiz geometri: kılavuz parçalarıyla yazılır.
+                        foreach (var parca in kilavuz.Parcala())
+                            Yaz(parca);
+                    }
+                }
             }
 
             foreach (var obje in nesneler)
                 Yaz(obje);
 
             dxfBelge.Save(dosyaYolu);
+        }
+
+        /// <summary>Ölçü stilinin DXF karşılığı (DIMSTYLE). Adı DXF'te geçersizse "Standart" adıyla yazılır.</summary>
+        private static DimensionStyle StilOlustur(OlcuStili stil)
+        {
+            DimensionStyle ds;
+            try
+            {
+                ds = new DimensionStyle(stil.Ad);
+            }
+            catch (ArgumentException)
+            {
+                ds = new DimensionStyle("Standart");
+            }
+            ds.DimScaleOverall = stil.GenelOlcek > 0 ? stil.GenelOlcek : 1;
+            ds.TextHeight = stil.YaziYuksekligi;
+            ds.TextOffset = stil.YaziBoslugu;
+            ds.TextVerticalPlacement = stil.YaziKonumu == OlcuYaziKonumu.Ortada ? DimensionStyleTextVerticalPlacement.Centered : DimensionStyleTextVerticalPlacement.Above;
+            ds.LengthPrecision = (short)Math.Max(0, Math.Min(8, stil.OndalikBasamak));
+            ds.AngularPrecision = (short)Math.Max(0, Math.Min(8, stil.AciOndalikBasamak));
+            ds.DimScaleLinear = stil.UzunlukCarpani;
+            ds.DimPrefix = stil.OnEk ?? "";
+            ds.DimSuffix = stil.SonEk ?? "";
+            ds.DecimalSeparator = stil.OndalikAyraci;
+            ds.DimAngularUnits = stil.AciBirimi == OlcuAciBirimi.Grad ? netDxf.Units.AngleUnitType.Gradians : netDxf.Units.AngleUnitType.DecimalDegrees;
+            ds.ArrowSize = stil.OkBoyu;
+            ds.ExtLineOffset = stil.UzatmaAraligi;
+            ds.ExtLineExtend = stil.UzatmaTasmasi;
+            ds.DimLineExtend = stil.OlcuCizgisiTasmasi;
+            Block ok = null;
+            switch (stil.OkTipi)
+            {
+                case OlcuOkTipi.EgikCizgi: ok = DimensionArrowhead.ArchitecturalTick; break;
+                case OlcuOkTipi.Nokta: ok = DimensionArrowhead.Dot; break;
+                case OlcuOkTipi.Acik: ok = DimensionArrowhead.Open; break;
+                case OlcuOkTipi.Yok: ok = DimensionArrowhead.None; break;
+            }
+            ds.DimArrow1 = ok;
+            ds.DimArrow2 = ok;
+            return ds;
+        }
+
+        /// <summary>Ölçü objesinin DXF ölçü varlığı (DIMENSION); geometrisi geçersizse null.</summary>
+        private static Dimension OlcuVarligi(OlcuNesnesi olcu, Dictionary<OlcuStili, DimensionStyle> stiller)
+        {
+            var stil = olcu.Stil ?? OlcuStili.Varsayilan;
+            if (!stiller.TryGetValue(stil, out var ds))
+                stiller[stil] = ds = StilOlustur(stil);
+            Vector2 a = new Vector2(olcu.AX, olcu.AY), b = new Vector2(olcu.BX, olcu.BY), c = new Vector2(olcu.CX, olcu.CY), d = new Vector2(olcu.DX, olcu.DY);
+            Dimension varlik;
+            try
+            {
+                switch (olcu.Tur)
+                {
+                    case OlcuTuru.Dogrusal:
+                    {
+                        var dogrusal = new LinearDimension(a, b, 0, olcu.Aci, ds);
+                        dogrusal.SetDimensionLinePosition(c);
+                        varlik = dogrusal;
+                        break;
+                    }
+                    case OlcuTuru.Hizali:
+                    {
+                        var hizali = new AlignedDimension(a, b, 0, ds);
+                        hizali.SetDimensionLinePosition(c);
+                        varlik = hizali;
+                        break;
+                    }
+                    case OlcuTuru.Acisal:
+                    {
+                        // DXF'te açı başlangıç kolundan bitiş koluna saat yönünün tersine ölçülür.
+                        var acisal = olcu.AciB_denBasliyor()
+                            ? new Angular3PointDimension(a, b, c, Vector2.Distance(a, d), ds)
+                            : new Angular3PointDimension(a, c, b, Vector2.Distance(a, d), ds);
+                        acisal.SetDimensionLinePosition(d);
+                        varlik = acisal;
+                        break;
+                    }
+                    case OlcuTuru.Yaricap:
+                        varlik = new RadialDimension(a, b, ds);
+                        break;
+                    case OlcuTuru.Cap:
+                        varlik = new DiametricDimension(a, b, ds);
+                        break;
+                    default:
+                        return null;
+                }
+            }
+            catch (ArgumentException)
+            {
+                // Sıfır uzunluk gibi geçersiz geometri.
+                return null;
+            }
+            if (!string.IsNullOrEmpty(olcu.Metin))
+                varlik.UserText = olcu.Metin;
+            return varlik;
         }
 
         // Tabakanın DXF karşılığını kurar. Adı DXF'te geçersiz karakter içeriyorsa null döner; o tabakanın objeleri

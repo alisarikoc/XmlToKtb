@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -56,9 +56,23 @@ namespace XmlToKtb.Cizim
             var bas = gorunum.DunyadanEkrana(BaslangicX, BaslangicY, panelGenislik, panelYukseklik);
             var bit = gorunum.DunyadanEkrana(BitisX, BitisY, panelGenislik, panelYukseklik);
 
-            using (var kalem = new Pen(Secili ? Color.DodgerBlue : CizimRengi(Renk), Secili ? 2.5f : 1.5f))
+            var renk = Secili ? Color.DodgerBlue : CizimRengi(Renk);
+            using (var kalem = new Pen(renk, Secili ? 2.5f : KalemKalinligi(1.5f)))
             {
                 grafik.DrawLine(kalem, bas, bit);
+            }
+
+            // Çizgi kotları: kot sıfır değilse; iki ucun kotu aynıysa ortada bir kez, farklıysa her uçta.
+            if (CizimBaglami.Secenekler != null && CizimBaglami.Secenekler.CizgiKotlari && (BaslangicZ != 0 || BitisZ != 0))
+            {
+                var aci = CizimBaglami.OkunurAci(bas, bit);
+                if (Math.Abs(BaslangicZ - BitisZ) < 0.0005)
+                    CizimBaglami.EtiketYaz(grafik, gorunum, CizimBaglami.KotMetni(BaslangicZ), new PointF((bas.X + bit.X) / 2, (bas.Y + bit.Y) / 2), renk, 0, -0.7f, aci, true);
+                else
+                {
+                    CizimBaglami.EtiketYaz(grafik, gorunum, CizimBaglami.KotMetni(BaslangicZ), bas, renk, 0.3f, -0.7f, aci);
+                    CizimBaglami.EtiketYaz(grafik, gorunum, CizimBaglami.KotMetni(BitisZ), bit, renk, 0.3f, -0.7f, aci);
+                }
             }
 
             if (Secili)
@@ -89,6 +103,11 @@ namespace XmlToKtb.Cizim
         {
             yield return new PointF((float)BaslangicX, (float)BaslangicY);
             yield return new PointF((float)BitisX, (float)BitisY);
+        }
+
+        public override IEnumerable<double[]> OrtaNoktalari()
+        {
+            yield return new[] { (BaslangicX + BitisX) / 2.0, (BaslangicY + BitisY) / 2.0 };
         }
 
         public override PointF? OrtaNoktaAl()

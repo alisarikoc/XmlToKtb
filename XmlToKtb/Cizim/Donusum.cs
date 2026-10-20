@@ -142,6 +142,29 @@ namespace XmlToKtb.Cizim
                     }
                     break;
 
+                case OlcuNesnesi olcu:
+                    // Tanım noktaları dönüşür; doğrusal ölçünün doğrultusu da döner. Ölçülen değer yeni geometriden
+                    // hesaplanır (ölçeklenen ölçü yeni uzunluğu gösterir).
+                    Nokta(olcu.AX, olcu.AY, out x, out y);
+                    olcu.AX = x; olcu.AY = y;
+                    Nokta(olcu.BX, olcu.BY, out x, out y);
+                    olcu.BX = x; olcu.BY = y;
+                    Nokta(olcu.CX, olcu.CY, out x, out y);
+                    olcu.CX = x; olcu.CY = y;
+                    Nokta(olcu.DX, olcu.DY, out x, out y);
+                    olcu.DX = x; olcu.DY = y;
+                    olcu.Aci = AciNormal(YonDerece(olcu.Aci));
+                    break;
+
+                case KilavuzNesnesi kilavuz:
+                    // Köşeler dönüşür; iniş çizgisi ve yazı her zaman yatay kalır (AutoCAD'deki gibi).
+                    foreach (var k in kilavuz.Koseler)
+                    {
+                        Nokta(k[0], k[1], out x, out y);
+                        k[0] = x; k[1] = y;
+                    }
+                    break;
+
                 case BlokNesnesi blok:
                     Nokta(blok.KonumX, blok.KonumY, out x, out y);
                     blok.KonumX = x; blok.KonumY = y;
@@ -162,7 +185,7 @@ namespace XmlToKtb.Cizim
                     Nokta(g.BaslangicX, g.BaslangicY, out x, out y);
                     g.BaslangicX = x; g.BaslangicY = y;
                     g.BaslangicAcisi = Yon(g.BaslangicAcisi);
-                    foreach (var parca in g.Parcalar)
+                    foreach (var parca in g.TumParcalar)
                     {
                         parca.Uzunluk *= Math.Abs(Olcek);
                         if (!double.IsInfinity(parca.YaricapBaslangic)) parca.YaricapBaslangic *= Math.Abs(Olcek);

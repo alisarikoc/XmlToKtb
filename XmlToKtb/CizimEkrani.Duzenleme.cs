@@ -30,7 +30,18 @@ namespace XmlToKtb
             Patlat,
             CokluDogru,
             TopluDegistir,
-            Cit
+            Cit,
+            CokluDogruCiz,
+            NoktaAt,
+            YayCiz,
+            YaziYaz,
+            OlcuDogrusal,
+            OlcuHizali,
+            OlcuAcisal,
+            OlcuYaricap,
+            OlcuCap,
+            Kilavuz,
+            Sil
         }
 
         private static readonly Dictionary<DuzenKomutu, string> KomutAdlari = new Dictionary<DuzenKomutu, string>
@@ -38,7 +49,10 @@ namespace XmlToKtb
             { DuzenKomutu.PanoyaKopyala, "Panoya Kopyala" }, { DuzenKomutu.PanoyaKes, "Panoya Kes" },
             { DuzenKomutu.ReferansKopyala, "Referans Noktası ile Kopyala" }, { DuzenKomutu.Uzat, "Uzat" },
             { DuzenKomutu.Paralel, "Paralel" }, { DuzenKomutu.Aynala, "Aynala" }, { DuzenKomutu.Hizala, "2 Noktadan Dönüşüm" },
-            { DuzenKomutu.Patlat, "Patlat" }, { DuzenKomutu.CokluDogru, "Çoklu Doğruya Dönüştür" }, { DuzenKomutu.TopluDegistir, "Toplu Obje Değiştir" }
+            { DuzenKomutu.Patlat, "Patlat" }, { DuzenKomutu.CokluDogruCiz, "Çoklu Doğru Çiz" }, { DuzenKomutu.NoktaAt, "Nokta At" }, { DuzenKomutu.YayCiz, "Yay Çiz" }, { DuzenKomutu.YaziYaz, "Yazı Yaz" }, { DuzenKomutu.CokluDogru, "Çoklu Doğruya Dönüştür" }, { DuzenKomutu.TopluDegistir, "Toplu Obje Değiştir" },
+            { DuzenKomutu.OlcuDogrusal, "Doğrusal Ölçü" }, { DuzenKomutu.OlcuHizali, "Hizalı Ölçü" }, { DuzenKomutu.OlcuAcisal, "Açısal Ölçü" },
+            { DuzenKomutu.OlcuYaricap, "Yarıçap Ölçüsü" }, { DuzenKomutu.OlcuCap, "Çap Ölçüsü" }, { DuzenKomutu.Kilavuz, "Kılavuz Çizgi" },
+            { DuzenKomutu.Sil, "Sil" }
         };
 
         private DuzenKomutu _duzenKomutu = DuzenKomutu.Yok;
@@ -91,6 +105,23 @@ namespace XmlToKtb
             for (var i = panoOgeleri.Length - 1; i >= 0; i--)
                 duzenleMenuItem.DropDownItems.Insert(0, panoOgeleri[i]);
 
+            // --- Geri Al / İleri Al (en fazla 10 adım) ---
+            _geriAlOgesi = Oge("Geri Al", "Ctrl+Z", GeriAl);
+            _ileriAlOgesi = Oge("İleri Al", "Ctrl+Y", IleriAl);
+            duzenleMenuItem.DropDownItems.Insert(0, new ToolStripSeparator());
+            duzenleMenuItem.DropDownItems.Insert(0, _ileriAlOgesi);
+            duzenleMenuItem.DropDownItems.Insert(0, _geriAlOgesi);
+            cizimPaneli1.GeriAlAcik = true;
+            cizimPaneli1.GeriAlSiniri = 10;
+            cizimPaneli1.GecmisDegisti += (s, e) => GeriAlMenusunuGuncelle();
+            cizimPaneli1.GecmisiTemizle();
+            // Menü komutları (dosya açma, yüzey/güzergah oluşturma, koordinat dönüşümü...) ve fare işlemleri
+            // bittikten sonra çizim değiştiyse geri al adımı kaydedilir.
+            anaMenuStrip.ItemClicked += (s, e) => BeginInvoke((Action)cizimPaneli1.DegisiklikKaydet);
+            foreach (ToolStripMenuItem ust in anaMenuStrip.Items.OfType<ToolStripMenuItem>())
+                ust.DropDownItemClicked += (s, e) => BeginInvoke((Action)cizimPaneli1.DegisiklikKaydet);
+            cizimPaneli1.MouseUp += (s, e) => BeginInvoke((Action)cizimPaneli1.DegisiklikKaydet);
+
             var konum = duzenleMenuItem.DropDownItems.IndexOf(noktaEditoruMenuItem);
             var yeniOgeler = new ToolStripItem[]
             {
@@ -108,6 +139,23 @@ namespace XmlToKtb
             };
             for (var i = 0; i < yeniOgeler.Length; i++)
                 duzenleMenuItem.DropDownItems.Insert(Math.Max(0, konum) + i, yeniOgeler[i]);
+            // Sil: Kaydır, Döndür, Kırp, Kopyala, Ölçekle ile aynı blokta (ribbon'da "Değiştir" grubu).
+            duzenleMenuItem.DropDownItems.Insert(duzenleMenuItem.DropDownItems.IndexOf(olcekleMenuItem) + 1,
+                Oge("Sil", "Del", () => KomutBaslat(DuzenKomutu.Sil)));
+
+            // --- Çizim: çoklu doğru (polyline) ---
+            var cokluDogruCizOgesi = Oge("Çoklu Doğru (Polyline) Çiz", null, () => KomutBaslat(DuzenKomutu.CokluDogruCiz));
+            cizimMenuItem.DropDownItems.Insert(cizimMenuItem.DropDownItems.IndexOf(cizgiCizMenuItem) + 1, cokluDogruCizOgesi);
+            cizimMenuItem.DropDownItems.Add(Oge("Yay Çiz (3 nokta)", null, () => KomutBaslat(DuzenKomutu.YayCiz)));
+            cizimMenuItem.DropDownItems.Add(new ToolStripSeparator());
+            cizimMenuItem.DropDownItems.Add(Oge("Nokta At", null, () => KomutBaslat(DuzenKomutu.NoktaAt)));
+            cizimMenuItem.DropDownItems.Add(Oge("Yazı Yaz", null, () => KomutBaslat(DuzenKomutu.YaziYaz)));
+
+            // --- Hesap menüsü ---
+            var hesapMenu = new ToolStripMenuItem("Hesap");
+            hesapMenu.DropDownItems.Add(Oge("Poligon Hesabı...", null, PoligonHesabiniAc));
+            var yolSirasi = anaMenuStrip.Items.Cast<ToolStripItem>().ToList().FindIndex(i => i.Text == "Yol");
+            anaMenuStrip.Items.Insert(yolSirasi >= 0 ? yolSirasi + 1 : anaMenuStrip.Items.Count, hesapMenu);
 
             // --- Seçim menüsü ---
             var secimMenu = new ToolStripMenuItem("Seçim");
@@ -137,11 +185,126 @@ namespace XmlToKtb
             cizimPaneli1.UstCizim += DuzenUstCizim;
             cizimPaneli1.MouseMove += DuzenFareHareketi;
             cizimPaneli1.KeyDown += DuzenKisayollari;
+
+            // Son komutu tekrarlama: komut bittikten sonra (Seç aracında, bekleyen seçim yokken) Boşluk ya da Enter son
+            // komutu yeniden başlatır. Tuşa basıldığı andaki durum, panel kendi işini yapmadan önce alınır; böylece
+            // seçimi onaylayan Enter komutu tekrar başlatmaz. Sağ tık komut tekrarlamaz, bağlam menüsünü açar.
+            cizimPaneli1.PreviewKeyDown += (s, e) => _tekrarUygun = EkranBosBekliyor();
+            cizimPaneli1.KeyDown += (s, e) =>
+            {
+                if ((e.KeyCode == Keys.Enter || e.KeyCode == Keys.Space) && !e.Control && _tekrarUygun)
+                {
+                    _tekrarUygun = false;
+                    SonKomutuTekrarla();
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                }
+            };
+            SagTikMenusunuKur();
+            cizimPaneli1.AracDegisti += (s, arac) =>
+            {
+                if (arac != CizimAraci.Sec && arac != CizimAraci.NoktaAl)
+                    SonKomutuKaydet(AracAdi(arac), () => cizimPaneli1.AktifArac = arac);
+            };
+        }
+
+        // ------------------------------------------------------------------ son komutu tekrarla
+
+        private Action _sonKomut;
+        private string _sonKomutAdi;
+        private bool _tekrarUygun;
+
+        // Ekranda çalışan bir komut ya da bekleyen bir seçim yok mu?
+        private bool EkranBosBekliyor()
+        {
+            return cizimPaneli1.AktifArac == CizimAraci.Sec && _duzenKomutu == DuzenKomutu.Yok && _secimBekleyenKomut == DuzenKomutu.Yok
+                   && !_noktaSecimiBekleniyor && !_tabakaKapatiliyor;
+        }
+
+        private void SonKomutuKaydet(string ad, Action eylem)
+        {
+            _sonKomutAdi = ad;
+            _sonKomut = eylem;
+            // Sağ tık menüsündeki "Son Komutlar" listesi: en yeni başta, aynı komut bir kez, en fazla 10 komut.
+            _sonKomutlar.RemoveAll(k => k.Key == ad);
+            _sonKomutlar.Insert(0, new KeyValuePair<string, Action>(ad, eylem));
+            if (_sonKomutlar.Count > 10)
+                _sonKomutlar.RemoveRange(10, _sonKomutlar.Count - 10);
+        }
+
+        private readonly List<KeyValuePair<string, Action>> _sonKomutlar = new List<KeyValuePair<string, Action>>();
+
+        private void SonKomutuTekrarla()
+        {
+            if (_sonKomut == null)
+                return;
+            KomutIpucu("Son komut tekrarlanıyor: " + _sonKomutAdi);
+            _sonKomut();
+        }
+
+        private static string AracAdi(CizimAraci arac)
+        {
+            switch (arac)
+            {
+                case CizimAraci.Cizgi: return "Çizgi";
+                case CizimAraci.Kaydir: return "Kaydır";
+                case CizimAraci.Kopyala: return "Kopyala";
+                case CizimAraci.Dondur: return "Döndür";
+                case CizimAraci.Olcekle: return "Ölçekle";
+                case CizimAraci.Kes: return "Kırp";
+                case CizimAraci.DaireMerkezYaricap: return "Daire (merkez, yarıçap)";
+                case CizimAraci.Daire3Nokta: return "Daire (3 nokta)";
+                case CizimAraci.Daire2NoktaYaricap: return "Daire (2 nokta, yarıçap)";
+                case CizimAraci.DaireTegetIkiObje: return "Daire (2 objeye teğet)";
+                case CizimAraci.DaireTegetUcObje: return "Daire (3 objeye teğet)";
+                default: return arac.ToString();
+            }
         }
 
         // Kısayollar çizim ekranı odaktayken çalışır (özellikler panelinde metin kopyalarken karışmasın diye).
         private void DuzenKisayollari(object sender, KeyEventArgs e)
         {
+            if (_duzenKomutu == DuzenKomutu.Kilavuz && !e.Control)
+            {
+                if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Space)
+                    KilavuzuTamamla();
+                else if (e.KeyCode == Keys.Back && _komutNoktalari.Count > 0)
+                {
+                    _komutNoktalari.RemoveAt(_komutNoktalari.Count - 1);
+                    KomutIpucunuGuncelle();
+                    cizimPaneli1.Invalidate();
+                }
+                else
+                    return;
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                return;
+            }
+            if (_duzenKomutu == DuzenKomutu.CokluDogruCiz && !e.Control)
+            {
+                switch (e.KeyCode)
+                {
+                    case Keys.Enter:
+                    case Keys.Space:
+                        CokluDogruyuTamamla(false);
+                        break;
+                    case Keys.K:
+                    case Keys.C:
+                        CokluDogruyuTamamla(true);
+                        break;
+                    case Keys.Back:
+                        if (_komutNoktalari.Count > 0)
+                            _komutNoktalari.RemoveAt(_komutNoktalari.Count - 1);
+                        KomutIpucunuGuncelle();
+                        cizimPaneli1.Invalidate();
+                        break;
+                    default:
+                        return;
+                }
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                return;
+            }
             if (!e.Control)
                 return;
             DuzenKomutu komut = DuzenKomutu.Yok;
@@ -154,6 +317,8 @@ namespace XmlToKtb
                     else komut = DuzenKomutu.Yapistir;
                     break;
                 case Keys.A: SecimiUygula(n => true, SecimBirlesimi.Yeni); break;
+                case Keys.Z: GeriAl(); break;
+                case Keys.Y: IleriAl(); break;
                 case Keys.F: BulDegistir(); break;
                 default: return;
             }
@@ -164,6 +329,39 @@ namespace XmlToKtb
         }
 
         private List<CizimNesnesi> SeciliNesneler() => cizimPaneli1.Nesneler.Where(n => n.Secili).ToList();
+
+        // ------------------------------------------------------------------ geri al / ileri al
+
+        private ToolStripMenuItem _geriAlOgesi, _ileriAlOgesi;
+
+        private void GeriAlMenusunuGuncelle()
+        {
+            _geriAlOgesi.Enabled = cizimPaneli1.GeriAlinabilir;
+            _ileriAlOgesi.Enabled = cizimPaneli1.Ilerlenebilir;
+        }
+
+        private void GeriAl()
+        {
+            KomutuBitir();
+            if (!cizimPaneli1.GeriAlinabilir)
+            {
+                KomutIpucu("Geri alınacak adım yok (en fazla 10 adım geri alınabilir).");
+                return;
+            }
+            cizimPaneli1.GeriAl();
+            ozellikGrid.Refresh();
+            KomutIpucu("Geri alındı.");
+        }
+
+        private void IleriAl()
+        {
+            KomutuBitir();
+            if (!cizimPaneli1.Ilerlenebilir)
+                return;
+            cizimPaneli1.Ilerle();
+            ozellikGrid.Refresh();
+            KomutIpucu("İleri alındı.");
+        }
 
         private void KomutIpucu(string metin)
         {
@@ -179,10 +377,12 @@ namespace XmlToKtb
         private void KomutBaslat(DuzenKomutu komut)
         {
             KomutuBitir();
+            SonKomutuKaydet(KomutAdlari.TryGetValue(komut, out var komutAdi) ? komutAdi : komut == DuzenKomutu.Yapistir ? "Yapıştır" : "Çit ile Seç", () => KomutBaslat(komut));
             _tabakaKapatiliyor = false;
 
             var secili = SeciliNesneler();
-            var secimGerekli = komut != DuzenKomutu.Yapistir && komut != DuzenKomutu.Cit && komut != DuzenKomutu.Uzat;
+            var secimGerekli = komut != DuzenKomutu.Yapistir && komut != DuzenKomutu.Cit && komut != DuzenKomutu.Uzat && komut != DuzenKomutu.CokluDogruCiz
+                               && komut != DuzenKomutu.NoktaAt && komut != DuzenKomutu.YayCiz && komut != DuzenKomutu.YaziYaz && !OlcuKomutuMu(komut);
             if (secimGerekli && secili.Count == 0)
             {
                 _secimBekleyenKomut = komut;
@@ -203,11 +403,17 @@ namespace XmlToKtb
                 case DuzenKomutu.Patlat:
                     Patlat(secili);
                     return;
+                case DuzenKomutu.Sil:
+                    cizimPaneli1.SeciliNesneleriSil();
+                    cizimPaneli1.DegisiklikKaydet();
+                    KomutIpucu("Sil: " + secili.Count + " obje silindi (geri almak için Ctrl+Z).");
+                    return;
                 case DuzenKomutu.CokluDogru:
                     CokluDogruyaDonustur(secili);
                     return;
                 case DuzenKomutu.TopluDegistir:
                     ozellikGrid.SelectedObjects = secili.Cast<object>().ToArray();
+                    OzellikleriGoster();
                     ozellikGrid.Focus();
                     KomutIpucu(secili.Count + " obje: özellikler panelinde ortak özellikler gösteriliyor; değiştirilen değer hepsine uygulanır.");
                     return;
@@ -237,7 +443,7 @@ namespace XmlToKtb
             _duzenKomutu = komut;
             _komutNoktalari.Clear();
             // Obje seçtiren adımlarda imleç kare, nokta verilenlerde artıdır.
-            cizimPaneli1.NoktaAlmayaBasla(komut == DuzenKomutu.Uzat);
+            cizimPaneli1.NoktaAlmayaBasla(komut == DuzenKomutu.Uzat || komut == DuzenKomutu.OlcuYaricap || komut == DuzenKomutu.OlcuCap);
             cizimPaneli1.Focus();
             KomutIpucunuGuncelle();
         }
@@ -260,7 +466,16 @@ namespace XmlToKtb
                     ipucu = new[] { "1. kaynak noktasını tıklayın.", "1. hedef noktasını tıklayın.", "2. kaynak noktasını tıklayın.", "2. hedef noktasını tıklayın." }[Math.Min(3, _komutNoktalari.Count)];
                     break;
                 case DuzenKomutu.Cit: ipucu = "Çit noktalarını tıklayın; bitirince sağ tık ya da Esc (çitin kestiği objeler seçilir)."; break;
-                default: ipucu = ""; break;
+                case DuzenKomutu.NoktaAt: ipucu = "noktanın yerini tıklayın (art arda atılabilir). Bitirmek için sağ tık ya da Esc."; break;
+                case DuzenKomutu.YayCiz:
+                    ipucu = new[] { "yayın başlangıç noktasını tıklayın.", "yayın üzerinden geçeceği ikinci noktayı tıklayın.", "yayın bitiş noktasını tıklayın." }[Math.Min(2, _komutNoktalari.Count)];
+                    break;
+                case DuzenKomutu.YaziYaz: ipucu = "yazının yerini (sol alt köşesini) tıklayın; metin sorulur. Bitirmek için sağ tık ya da Esc."; break;
+                case DuzenKomutu.CokluDogruCiz:
+                    ipucu = (_komutNoktalari.Count == 0 ? "ilk noktayı tıklayın." : (_komutNoktalari.Count + 1) + ". noktayı tıklayın.") +
+                            "  Enter / sağ tık: bitir,  K: kapatarak bitir (ilk noktaya tıklamak da kapatır),  Backspace: son noktayı geri al,  Esc: bitir.";
+                    break;
+                default: ipucu = OlcuKomutuMu(_duzenKomutu) ? OlcuIpucu() : ""; break;
             }
             KomutIpucu(_duzenKomutu == DuzenKomutu.Yok ? "" : (KomutAdlari.TryGetValue(_duzenKomutu, out var ad) ? ad : _duzenKomutu == DuzenKomutu.Yapistir ? "Yapıştır" : "Çit ile Seç") + ": " + ipucu);
         }
@@ -302,6 +517,16 @@ namespace XmlToKtb
         {
             if (_duzenKomutu == DuzenKomutu.Yok)
                 return;
+            if (_duzenKomutu == DuzenKomutu.CokluDogruCiz)
+            {
+                CokluDogruyuTamamla(false);
+                return;
+            }
+            if (_duzenKomutu == DuzenKomutu.Kilavuz)
+            {
+                KilavuzuTamamla();
+                return;
+            }
             if (_duzenKomutu == DuzenKomutu.Cit && _komutNoktalari.Count >= 2)
             {
                 var cit = new List<double[]>(_komutNoktalari);
@@ -316,6 +541,11 @@ namespace XmlToKtb
         {
             if (_duzenKomutu == DuzenKomutu.Yok)
                 return;
+            if (OlcuKomutuMu(_duzenKomutu))
+            {
+                OlcuNoktaTiklandi(x, y);
+                return;
+            }
 
             switch (_duzenKomutu)
             {
@@ -333,6 +563,7 @@ namespace XmlToKtb
                     var kopyalar = _pano.Select(NesneDonusumleri.Klonla).ToList();
                     foreach (var kopya in kopyalar)
                         NesneDonusumleri.Tasi(kopya, x - _panoX, y - _panoY);
+                    TabakalariAktifBelgeyeBagla(kopyalar);
                     Ekle(kopyalar, true);
                     KomutuBitir();
                     KomutIpucu(kopyalar.Count + " obje yapıştırıldı.");
@@ -431,6 +662,205 @@ namespace XmlToKtb
                     _komutNoktalari.Add(new[] { x, y });
                     cizimPaneli1.Invalidate();
                     break;
+
+                case DuzenKomutu.NoktaAt:
+                {
+                    // Nokta numarası, çizimdeki en büyük sayısal nokta numarasından devam eder.
+                    var enBuyuk = 0;
+                    foreach (var mevcut in cizimPaneli1.Nesneler.OfType<NoktaNesnesi>())
+                    {
+                        if (int.TryParse(mevcut.NoktaAdi, out var no) && no > enBuyuk)
+                            enBuyuk = no;
+                    }
+                    var nokta = new NoktaNesnesi { X = x, Y = y, Z = 0, NoktaAdi = (enBuyuk + 1).ToString(CultureInfo.InvariantCulture) };
+                    // Pencerede numara ve koordinatlar düzeltilebilir; İptal'de nokta tıklanan yerde, verilen numarayla kalır.
+                    NoktaBilgisiSor(nokta);
+                    Ekle(new List<CizimNesnesi> { nokta }, false);
+                    KomutIpucu("Nokta At: " + nokta.NoktaAdi + " numaralı nokta atıldı. Sıradaki noktayı tıklayın ya da sağ tıkla bitirin.");
+                    break;
+                }
+
+                case DuzenKomutu.YayCiz:
+                {
+                    var son = _komutNoktalari.LastOrDefault();
+                    if (son != null && Math.Abs(son[0] - x) < 1e-9 && Math.Abs(son[1] - y) < 1e-9)
+                        break;
+                    _komutNoktalari.Add(new[] { x, y });
+                    if (_komutNoktalari.Count < 3)
+                    {
+                        KomutIpucunuGuncelle();
+                        cizimPaneli1.Invalidate();
+                        break;
+                    }
+                    var yay = UcNoktadanYay(_komutNoktalari[0], _komutNoktalari[1], _komutNoktalari[2]);
+                    KomutuBitir();
+                    if (yay == null)
+                    {
+                        KomutIpucu("Yay Çiz: üç nokta aynı doğru üzerinde; yay oluşmadı.");
+                        break;
+                    }
+                    Ekle(new List<CizimNesnesi> { yay }, false);
+                    KomutIpucu(string.Format(CultureInfo.InvariantCulture, "Yay çizildi: R = {0:0.###} m, uzunluk {1:0.###} m.", yay.Yaricap, yay.Uzunluk));
+                    break;
+                }
+
+                case DuzenKomutu.YaziYaz:
+                {
+                    if (!YaziBilgisiSor(out var metin, out var yukseklik, out var donus))
+                        break;
+                    var yazi = new YaziNesnesi { Metin = metin, KonumX = x, KonumY = y, Yukseklik = yukseklik, Donus = donus, HizaYatay = YatayHizalama.Sol, HizaDikey = DikeyHizalama.Alt };
+                    Ekle(new List<CizimNesnesi> { yazi }, false);
+                    KomutIpucu("Yazı Yaz: yazı eklendi. Sıradaki yazının yerini tıklayın ya da sağ tıkla bitirin.");
+                    break;
+                }
+
+                case DuzenKomutu.CokluDogruCiz:
+                {
+                    // İlk noktaya (yakalamayla) yeniden tıklanırsa çoklu doğru kapatılarak biter; aynı noktaya art arda
+                    // tıklama yok sayılır.
+                    if (_komutNoktalari.Count >= 3 && Math.Abs(_komutNoktalari[0][0] - x) < 1e-6 && Math.Abs(_komutNoktalari[0][1] - y) < 1e-6)
+                    {
+                        CokluDogruyuTamamla(true);
+                        break;
+                    }
+                    var son = _komutNoktalari.LastOrDefault();
+                    if (son != null && Math.Abs(son[0] - x) < 1e-9 && Math.Abs(son[1] - y) < 1e-9)
+                        break;
+                    _komutNoktalari.Add(new[] { x, y });
+                    KomutIpucunuGuncelle();
+                    cizimPaneli1.Invalidate();
+                    break;
+                }
+            }
+        }
+
+        /// <summary>Çizilen noktalardan çoklu doğruyu oluşturur (en az iki nokta varsa) ve komutu bitirir.</summary>
+        private void CokluDogruyuTamamla(bool kapali)
+        {
+            var noktalar = new List<double[]>(_komutNoktalari);
+            KomutuBitir();
+            if (noktalar.Count < 2 || (kapali && noktalar.Count < 3))
+                return;
+
+            var cokluDogru = new CokluDogruNesnesi { Kapali = kapali };
+            foreach (var p in noktalar)
+                cokluDogru.Koseler.Add(new CokluDogruKosesi { X = p[0], Y = p[1] });
+            Ekle(new List<CizimNesnesi> { cokluDogru }, false);
+            KomutIpucu("Çoklu doğru çizildi: " + noktalar.Count + " köşe" + (kapali ? ", kapalı" : "") + string.Format(CultureInfo.InvariantCulture, ", uzunluk {0:0.###} m.", cokluDogru.Uzunluk));
+        }
+
+        /// <summary>Başlangıç, ara ve bitiş noktasından geçen yay; noktalar aynı doğru üzerindeyse null.</summary>
+        private static YayNesnesi UcNoktadanYay(double[] a, double[] b, double[] c)
+        {
+            var payda = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]));
+            if (Math.Abs(payda) < 1e-12)
+                return null;
+            double a2 = a[0] * a[0] + a[1] * a[1], b2 = b[0] * b[0] + b[1] * b[1], c2 = c[0] * c[0] + c[1] * c[1];
+            var mx = (a2 * (b[1] - c[1]) + b2 * (c[1] - a[1]) + c2 * (a[1] - b[1])) / payda;
+            var my = (a2 * (c[0] - b[0]) + b2 * (a[0] - c[0]) + c2 * (b[0] - a[0])) / payda;
+            var r = Math.Sqrt((a[0] - mx) * (a[0] - mx) + (a[1] - my) * (a[1] - my));
+            double basAci = Math.Atan2(a[1] - my, a[0] - mx) * 180 / Math.PI, bitAci = Math.Atan2(c[1] - my, c[0] - mx) * 180 / Math.PI;
+            // Yay saat yönünün tersine çizilir: başlangıç-ara-bitiş saat yönündeyse uçlar yer değiştirir.
+            var saatYonunun = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0]) > 0;
+            return new YayNesnesi { MerkezX = mx, MerkezY = my, Yaricap = r, BaslangicAcisi = saatYonunun ? basAci : bitAci, BitisAcisi = saatYonunun ? bitAci : basAci };
+        }
+
+        private string _sonYaziMetni = "";
+        private double _sonYaziYuksekligi;
+        private double _sonYaziDonusu;
+
+        // Yazının metnini, yüksekliğini ve dönüşünü sorar. Yükseklik varsayılanı, proje ölçeğinde kağıtta 2.5 mm'dir.
+        private bool YaziBilgisiSor(out string metin, out double yukseklik, out double donus)
+        {
+            metin = null;
+            yukseklik = donus = 0;
+            if (_sonYaziYuksekligi <= 0)
+                _sonYaziYuksekligi = 2.5 * CizimAyarlari.ProjeOlcegi / 1000.0;
+            using (var dlg = new Form
+            {
+                Text = "Yazı Yaz", FormBorderStyle = FormBorderStyle.FixedDialog, StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false, MinimizeBox = false, ShowInTaskbar = false, ClientSize = new Size(360, 150)
+            })
+            {
+                dlg.Controls.Add(new Label { Text = "Metin:", Location = new Point(12, 17), AutoSize = true });
+                var metinKutu = new TextBox { Text = _sonYaziMetni, Location = new Point(130, 14), Size = new Size(218, 20) };
+                dlg.Controls.Add(new Label { Text = "Yükseklik (m):", Location = new Point(12, 47), AutoSize = true });
+                var yukseklikKutu = new TextBox { Text = _sonYaziYuksekligi.ToString("0.###", CultureInfo.InvariantCulture), Location = new Point(130, 44), Size = new Size(90, 20) };
+                dlg.Controls.Add(new Label { Text = "Döndürme (derece):", Location = new Point(12, 77), AutoSize = true });
+                var donusKutu = new TextBox { Text = _sonYaziDonusu.ToString("0.###", CultureInfo.InvariantCulture), Location = new Point(130, 74), Size = new Size(90, 20) };
+                var tamam = new Button { Text = "Tamam", Location = new Point(192, 112), Size = new Size(75, 26), DialogResult = DialogResult.OK };
+                var iptal = new Button { Text = "İptal", Location = new Point(273, 112), Size = new Size(75, 26), DialogResult = DialogResult.Cancel };
+                dlg.Controls.AddRange(new Control[] { metinKutu, yukseklikKutu, donusKutu, tamam, iptal });
+                dlg.AcceptButton = tamam;
+                dlg.CancelButton = iptal;
+                if (dlg.ShowDialog(this) != DialogResult.OK)
+                    return false;
+                if (metinKutu.Text.Trim().Length == 0 || !NcnDosyasi.SayiOku(yukseklikKutu.Text, out yukseklik) || yukseklik <= 0 || !NcnDosyasi.SayiOku(donusKutu.Text, out donus))
+                {
+                    MessageBox.Show("Metin boş olamaz; yükseklik sıfırdan büyük, döndürme bir sayı olmalıdır.", "Yazı Yaz", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+                metin = metinKutu.Text;
+                _sonYaziMetni = metin;
+                _sonYaziYuksekligi = yukseklik;
+                _sonYaziDonusu = donus;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Atılan noktanın numarasını ve koordinatlarını (Y sağa, X yukarı, Z) gösterir; Tamam'da girilen değerler noktaya
+        /// yazılır, İptal'de nokta olduğu gibi kalır. Değiştirilmeyen koordinat kutusu tıklanan tam değeri korur.
+        /// </summary>
+        private bool NoktaBilgisiSor(NoktaNesnesi nokta)
+        {
+            string Metin(double deger) => deger.ToString("0.000", CultureInfo.InvariantCulture);
+            using (var dlg = new Form
+            {
+                Text = "Nokta At", FormBorderStyle = FormBorderStyle.FixedDialog, StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false, MinimizeBox = false, ShowInTaskbar = false, ClientSize = new Size(300, 180)
+            })
+            {
+                TextBox Satir(string etiket, string deger, int ust)
+                {
+                    dlg.Controls.Add(new Label { Text = etiket, Location = new Point(12, ust + 3), AutoSize = true });
+                    var kutu = new TextBox { Text = deger, Location = new Point(110, ust), Size = new Size(178, 20), TextAlign = HorizontalAlignment.Right };
+                    dlg.Controls.Add(kutu);
+                    return kutu;
+                }
+                var noKutu = Satir("Nokta No:", nokta.NoktaAdi, 14);
+                noKutu.TextAlign = HorizontalAlignment.Left;
+                var yKutu = Satir("Y (sağa):", Metin(nokta.X), 44);
+                var xKutu = Satir("X (yukarı):", Metin(nokta.Y), 74);
+                var zKutu = Satir("Z (kot):", Metin(nokta.Z), 104);
+                var tamam = new Button { Text = "Tamam", Location = new Point(132, 142), Size = new Size(75, 26), DialogResult = DialogResult.OK };
+                var iptal = new Button { Text = "İptal", Location = new Point(213, 142), Size = new Size(75, 26), DialogResult = DialogResult.Cancel };
+                dlg.Controls.AddRange(new Control[] { tamam, iptal });
+                dlg.AcceptButton = tamam;
+                dlg.CancelButton = iptal;
+                dlg.Shown += (s, e) => noKutu.SelectAll();
+
+                double yeniY = 0, yeniX = 0, yeniZ = 0;
+                dlg.FormClosing += (s, e) =>
+                {
+                    if (dlg.DialogResult != DialogResult.OK)
+                        return;
+                    if (noKutu.Text.Trim().Length == 0 || !NcnDosyasi.SayiOku(yKutu.Text, out yeniY) || !NcnDosyasi.SayiOku(xKutu.Text, out yeniX) || !NcnDosyasi.SayiOku(zKutu.Text, out yeniZ))
+                    {
+                        MessageBox.Show(dlg, "Nokta numarası boş olamaz; Y, X ve Z sayı olmalıdır.", "Nokta At", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        e.Cancel = true;
+                    }
+                };
+                if (dlg.ShowDialog(this) != DialogResult.OK)
+                    return false;
+
+                nokta.NoktaAdi = noKutu.Text.Trim();
+                if (yKutu.Text.Trim() != Metin(nokta.X))
+                    nokta.X = yeniY;
+                if (xKutu.Text.Trim() != Metin(nokta.Y))
+                    nokta.Y = yeniX;
+                nokta.Z = yeniZ;
+                return true;
             }
         }
 
@@ -503,6 +933,11 @@ namespace XmlToKtb
                     oge.Ciz(e.Graphics, cizimPaneli1.Gorunum, w, h);
                 return;
             }
+            if (OlcuKomutuMu(_duzenKomutu))
+            {
+                OlcuOnizlemesiCiz(e.Graphics);
+                return;
+            }
             if (_komutNoktalari.Count == 0)
                 return;
 
@@ -510,11 +945,24 @@ namespace XmlToKtb
             using (var kalem = new Pen(Color.Firebrick, 1.2f) { DashStyle = DashStyle.Dash })
             {
                 var noktalar = _komutNoktalari.Select(p => cizimPaneli1.Gorunum.DunyadanEkrana(p[0], p[1], w, h)).ToList();
-                if (_duzenKomutu == DuzenKomutu.Cit)
+                if (_duzenKomutu == DuzenKomutu.Cit || _duzenKomutu == DuzenKomutu.CokluDogruCiz)
                 {
                     noktalar.Add(fare);
                     if (noktalar.Count >= 2)
                         e.Graphics.DrawLines(kalem, noktalar.ToArray());
+                }
+                else if (_duzenKomutu == DuzenKomutu.YayCiz && _komutNoktalari.Count == 2)
+                {
+                    // İki nokta verildiyse fareden geçen yayın önizlemesi.
+                    cizimPaneli1.Gorunum.EkrandanDunyayaHassas(fare, w, h, out var fx, out var fy);
+                    var onizleme = UcNoktadanYay(_komutNoktalari[0], _komutNoktalari[1], new[] { fx, fy });
+                    if (onizleme != null)
+                    {
+                        var yayNoktalari = GeometriIslemleri.Primitifler(onizleme)[0].Noktalar(180)
+                            .Select(p => cizimPaneli1.Gorunum.DunyadanEkrana(p[0], p[1], w, h)).ToArray();
+                        if (yayNoktalari.Length >= 2)
+                            e.Graphics.DrawLines(kalem, yayNoktalari);
+                    }
                 }
                 else
                 {
@@ -552,6 +1000,7 @@ namespace XmlToKtb
 
         private void KoordinatliYapistir()
         {
+            SonKomutuKaydet("Koordinatlı Yerine Yapıştır", KoordinatliYapistir);
             if (_pano.Count == 0)
             {
                 MessageBox.Show("Pano boş. Önce objeleri panoya kopyalayın.", "Koordinatlı Yerine Yapıştır", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -559,6 +1008,7 @@ namespace XmlToKtb
             }
             KomutuBitir();
             var kopyalar = _pano.Select(NesneDonusumleri.Klonla).ToList();
+            TabakalariAktifBelgeyeBagla(kopyalar);
             Ekle(kopyalar, true);
             KomutIpucu(kopyalar.Count + " obje kopyalandıkları koordinata yapıştırıldı.");
         }
@@ -619,10 +1069,29 @@ namespace XmlToKtb
                        (kullanilmayan > 0 ? "; " + kullanilmayan + " obje çizgi/yay olmadığı için alınmadı" : "") + ".");
         }
 
+        // ------------------------------------------------------------------ hesap
+
+        private PoligonHesabiForm _poligonHesabi;
+
+        // Poligon hesabı penceresi çizim ekranının üzerinde açık kalır (ekrandan nokta alabilmek için); tek tanedir.
+        private void PoligonHesabiniAc()
+        {
+            if (_poligonHesabi == null || _poligonHesabi.IsDisposed)
+            {
+                _poligonHesabi = new PoligonHesabiForm(cizimPaneli1);
+                _poligonHesabi.Show(this);
+            }
+            else
+            {
+                _poligonHesabi.Activate();
+            }
+        }
+
         // ------------------------------------------------------------------ bul / değiştir
 
         private void BulDegistir()
         {
+            SonKomutuKaydet("Bul / Değiştir", BulDegistir);
             KomutuBitir();
             using (var dlg = new BulDegistirForm(cizimPaneli1))
                 dlg.ShowDialog(this);
@@ -692,6 +1161,7 @@ namespace XmlToKtb
 
         private void HizliSecim()
         {
+            SonKomutuKaydet("Hızlı Seçim", HizliSecim);
             KomutuBitir();
             using (var dlg = new HizliSecimForm(cizimPaneli1.Nesneler, cizimPaneli1.Tabakalar))
             {

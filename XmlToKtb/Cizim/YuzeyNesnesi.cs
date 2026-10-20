@@ -91,6 +91,10 @@ namespace XmlToKtb.Cizim
         private bool _obSecili;
         private Color _obRenk;
         private int _surum;
+
+        /// <summary>Koordinatlar ya da üçgenler her değiştiğinde artan sayaç (geri al kaydı değişikliği bununla anlar).</summary>
+        [System.ComponentModel.Browsable(false)]
+        public int Surum => _surum;
         private bool _birKezCizildi;
         private float[] _ekranX, _ekranY;
 

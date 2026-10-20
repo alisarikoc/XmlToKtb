@@ -61,12 +61,32 @@ namespace XmlToKtb
             cizimPaneli1.GeriAlAcik = true;
             cizimPaneli1.GecmisDegisti += (s, e) => GeriAlMenusunuGuncelle();
             GeriAlMenusunuGuncelle();
+            // Kesişim yakalama düğmesi diğer yakalama düğmelerinin yanına eklenir.
+            _kesisimYakalaButton = new ToolStripButton("Kesişim")
+            {
+                Alignment = ToolStripItemAlignment.Right, CheckOnClick = true, DisplayStyle = ToolStripItemDisplayStyle.Text, ToolTipText = "Kesişim Yakala"
+            };
+            _kesisimYakalaButton.CheckedChanged += yakalamaButonu_CheckedChanged;
+            merkezYakalaButton.Owner.Items.Insert(merkezYakalaButton.Owner.Items.IndexOf(merkezYakalaButton), _kesisimYakalaButton);
             ucYakalaButton.Checked = true;
 
             // Proje menüsünden sonra: kesitlerin noktaları üzerinde toplu işlemler.
             var kesitIslemleriMenuItem = new ToolStripMenuItem("Kesit İşlemleri");
-            kesitIslemleriMenuItem.DropDownItems.Add("Nokta Sil (ekrandan)", null, (s, e) => NoktaSilmeyiBaslat());
-            kesitIslemleriMenuItem.DropDownItems.Add("Kesit Boyunca Sık Noktaları Temizle...", null, (s, e) => SikNoktalariTemizle());
+            kesitIslemleriMenuItem.DropDownItems.Add("Nokta Sil (ekrandan)", null, (s, e) => NoktaSilKomutu());
+            kesitIslemleriMenuItem.DropDownItems.Add("Kesit Boyunca Sık Noktaları Temizle...", null, (s, e) => SikNoktalariTemizleKomutu());
+
+            // Sağ tık menüsü (son komutlar, pano, hızlı seçim, bul/değiştir...) ve Boşluk ile komut tekrarı.
+            _komutMenusu = new PanelKomutMenusu(cizimPaneli1, this)
+            {
+                MesgulMu = () => _noktaSiliniyor,
+                Degisti = () => ozellikGrid.Refresh(),
+                Ipucu = metin => konumDurumLabel.Text = metin,
+                EkOgeler = ogeler =>
+                {
+                    ogeler.Add(new ToolStripMenuItem("Nokta Sil (ekrandan)", PanelKomutMenusu.Simge(''), (s, e) => NoktaSilKomutu()));
+                    ogeler.Add(new ToolStripMenuItem("Kesit Boyunca Sık Noktaları Temizle...", PanelKomutMenusu.Simge(''), (s, e) => SikNoktalariTemizleKomutu()));
+                }
+            };
             cizimPaneli1.NoktaTiklandi += NoktaSilTiklandi;
             cizimPaneli1.NoktaAlmaBitti += (s, e) =>
             {
@@ -74,6 +94,21 @@ namespace XmlToKtb
                 konumDurumLabel.Text = "";
             };
             anaMenuStrip.Items.Insert(anaMenuStrip.Items.IndexOf(projeMenuItem) + 1, kesitIslemleriMenuItem);
+        }
+
+        private readonly PanelKomutMenusu _komutMenusu;
+
+        // Kesit işlemleri son komutlara kaydedilir (Boşluk ile tekrarlanır, sağ tık menüsünde listelenir).
+        private void NoktaSilKomutu()
+        {
+            _komutMenusu.KomutKaydet("Nokta Sil", NoktaSilKomutu);
+            NoktaSilmeyiBaslat();
+        }
+
+        private void SikNoktalariTemizleKomutu()
+        {
+            _komutMenusu.KomutKaydet("Sık Noktaları Temizle", SikNoktalariTemizleKomutu);
+            SikNoktalariTemizle();
         }
 
         /// <summary>
@@ -260,6 +295,8 @@ namespace XmlToKtb
             return sonuc;
         }
 
+        private ToolStripButton _kesisimYakalaButton;
+
         private void GeriAlMenusunuGuncelle()
         {
             geriAlMenuItem.Enabled = cizimPaneli1.GeriAlinabilir;
@@ -284,6 +321,7 @@ namespace XmlToKtb
             if (ortaYakalaButton.Checked) mod |= YakalamaModu.Orta;
             if (dikYakalaButton.Checked) mod |= YakalamaModu.Dik;
             if (merkezYakalaButton.Checked) mod |= YakalamaModu.Merkez;
+            if (_kesisimYakalaButton != null && _kesisimYakalaButton.Checked) mod |= YakalamaModu.Kesisim;
             cizimPaneli1.AktifYakalamaModu = mod;
         }
 

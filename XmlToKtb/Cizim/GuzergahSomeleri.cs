@@ -212,7 +212,8 @@ namespace XmlToKtb.Cizim
             GrubuKapat();
 
             Someler = someler;
-            SomeModeliGecerli = gecerli && Parcalar.Count > 0;
+            // Açıklıkla bağlanmış (atlamalı) güzergah tek bir some çizgisiyle ifade edilemez.
+            SomeModeliGecerli = gecerli && Parcalar.Count > 0 && !Parcalar.Any(p => p.AraBaglanti && p.Sabit);
         }
 
         /// <summary>
@@ -246,8 +247,10 @@ namespace XmlToKtb.Cizim
             return GrubuYerlestir(grup, sapma, out girisTeget, out cikisTeget, out _);
         }
 
-        // Ek olarak, somenin gruptaki (en uzun) kurbun ortasına uzaklığını verir (kurp yoksa 0).
-        private static bool GrubuYerlestir(List<GuzergahParcasi> grup, double sapma, out double girisTeget, out double cikisTeget, out double ortaMesafe)
+        // Ek olarak, somenin gruptaki (en uzun) kurbun ortasına uzaklığını verir (kurp yoksa 0). Korunacak parça
+        // verilirse (boyu elle girilen kurp) sapmayı o değil, gruptaki diğer en uzun kurp tamamlar.
+        private static bool GrubuYerlestir(List<GuzergahParcasi> grup, double sapma, out double girisTeget, out double cikisTeget, out double ortaMesafe,
+            GuzergahParcasi korunacak = null)
         {
             girisTeget = cikisTeget = ortaMesafe = 0;
             if (grup.Count == 0)
@@ -262,7 +265,7 @@ namespace XmlToKtb.Cizim
                     parca.Yon = sapma > 0 ? DonusYonu.Sol : DonusYonu.Sag;
             }
 
-            var kurp = grup.Where(p => p.Tip == GuzergahParcaTipi.Kurp).OrderByDescending(p => p.Uzunluk).FirstOrDefault();
+            var kurp = grup.Where(p => p.Tip == GuzergahParcaTipi.Kurp && !ReferenceEquals(p, korunacak)).OrderByDescending(p => p.Uzunluk).FirstOrDefault();
             if (kurp != null)
             {
                 var digerleri = grup.Where(p => !ReferenceEquals(p, kurp)).Sum(Donus);
@@ -301,6 +304,12 @@ namespace XmlToKtb.Cizim
         /// </summary>
         public bool SomeModelindenKur(List<double[]> noktalar, List<List<GuzergahParcasi>> gruplar, out string hata)
         {
+            return SomeModelindenKur(noktalar, gruplar, out hata, -1, -1);
+        }
+
+        // korunanSome/korunanParca: o somenin grubunda boyu değiştirilmeyecek kurp (sapmayı gruptaki diğer kurp tamamlar).
+        private bool SomeModelindenKur(List<double[]> noktalar, List<List<GuzergahParcasi>> gruplar, out string hata, int korunanSome, int korunanParca)
+        {
             hata = null;
             var somesayisi = noktalar.Count - 2;
             if (somesayisi < 0 || gruplar.Count != somesayisi)
@@ -327,9 +336,10 @@ namespace XmlToKtb.Cizim
             double[] girisTegetleri = new double[somesayisi], cikisTegetleri = new double[somesayisi];
             for (var i = 0; i < somesayisi; i++)
             {
-                if (!GrubuYerlestir(yeniGruplar[i], AciyiSar(acilar[i + 1] - acilar[i]), out girisTegetleri[i], out cikisTegetleri[i]))
+                var korunacak = i == korunanSome && korunanParca >= 0 && korunanParca < yeniGruplar[i].Count ? yeniGruplar[i][korunanParca] : null;
+                if (!GrubuYerlestir(yeniGruplar[i], AciyiSar(acilar[i + 1] - acilar[i]), out girisTegetleri[i], out cikisTegetleri[i], out _, korunacak))
                 {
-                    hata = (i + 1) + ". somedeki kurp bu sapma açısına oturmuyor.";
+                    hata = (i + 1) + ". somedeki kurp grubu bu sapma açısına oturmuyor (kurpların toplam dönüşü sapmayı aşıyor ya da kurp boyu sıfırın altına düşüyor).";
                     return false;
                 }
             }
@@ -380,29 +390,58 @@ namespace XmlToKtb.Cizim
         // ------------------------------------------------------------------ tutamaçlar
 
         /// <summary>
-        /// Sürüklenebilir noktalar: başlangıç, some noktaları, bitiş ve ardından basit kurpların orta noktaları
-        /// (yarıçap tutamaçları).
+        /// Sürüklenebilir noktalar: başlangıç, some noktaları, bitiş, basit kurpların orta noktaları (yarıçap
+        /// tutamaçları) ve güzergah editörü açıkken her parçanın bitiş ucu (parça boyu tutamaçları).
         /// </summary>
         public IList<double[]> TutamaclariAl()
         {
-            if (!TutamaclarEtkin || !SomeModeliAl(out var noktalar, out _))
-                return new List<double[]>();
-            foreach (var some in Someler)
+            var tutamaclar = new List<double[]>();
+            if (!TutamaclarEtkin)
+                return tutamaclar;
+            if (SomeModeliAl(out var noktalar, out _))
             {
-                if (some.OrtaTutamacVar)
-                    noktalar.Add(new[] { some.OrtaX, some.OrtaY });
+                tutamaclar.AddRange(noktalar);
+                foreach (var some in Someler)
+                {
+                    if (some.OrtaTutamacVar)
+                        tutamaclar.Add(new[] { some.OrtaX, some.OrtaY });
+                }
             }
-            return noktalar;
+            foreach (var sira in UcTutamaciOlanParcalar())
+                tutamaclar.Add(new[] { Parcalar[sira].BitisX, Parcalar[sira].BitisY });
+            return tutamaclar;
+        }
+
+        // Editör açıkken (güzergah vurgulu) bitiş ucundan sündürülebilen parçalar. Some modeli geçerliyse son parçanın
+        // ucu zaten güzergahın bitiş tutamacıdır; değilse o da eklenir.
+        private List<int> UcTutamaciOlanParcalar()
+        {
+            var sonuc = new List<int>();
+            if (VurguluParca < 0)
+                return sonuc;
+            var son = SomeModeliGecerli ? Parcalar.Count - 1 : Parcalar.Count;
+            for (var i = 0; i < son; i++)
+                sonuc.Add(i);
+            return sonuc;
         }
 
         /// <summary>
         /// Bir ucu ya da someyi yeni yerine taşır (kurp yarıçapları ve spiral boyları korunur); kurp ortasındaki
-        /// tutamaç taşınırsa kurbun yarıçapı değişir.
+        /// tutamaç taşınırsa kurbun yarıçapı, parça ucundaki tutamaç taşınırsa o parçanın boyu değişir.
         /// </summary>
         public bool TutamacTasi(int tutamac, double x, double y)
         {
-            if (!SomeModeliAl(out var noktalar, out var gruplar) || tutamac < 0)
+            if (tutamac < 0)
                 return false;
+
+            var modelVar = SomeModeliAl(out var noktalar, out var gruplar);
+            var modelTutamacSayisi = modelVar ? noktalar.Count + Someler.Count(s => s.OrtaTutamacVar) : 0;
+            if (tutamac >= modelTutamacSayisi)
+            {
+                var ucParcalari = UcTutamaciOlanParcalar();
+                var sira = tutamac - modelTutamacSayisi;
+                return sira < ucParcalari.Count && ParcaUcunuTasi(ucParcalari[sira], x, y);
+            }
 
             if (tutamac < noktalar.Count)
             {
@@ -411,15 +450,91 @@ namespace XmlToKtb.Cizim
             }
 
             // Orta tutamaçlar, tutamacı olan somelerin sırasıyla dizilidir.
-            var sira = tutamac - noktalar.Count;
+            var ortaSira = tutamac - noktalar.Count;
             for (var i = 0; i < Someler.Count; i++)
             {
-                if (Someler[i].OrtaTutamacVar && sira-- == 0)
+                if (Someler[i].OrtaTutamacVar && ortaSira-- == 0)
                     return KurpOrtasiniTasi(i, x, y, noktalar, gruplar);
             }
             return false;
         }
 
+        // Parçanın başı sabitken verilen boydaki bitiş noktası (eğrilik baştan sona doğrusal değişir).
+        private static void ParcaSonu(GuzergahParcasi parca, double boy, out double x, out double y)
+        {
+            double k0 = parca.BaslangicEgriligi, k1 = parca.BitisEgriligi, a0 = parca.BaslangicAcisi;
+            const int adim = 64;
+            var h = boy / adim;
+            double toplamX = 0, toplamY = 0;
+            for (var j = 0; j <= adim; j++)
+            {
+                var s = j * h;
+                var dogrultu = boy <= 0 ? a0 : a0 + k0 * s + (k1 - k0) * s * s / (2 * boy);
+                var agirlik = j == 0 || j == adim ? 1 : j % 2 == 1 ? 4 : 2;
+                toplamX += agirlik * Math.Cos(dogrultu);
+                toplamY += agirlik * Math.Sin(dogrultu);
+            }
+            x = parca.BaslangicX + toplamX * h / 3;
+            y = parca.BaslangicY + toplamY * h / 3;
+        }
+
+        /// <summary>
+        /// Parçanın bitiş ucunu fareye en yakın gelecek şekilde parçanın boyunu değiştirir (doğruda izdüşüm, kurpta
+        /// merkez açısı, spiralde boy araması; yarıçaplar aynı kalır). Sonraki parçalar uç uca kayar.
+        /// </summary>
+        private bool ParcaUcunuTasi(int sira, double x, double y)
+        {
+            var parca = Parcalar[sira];
+            double yeniBoy;
+            if (parca.Tip == GuzergahParcaTipi.Dogru)
+            {
+                yeniBoy = (x - parca.BaslangicX) * Math.Cos(parca.BaslangicAcisi) + (y - parca.BaslangicY) * Math.Sin(parca.BaslangicAcisi);
+            }
+            else if (parca.Tip == GuzergahParcaTipi.Kurp)
+            {
+                // Merkezden bakınca başlangıçtan fareye dönüş açısı (dönüş yönünde).
+                var sola = parca.Yon == DonusYonu.Sol;
+                var dikme = parca.BaslangicAcisi + (sola ? Math.PI / 2 : -Math.PI / 2);
+                double mx = parca.BaslangicX + parca.YaricapBaslangic * Math.Cos(dikme), my = parca.BaslangicY + parca.YaricapBaslangic * Math.Sin(dikme);
+                var donus = Math.Atan2(y - my, x - mx) - Math.Atan2(parca.BaslangicY - my, parca.BaslangicX - mx);
+                if (!sola) donus = -donus;
+                donus %= 2 * Math.PI;
+                if (donus < 0) donus += 2 * Math.PI;
+                yeniBoy = donus * parca.YaricapBaslangic;
+            }
+            else
+            {
+                // Spiral: önce kaba tarama, sonra en iyi aralıkta altın oran araması.
+                var ust = 3 * (parca.Uzunluk + Math.Sqrt(Math.Pow(x - parca.BaslangicX, 2) + Math.Pow(y - parca.BaslangicY, 2)));
+                double Uzaklik(double boy)
+                {
+                    ParcaSonu(parca, boy, out var px, out var py);
+                    return (px - x) * (px - x) + (py - y) * (py - y);
+                }
+                double enIyi = 0, enKucuk = double.MaxValue;
+                const int tarama = 120;
+                for (var k = 1; k <= tarama; k++)
+                {
+                    var boy = ust * k / tarama;
+                    var u = Uzaklik(boy);
+                    if (u < enKucuk) { enKucuk = u; enIyi = boy; }
+                }
+                double a = Math.Max(1e-3, enIyi - ust / tarama), b = enIyi + ust / tarama, oran = (Math.Sqrt(5) - 1) / 2;
+                for (var k = 0; k < 60; k++)
+                {
+                    double c = b - oran * (b - a), d = a + oran * (b - a);
+                    if (Uzaklik(c) < Uzaklik(d)) b = d; else a = c;
+                }
+                yeniBoy = (a + b) / 2;
+            }
+
+            if (double.IsNaN(yeniBoy) || yeniBoy < 1e-3)
+                return false;
+            parca.Uzunluk = yeniBoy;
+            SabitleriBirak(sira + 1);
+            Hesapla();
+            return true;
+        }
         // Kurbun ortası fareye getirilecek şekilde yarıçapı bulur. Somenin kurp ortasına uzaklığı yarıçapla birlikte
         // büyüdüğü için yarıçap ikiye bölme yöntemiyle aranır; spiral boyları aynı kalır.
         private bool KurpOrtasiniTasi(int someSirasi, double x, double y, List<double[]> noktalar, List<List<GuzergahParcasi>> gruplar)
@@ -453,6 +568,111 @@ namespace XmlToKtb.Cizim
 
             GrupYaricapiniAyarla(gruplar[someSirasi], Math.Round(ust, 3));
             return SomeModelindenKur(noktalar, gruplar, out _);
+        }
+
+        /// <summary>
+        /// Bir somenin kurp grubundaki kurp ya da spiral parçasının değerini (yarıçap, kurp boyu, spiral boyu) some
+        /// noktaları ve doğrultular aynı kalacak şekilde değiştirir: kurp sapmayı tamamlayacak boyu alır, teğet boyları
+        /// değişir, bağlı doğrular kısalır ya da uzar. Kurp boyu verilirse o boyu verecek yarıçap aranır (spiral boyları
+        /// aynı kalır). <paramref name="yeni"/> parçanın istenen değerleridir. Uygulanamazsa güzergah değişmez.
+        /// </summary>
+        public bool SomeParcasiniDegistir(int parcaSirasi, GuzergahParcasi yeni, bool uzunlukDegisti, out string hata)
+        {
+            hata = null;
+            if (!SomeModeliAl(out var noktalar, out var gruplar))
+            {
+                hata = "Güzergah some noktalarıyla ifade edilemiyor.";
+                return false;
+            }
+            var someSirasi = Someler.FindIndex(s => s.ParcaSiralari.Contains(parcaSirasi));
+            if (someSirasi < 0)
+            {
+                hata = "Parça bir somenin kurp grubunda değil.";
+                return false;
+            }
+
+            var grup = gruplar[someSirasi];
+            var hedef = grup[Someler[someSirasi].ParcaSiralari.IndexOf(parcaSirasi)];
+            var basit = BasitGrubunKurbu(grup) != null;
+            double[] onceki = noktalar[someSirasi], simdiki = noktalar[someSirasi + 1], sonraki = noktalar[someSirasi + 2];
+            var sapma = AciyiSar(Math.Atan2(sonraki[1] - simdiki[1], sonraki[0] - simdiki[0]) - Math.Atan2(simdiki[1] - onceki[1], simdiki[0] - onceki[0]));
+
+            var hedefSirasi = grup.IndexOf(hedef);
+            if (hedef.Tip == GuzergahParcaTipi.Kurp && uzunlukDegisti && !basit)
+            {
+                // Birleşik kurp: girilen boy aynen kalır, grubun giriş/çıkış doğrultuları sabit kalacak şekilde sapmayı
+                // gruptaki diğer en uzun kurp tamamlar (içerdeki someler bu yüzden yer değiştirebilir).
+                if (!grup.Any(p => p.Tip == GuzergahParcaTipi.Kurp && !ReferenceEquals(p, hedef)))
+                {
+                    hata = "Grupta boyu ayarlanabilecek başka kurp yok; giriş ve çıkış doğrultuları korunarak bu kurbun boyu değiştirilemez.";
+                    return false;
+                }
+                hedef.Uzunluk = yeni.Uzunluk;
+                return SomeModelindenKur(noktalar, gruplar, out hata, someSirasi, hedefSirasi);
+            }
+            if (hedef.Tip == GuzergahParcaTipi.Kurp && uzunlukDegisti)
+            {
+                // Sapma sabitken kurp boyu yarıçapla birlikte artar; istenen boyu veren yarıçap ikiye bölmeyle aranır.
+                double alt = 0.01, ust = 1e7, bulunanBoy = double.NaN;
+                for (var adim = 0; adim < 90; adim++)
+                {
+                    var orta = Math.Sqrt(alt * ust);
+                    var deneme = grup.Select(KiriksizKopya).ToList();
+                    GrupYaricapiniAyarla(deneme, orta);
+                    if (!GrubuYerlestir(deneme, sapma, out _, out _))
+                    {
+                        alt = orta;
+                        continue;
+                    }
+                    var boy = deneme.First(p => p.Tip == GuzergahParcaTipi.Kurp).Uzunluk;
+                    if (boy < yeni.Uzunluk) alt = orta; else ust = orta;
+                    bulunanBoy = boy;
+                }
+                if (ust >= 9e6 || double.IsNaN(bulunanBoy) || Math.Abs(bulunanBoy - yeni.Uzunluk) > 1e-3)
+                {
+                    hata = "Bu kurp boyu, somedeki sapma açısı ve spiral boylarıyla elde edilemiyor.";
+                    return false;
+                }
+                GrupYaricapiniAyarla(grup, ust);
+            }
+            else if (hedef.Tip == GuzergahParcaTipi.Kurp)
+            {
+                var yaricap = yeni.YaricapBaslangic;
+                if (basit)
+                {
+                    GrupYaricapiniAyarla(grup, yaricap);
+                }
+                else
+                {
+                    // Bileşik grupta yalnızca bu kurp ve ona doğrudan bağlanan spiral uçları değişir.
+                    var j = grup.IndexOf(hedef);
+                    if (j > 0 && grup[j - 1].Tip == GuzergahParcaTipi.Spiral && !double.IsInfinity(grup[j - 1].YaricapBitis))
+                        grup[j - 1].YaricapBitis = yaricap;
+                    if (j + 1 < grup.Count && grup[j + 1].Tip == GuzergahParcaTipi.Spiral && !double.IsInfinity(grup[j + 1].YaricapBaslangic))
+                        grup[j + 1].YaricapBaslangic = yaricap;
+                    hedef.YaricapBaslangic = hedef.YaricapBitis = yaricap;
+                }
+            }
+            else
+            {
+                // Spiral: boy değişirse kurp boyu kendiliğinden ayarlanır. Doğruya bağlanan ucu aynı kalıp kurp tarafındaki
+                // yarıçapı değişirse (basit grupta) kurbun yarıçapı da onunla birlikte değişir.
+                hedef.Uzunluk = yeni.Uzunluk;
+                var ayniUcSonsuz = double.IsInfinity(hedef.YaricapBaslangic) == double.IsInfinity(yeni.YaricapBaslangic)
+                                   && double.IsInfinity(hedef.YaricapBitis) == double.IsInfinity(yeni.YaricapBitis)
+                                   && double.IsInfinity(yeni.YaricapBaslangic) != double.IsInfinity(yeni.YaricapBitis);
+                if (basit && ayniUcSonsuz)
+                {
+                    GrupYaricapiniAyarla(grup, double.IsInfinity(yeni.YaricapBaslangic) ? yeni.YaricapBitis : yeni.YaricapBaslangic);
+                }
+                else
+                {
+                    hedef.YaricapBaslangic = yeni.YaricapBaslangic;
+                    hedef.YaricapBitis = yeni.YaricapBitis;
+                }
+            }
+
+            return SomeModelindenKur(noktalar, gruplar, out hata);
         }
 
         // Some noktalarını ve somelere giden teğet doğrultularını (sanal, kesikli) çizer.

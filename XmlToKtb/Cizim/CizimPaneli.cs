@@ -74,7 +74,9 @@ namespace XmlToKtb.Cizim
         Uc = 2,
         Orta = 4,
         Dik = 8,
-        Merkez = 16
+        Merkez = 16,
+        /// <summary>İki objenin (çizgi, yay, daire, çoklu doğru, güzergah...) kesiştiği nokta.</summary>
+        Kesisim = 32
     }
 
     /// <summary>AutoCAD benzeri pan/zoom yapılabilen, çizim yapılabilen koordinat düzlemi.</summary>
@@ -93,6 +95,8 @@ namespace XmlToKtb.Cizim
         private PointF _sonFareEkranKonumu;
         private PointF? _yakalananDunyaNoktasi;
         private YakalamaModu _yakalananTuru;
+        // Kesişime ya da orta noktaya yakalanıldığında o noktanın çift hassasiyetli koordinatı (diğerlerinde null).
+        private double[] _yakalananTam;
         private bool _panSurukleniyor;
         private Point _panBaslangicEkran;
         private double _panBaslangicOfsetX;
@@ -201,46 +205,230 @@ namespace XmlToKtb.Cizim
         public bool GeriAlinabilir => _geriAlYigini.Count > 0;
         public bool Ilerlenebilir => _ilerleYigini.Count > 0;
 
-        /// <summary>Çizimin bir andaki hali: objenin kendisi ve (çizgiyse) koordinatları.</summary>
-        private class DurumKaydi
+        /// <summary>Geri alınabilecek en fazla adım sayısı (0: sınırsız). Sınır aşılınca en eski adım silinir.</summary>
+        public int GeriAlSiniri { get; set; }
+
+        /// <summary>
+        /// Çizimin bir andaki hali için bir objenin kaydı: obje, tabakası, rengi, koordinat ve boyutları (Degerler),
+        /// metinleri ve (güzergah/yüzey gibi karmaşık objelerde) bir kopyası.
+        /// </summary>
+        internal class DurumKaydi
         {
             public CizimNesnesi Nesne;
+            public Tabaka Tabaka;
+            public Color? Renk;
             public double[] Degerler;
+            public string[] Metinler;
+            public object Kopya;
         }
 
         private List<DurumKaydi> _sonDurum = new List<DurumKaydi>();
-        private readonly Stack<List<DurumKaydi>> _geriAlYigini = new Stack<List<DurumKaydi>>();
-        private readonly Stack<List<DurumKaydi>> _ilerleYigini = new Stack<List<DurumKaydi>>();
+        // En sondaki eleman en yeni adımdır.
+        private readonly List<List<DurumKaydi>> _geriAlYigini = new List<List<DurumKaydi>>();
+        private readonly List<List<DurumKaydi>> _ilerleYigini = new List<List<DurumKaydi>>();
+
+        // Objenin geri al için saklanan sayısal değerleri.
+        private static double[] DegerleriAl(CizimNesnesi nesne)
+        {
+            switch (nesne)
+            {
+                case CizgiNesnesi c: return new[] { c.BaslangicX, c.BaslangicY, c.BaslangicZ, c.BitisX, c.BitisY, c.BitisZ };
+                case NoktaNesnesi n: return new[] { n.X, n.Y, n.Z };
+                case DaireNesnesi d: return new[] { d.MerkezX, d.MerkezY, d.MerkezZ, d.Yaricap };
+                case YayNesnesi a: return new[] { a.MerkezX, a.MerkezY, a.MerkezZ, a.Yaricap, a.BaslangicAcisi, a.BitisAcisi };
+                case YaziNesnesi y: return new[] { y.KonumX, y.KonumY, y.KonumZ, y.Yukseklik, y.Donus, (double)y.HizaYatay, (double)y.HizaDikey };
+                case SpiralNesnesi s:
+                    return new[] { s.BaslangicX, s.BaslangicY, s.BaslangicZ, s.BitisX, s.BitisY, s.BitisZ, s.PiX, s.PiY, s.PiZ, s.YaricapBaslangic, s.YaricapBitis, s.Uzunluk, (double)s.Yon };
+                case CokluDogruNesnesi cd:
+                {
+                    var degerler = new List<double> { cd.Kapali ? 1 : 0 };
+                    foreach (var k in cd.Koseler)
+                    {
+                        degerler.Add(k.X); degerler.Add(k.Y); degerler.Add(k.Z); degerler.Add(k.Bulge);
+                    }
+                    return degerler.ToArray();
+                }
+                case BlokNesnesi b:
+                {
+                    var degerler = new List<double> { b.KonumX, b.KonumY };
+                    foreach (var oge in b.Ogeler)
+                    {
+                        var alt = DegerleriAl(oge) ?? new double[0];
+                        degerler.Add(alt.Length);
+                        degerler.AddRange(alt);
+                    }
+                    return degerler.ToArray();
+                }
+                case GuzergahNesnesi g:
+                {
+                    // Karşılaştırma için güzergahın tanımı; geri yükleme kopyadan yapılır.
+                    var degerler = new List<double> { g.BaslangicKm, g.BaslangicX, g.BaslangicY, g.BaslangicAcisi, g.Dusey.Count, g.Dever.Satirlar.Count };
+                    degerler.Add(g.KopukParcalar.Count);
+                    foreach (var p in g.TumParcalar)
+                        degerler.AddRange(new[] { (double)p.Tip, p.Uzunluk, p.YaricapBaslangic, p.YaricapBitis, (double)p.Yon, p.KirikAcisi, p.Sabit ? 1 : 0, p.SabitX, p.SabitY, p.SabitAci });
+                    foreach (var d in g.Dusey)
+                        degerler.AddRange(new[] { d.Km, d.Kot, (double)d.Tip, d.Uzunluk, d.Yaricap });
+                    return degerler.ToArray();
+                }
+                case YuzeyNesnesi yuzey:
+                    return new double[] { yuzey.Surum, yuzey.X.Count };
+                case OlcuNesnesi o:
+                    return new[] { (double)o.Tur, o.AX, o.AY, o.BX, o.BY, o.CX, o.CY, o.DX, o.DY, o.Aci };
+                case KilavuzNesnesi kl:
+                {
+                    var degerler = new List<double> { kl.Inis ? 1 : 0 };
+                    foreach (var k in kl.Koseler)
+                    {
+                        degerler.Add(k[0]);
+                        degerler.Add(k[1]);
+                    }
+                    return degerler.ToArray();
+                }
+                default:
+                    return null;
+            }
+        }
+
+        private static void DegerleriYukle(CizimNesnesi nesne, double[] d)
+        {
+            if (d == null)
+                return;
+            switch (nesne)
+            {
+                case CizgiNesnesi c:
+                    c.BaslangicX = d[0]; c.BaslangicY = d[1]; c.BaslangicZ = d[2]; c.BitisX = d[3]; c.BitisY = d[4]; c.BitisZ = d[5];
+                    break;
+                case NoktaNesnesi n:
+                    n.X = d[0]; n.Y = d[1]; n.Z = d[2];
+                    break;
+                case DaireNesnesi dd:
+                    dd.MerkezX = d[0]; dd.MerkezY = d[1]; dd.MerkezZ = d[2]; dd.Yaricap = d[3];
+                    break;
+                case YayNesnesi a:
+                    a.MerkezX = d[0]; a.MerkezY = d[1]; a.MerkezZ = d[2]; a.Yaricap = d[3]; a.BaslangicAcisi = d[4]; a.BitisAcisi = d[5];
+                    break;
+                case YaziNesnesi y:
+                    y.KonumX = d[0]; y.KonumY = d[1]; y.KonumZ = d[2]; y.Yukseklik = d[3]; y.Donus = d[4];
+                    y.HizaYatay = (YatayHizalama)(int)d[5]; y.HizaDikey = (DikeyHizalama)(int)d[6];
+                    break;
+                case SpiralNesnesi s:
+                    s.BaslangicX = d[0]; s.BaslangicY = d[1]; s.BaslangicZ = d[2]; s.BitisX = d[3]; s.BitisY = d[4]; s.BitisZ = d[5];
+                    s.PiX = d[6]; s.PiY = d[7]; s.PiZ = d[8]; s.YaricapBaslangic = d[9]; s.YaricapBitis = d[10]; s.Uzunluk = d[11]; s.Yon = (DonusYonu)(int)d[12];
+                    break;
+                case CokluDogruNesnesi cd:
+                    cd.Kapali = d[0] != 0;
+                    cd.Koseler.Clear();
+                    for (var i = 1; i + 3 < d.Length; i += 4)
+                        cd.Koseler.Add(new CokluDogruKosesi { X = d[i], Y = d[i + 1], Z = d[i + 2], Bulge = d[i + 3] });
+                    break;
+                case KilavuzNesnesi kl:
+                    kl.Inis = d[0] != 0;
+                    kl.Koseler.Clear();
+                    for (var i = 1; i + 1 < d.Length; i += 2)
+                        kl.Koseler.Add(new[] { d[i], d[i + 1] });
+                    break;
+                case OlcuNesnesi o:
+                    o.Tur = (OlcuTuru)(int)d[0];
+                    o.AX = d[1]; o.AY = d[2]; o.BX = d[3]; o.BY = d[4]; o.CX = d[5]; o.CY = d[6]; o.DX = d[7]; o.DY = d[8]; o.Aci = d[9];
+                    break;
+                case BlokNesnesi b:
+                {
+                    b.KonumX = d[0]; b.KonumY = d[1];
+                    var yer = 2;
+                    foreach (var oge in b.Ogeler)
+                    {
+                        if (yer >= d.Length)
+                            break;
+                        var uzunluk = (int)d[yer++];
+                        var alt = new double[uzunluk];
+                        Array.Copy(d, yer, alt, 0, uzunluk);
+                        yer += uzunluk;
+                        DegerleriYukle(oge, uzunluk > 0 ? alt : null);
+                    }
+                    break;
+                }
+            }
+        }
+
+        private static string[] MetinleriAl(CizimNesnesi nesne)
+        {
+            switch (nesne)
+            {
+                case YaziNesnesi y: return new[] { y.Metin };
+                case NoktaNesnesi n: return new[] { n.NoktaAdi, n.Kod, n.Pafta };
+                case GuzergahNesnesi g: return new[] { g.Ad };
+                case OlcuNesnesi o: return new[] { o.Metin, o.StilAdi };
+                case KilavuzNesnesi kl: return new[] { kl.Metin, kl.StilAdi };
+                case BlokNesnesi b: return b.Ogeler.OfType<YaziNesnesi>().Select(y => y.Metin).ToArray();
+                default: return null;
+            }
+        }
+
+        private static void MetinleriYukle(CizimNesnesi nesne, string[] m)
+        {
+            if (m == null)
+                return;
+            switch (nesne)
+            {
+                case YaziNesnesi y: y.Metin = m[0]; break;
+                case NoktaNesnesi n: n.NoktaAdi = m[0]; n.Kod = m[1]; n.Pafta = m[2]; break;
+                case OlcuNesnesi o: o.Metin = m[0]; o.StilAdi = m[1]; break;
+                case KilavuzNesnesi kl: kl.Metin = m[0]; kl.StilAdi = m[1]; break;
+                case BlokNesnesi b:
+                {
+                    var yazilar = b.Ogeler.OfType<YaziNesnesi>().ToList();
+                    for (var i = 0; i < yazilar.Count && i < m.Length; i++)
+                        yazilar[i].Metin = m[i];
+                    break;
+                }
+            }
+        }
 
         private List<DurumKaydi> DurumAl()
         {
+            // Yüzey koordinatları yalnızca değiştiğinde kopyalanır; değişmemişse önceki kaydın kopyası kullanılır.
+            var oncekiler = new Dictionary<CizimNesnesi, DurumKaydi>();
+            foreach (var kayit in _sonDurum)
+                oncekiler[kayit.Nesne] = kayit;
+
             var durum = new List<DurumKaydi>(Nesneler.Count);
             foreach (var nesne in Nesneler)
             {
-                var kayit = new DurumKaydi { Nesne = nesne };
-                if (nesne is CizgiNesnesi cizgi)
-                    kayit.Degerler = new[] { cizgi.BaslangicX, cizgi.BaslangicY, cizgi.BaslangicZ, cizgi.BitisX, cizgi.BitisY, cizgi.BitisZ };
+                var kayit = new DurumKaydi { Nesne = nesne, Tabaka = nesne.Tabaka, Renk = nesne.OzelRenk, Degerler = DegerleriAl(nesne), Metinler = MetinleriAl(nesne) };
+                if (nesne is GuzergahNesnesi g)
+                {
+                    kayit.Kopya = oncekiler.TryGetValue(nesne, out var eski) && DegerlerAyniMi(eski, kayit) ? eski.Kopya : g.Kopyala();
+                }
+                else if (nesne is YuzeyNesnesi yuzey)
+                {
+                    kayit.Kopya = oncekiler.TryGetValue(nesne, out var eski) && DegerlerAyniMi(eski, kayit)
+                        ? eski.Kopya
+                        : new[] { new List<double>(yuzey.X), new List<double>(yuzey.Y), new List<double>(yuzey.Z) };
+                }
                 durum.Add(kayit);
             }
             return durum;
+        }
+
+        private static bool DegerlerAyniMi(DurumKaydi a, DurumKaydi b)
+        {
+            if (!ReferenceEquals(a.Tabaka, b.Tabaka) || a.Renk != b.Renk)
+                return false;
+            if ((a.Degerler == null) != (b.Degerler == null) || (a.Degerler != null && (a.Degerler.Length != b.Degerler.Length || !a.Degerler.SequenceEqual(b.Degerler))))
+                return false;
+            if ((a.Metinler == null) != (b.Metinler == null) || (a.Metinler != null && !a.Metinler.SequenceEqual(b.Metinler)))
+                return false;
+            return true;
         }
 
         private static bool DurumlarAyniMi(List<DurumKaydi> a, List<DurumKaydi> b)
         {
             if (a.Count != b.Count)
                 return false;
-
             for (var i = 0; i < a.Count; i++)
             {
-                if (!ReferenceEquals(a[i].Nesne, b[i].Nesne))
+                if (!ReferenceEquals(a[i].Nesne, b[i].Nesne) || !DegerlerAyniMi(a[i], b[i]))
                     return false;
-                if (a[i].Degerler == null)
-                    continue;
-                for (var k = 0; k < a[i].Degerler.Length; k++)
-                {
-                    if (a[i].Degerler[k] != b[i].Degerler[k])
-                        return false;
-                }
             }
             return true;
         }
@@ -261,20 +449,40 @@ namespace XmlToKtb.Cizim
             Nesneler.Clear();
             foreach (var kayit in durum)
             {
-                kayit.Nesne.Secili = false;
-                if (kayit.Nesne is CizgiNesnesi cizgi)
+                var nesne = kayit.Nesne;
+                nesne.Secili = false;
+                nesne.Tabaka = kayit.Tabaka;
+                nesne.OzelRenk = kayit.Renk;
+                if (nesne is GuzergahNesnesi g && kayit.Kopya is GuzergahNesnesi kopya)
                 {
-                    cizgi.BaslangicX = kayit.Degerler[0];
-                    cizgi.BaslangicY = kayit.Degerler[1];
-                    cizgi.BaslangicZ = kayit.Degerler[2];
-                    cizgi.BitisX = kayit.Degerler[3];
-                    cizgi.BitisY = kayit.Degerler[4];
-                    cizgi.BitisZ = kayit.Degerler[5];
+                    g.DurumunuYukle(kopya);
                 }
-                Nesneler.Add(kayit.Nesne);
+                else if (nesne is YuzeyNesnesi yuzey && kayit.Kopya is List<double>[] koordinatlar)
+                {
+                    // Yüzeyde yalnızca koordinatlar (taşıma, döndürme, ölçek) geri alınır; üçgen düzenlemelerinin
+                    // kendi geri alı vardır.
+                    if (koordinatlar[0].Count == yuzey.X.Count)
+                    {
+                        for (var i = 0; i < yuzey.X.Count; i++)
+                        {
+                            yuzey.X[i] = koordinatlar[0][i];
+                            yuzey.Y[i] = koordinatlar[1][i];
+                            yuzey.Z[i] = koordinatlar[2][i];
+                        }
+                        yuzey.KoordinatlarDegisti();
+                    }
+                }
+                else
+                {
+                    DegerleriYukle(nesne, kayit.Degerler);
+                }
+                MetinleriYukle(nesne, kayit.Metinler);
+                Nesneler.Add(nesne);
             }
 
+            // Yükleme yüzey sayaçlarını değiştirebildiği için son durum yeniden alınır.
             _sonDurum = durum;
+            _sonDurum = DurumAl();
             _yakalananDunyaNoktasi = null;
             SecimBildir();
             NesnelerGuncellendi?.Invoke(this, EventArgs.Empty);
@@ -291,11 +499,20 @@ namespace XmlToKtb.Cizim
             if (!GeriAlAcik)
                 return;
 
+            // Tabakası belli olmayan yeni objeler aktif tabakaya şimdi girer; çizim sırasında girselerdi bu, geri al
+            // geçmişinde görünmez ayrı bir adım olurdu (ilk Geri Al hiçbir şey yapmıyor gibi görünürdü).
+            if (TabakalarAcik)
+                foreach (var nesne in Nesneler)
+                    if (nesne.Tabaka == null)
+                        nesne.Tabaka = AktifTabaka;
+
             var durum = DurumAl();
             if (DurumlarAyniMi(durum, _sonDurum))
                 return;
 
-            _geriAlYigini.Push(_sonDurum);
+            _geriAlYigini.Add(_sonDurum);
+            if (GeriAlSiniri > 0 && _geriAlYigini.Count > GeriAlSiniri)
+                _geriAlYigini.RemoveAt(0);
             _ilerleYigini.Clear();
             _sonDurum = durum;
             GecmisDegisti?.Invoke(this, EventArgs.Empty);
@@ -322,8 +539,12 @@ namespace XmlToKtb.Cizim
             if (_geriAlYigini.Count == 0)
                 return;
 
-            _ilerleYigini.Push(DurumAl());
-            DurumYukle(_geriAlYigini.Pop());
+            // Geri almadan önce yapılmış ama kaydedilmemiş değişiklik varsa önce o kaydedilir.
+            DegisiklikKaydet();
+            var onceki = _geriAlYigini[_geriAlYigini.Count - 1];
+            _geriAlYigini.RemoveAt(_geriAlYigini.Count - 1);
+            _ilerleYigini.Add(_sonDurum);
+            DurumYukle(onceki);
         }
 
         public void Ilerle()
@@ -331,8 +552,91 @@ namespace XmlToKtb.Cizim
             if (_ilerleYigini.Count == 0)
                 return;
 
-            _geriAlYigini.Push(DurumAl());
-            DurumYukle(_ilerleYigini.Pop());
+            var sonraki = _ilerleYigini[_ilerleYigini.Count - 1];
+            _ilerleYigini.RemoveAt(_ilerleYigini.Count - 1);
+            _geriAlYigini.Add(_sonDurum);
+            if (GeriAlSiniri > 0 && _geriAlYigini.Count > GeriAlSiniri)
+                _geriAlYigini.RemoveAt(0);
+            DurumYukle(sonraki);
+        }
+        /// <summary>
+        /// Bir çizim belgesinin panelden çıkarılmış hali: objeleri, tabakaları, görünümü ve geri al geçmişi. Çok
+        /// belgeli ekranda sekmeler arasında geçerken panel tek kalır; belgeler bununla saklanıp yüklenir.
+        /// </summary>
+        public sealed class BelgeDurumu
+        {
+            internal readonly List<CizimNesnesi> Nesneler = new List<CizimNesnesi>();
+            internal readonly List<Tabaka> Tabakalar = new List<Tabaka>();
+            internal Tabaka AktifTabaka;
+            internal double Olcek = 1, OfsetX, OfsetY;
+            internal List<DurumKaydi> SonDurum;
+            internal readonly List<List<DurumKaydi>> GeriAl = new List<List<DurumKaydi>>();
+            internal readonly List<List<DurumKaydi>> Ilerle = new List<List<DurumKaydi>>();
+            internal readonly List<OlcuStili> OlcuStilleri = new List<OlcuStili>();
+            internal OlcuStili AktifOlcuStili;
+
+            /// <summary>Belgedeki obje sayısı (panelde açık değilken).</summary>
+            public int NesneSayisi => Nesneler.Count;
+        }
+
+        /// <summary>Paneldeki çizimi belge durumu olarak çıkarır (panel değişmez; ardından başka bir belge yüklenir).</summary>
+        public BelgeDurumu BelgeDurumunuAl()
+        {
+            var d = new BelgeDurumu
+            {
+                AktifTabaka = _aktifTabaka,
+                Olcek = Gorunum.Olcek,
+                OfsetX = Gorunum.OfsetX,
+                OfsetY = Gorunum.OfsetY,
+                SonDurum = _sonDurum
+            };
+            d.Nesneler.AddRange(Nesneler);
+            d.Tabakalar.AddRange(Tabakalar);
+            d.GeriAl.AddRange(_geriAlYigini);
+            d.Ilerle.AddRange(_ilerleYigini);
+            d.OlcuStilleri.AddRange(OlcuStilleri);
+            d.AktifOlcuStili = _aktifOlcuStili;
+            return d;
+        }
+
+        /// <summary>
+        /// Belgeyi panele yükler: yarım kalan araç kapatılır, objeler, tabakalar, görünüm ve geri al geçmişi belgenin
+        /// olur. Boş (yeni) bir belge için new BelgeDurumu() verilir.
+        /// </summary>
+        public void BelgeDurumunuYukle(BelgeDurumu d)
+        {
+            AktifArac = CizimAraci.Sec;
+            _tutamacSurukleniyor = false;
+            _suruklenenUclar.Clear();
+            DuzenlenenYuzey = null;
+            _yakalananDunyaNoktasi = null;
+
+            Nesneler.Clear();
+            Nesneler.AddRange(d.Nesneler);
+            Tabakalar.Clear();
+            Tabakalar.AddRange(d.Tabakalar);
+            foreach (var tabaka in Tabakalar)
+                tabaka.Liste = Tabakalar;
+            _aktifTabaka = d.AktifTabaka;
+            OlcuStilleri.Clear();
+            OlcuStilleri.AddRange(d.OlcuStilleri);
+            foreach (var stil in OlcuStilleri)
+                stil.Liste = OlcuStilleri;
+            _aktifOlcuStili = d.AktifOlcuStili;
+            Gorunum.Olcek = d.Olcek;
+            Gorunum.OfsetX = d.OfsetX;
+            Gorunum.OfsetY = d.OfsetY;
+
+            _geriAlYigini.Clear();
+            _geriAlYigini.AddRange(d.GeriAl);
+            _ilerleYigini.Clear();
+            _ilerleYigini.AddRange(d.Ilerle);
+            _sonDurum = d.SonDurum ?? DurumAl();
+
+            SecimBildir();
+            NesnelerGuncellendi?.Invoke(this, EventArgs.Empty);
+            GecmisDegisti?.Invoke(this, EventArgs.Empty);
+            Invalidate();
         }
 
         /// <summary>Açıksa objeler tabakalara ayrılır: yeni objeler aktif tabakaya girer, kapalı tabakalar çizilmez.</summary>
@@ -352,6 +656,48 @@ namespace XmlToKtb.Cizim
                 return _aktifTabaka;
             }
             set => _aktifTabaka = value;
+        }
+
+        /// <summary>Çizimin ölçü stilleri (AutoCAD DIMSTYLE). Boşsa ilk kullanımda hazır stiller eklenir.</summary>
+        public readonly List<OlcuStili> OlcuStilleri = new List<OlcuStili>();
+
+        private OlcuStili _aktifOlcuStili;
+
+        /// <summary>Yeni ölçülerin kullandığı stil. Hiç stil yoksa hazır stiller (Standart, Harita) eklenir.</summary>
+        public OlcuStili AktifOlcuStili
+        {
+            get
+            {
+                if (OlcuStilleri.Count == 0)
+                {
+                    foreach (var stil in OlcuStili.HazirStiller(CizimAyarlari.ProjeOlcegi))
+                    {
+                        stil.Liste = OlcuStilleri;
+                        OlcuStilleri.Add(stil);
+                    }
+                }
+                if (_aktifOlcuStili == null || !OlcuStilleri.Contains(_aktifOlcuStili))
+                    _aktifOlcuStili = OlcuStilleri[0];
+                return _aktifOlcuStili;
+            }
+            set => _aktifOlcuStili = value;
+        }
+
+        /// <summary>
+        /// Verilen stilin çizimdeki karşılığı: aynı adda stil varsa o (ayarlarına dokunmadan), yoksa stilin bir kopyası
+        /// eklenir. Başka çizimden yapıştırılan ya da dosyadan okunan ölçüler için.
+        /// </summary>
+        public OlcuStili OlcuStiliBulVeyaEkle(OlcuStili kaynak)
+        {
+            if (kaynak == null)
+                return null;
+            var stil = OlcuStilleri.Find(s => string.Equals(s.Ad, kaynak.Ad, StringComparison.OrdinalIgnoreCase));
+            if (stil != null)
+                return stil;
+            stil = OlcuStilleri.Contains(kaynak) ? kaynak : kaynak.Kopyala(kaynak.Ad);
+            stil.Liste = OlcuStilleri;
+            OlcuStilleri.Add(stil);
+            return stil;
         }
 
         /// <summary>Verilen adda tabaka varsa onu döner (ayarlarına dokunmadan); yoksa verilen ayarlarla ekler.</summary>
@@ -476,7 +822,18 @@ namespace XmlToKtb.Cizim
             }
         }
 
-        private readonly Cursor _secAraciImleci;
+        // Seçim imleci (kare): açık zeminde siyah, koyu zeminde beyaz.
+        private readonly Cursor _kareImlecSiyah, _kareImlecBeyaz;
+        private Cursor SecimImleci => CizimBaglami.KoyuMu(BackColor) ? _kareImlecBeyaz : _kareImlecSiyah;
+
+        protected override void OnBackColorChanged(EventArgs e)
+        {
+            base.OnBackColorChanged(e);
+            // Kare imleç gösteriliyorsa zemine uygun renktekiyle değişir.
+            if (_kareImlecSiyah != null)
+                ImleciGuncelle();
+        }
+
         // NoktaAl aracında obje mi seçiliyor (kare imleç) yoksa nokta mı veriliyor (artı imleç)?
         private bool _noktaAlNesneSecer;
         private bool _secimBekleniyor;
@@ -508,7 +865,7 @@ namespace XmlToKtb.Cizim
                         || (DuzenlemeAraciMi(arac) && _duzenlemeAsamasi == DuzenlemeAsamasi.ObjeSeciliyor)
                         || (arac == CizimAraci.NoktaAl && _noktaAlNesneSecer);
             secim |= arac == CizimAraci.Sec && _secimBekleniyor;
-            Cursor = secim ? _secAraciImleci : arac == CizimAraci.Sec ? Cursors.Default : Cursors.Cross;
+            Cursor = secim ? SecimImleci : arac == CizimAraci.Sec ? Cursors.Default : Cursors.Cross;
         }
 
         /// <summary>
@@ -525,7 +882,8 @@ namespace XmlToKtb.Cizim
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
             BackColor = Color.White;
             TabStop = true;
-            _secAraciImleci = KareImleciOlustur(MilimetreyiPikselYap(2.0));
+            _kareImlecSiyah = KareImleciOlustur(MilimetreyiPikselYap(2.0), Color.Black);
+            _kareImlecBeyaz = KareImleciOlustur(MilimetreyiPikselYap(2.0), Color.White);
             Cursor = Cursors.Default;
             KeyDown += CizimPaneli_KeyDown;
         }
@@ -590,7 +948,7 @@ namespace XmlToKtb.Cizim
             }
         }
 
-        private void SeciliNesneleriSil()
+        public void SeciliNesneleriSil()
         {
             var silinecekler = new List<CizimNesnesi>();
             foreach (var nesne in Nesneler)
@@ -640,14 +998,14 @@ namespace XmlToKtb.Cizim
             return Math.Max(1, (int)Math.Round(milimetre / 25.4 * dpi));
         }
 
-        private static Cursor KareImleciOlustur(int boyutPiksel)
+        private static Cursor KareImleciOlustur(int boyutPiksel, Color renk)
         {
             using (var bitmap = new Bitmap(boyutPiksel, boyutPiksel))
             {
                 using (var g = Graphics.FromImage(bitmap))
                 {
                     g.Clear(Color.Transparent);
-                    using (var kalem = new Pen(Color.Black, 1f))
+                    using (var kalem = new Pen(renk, 1f))
                         g.DrawRectangle(kalem, 0, 0, boyutPiksel - 1, boyutPiksel - 1);
                 }
 
@@ -656,21 +1014,34 @@ namespace XmlToKtb.Cizim
             }
         }
 
+        /// <summary>Etiket ve kalın çizgi seçenekleri (Görünüm menüsü); null ise objeler etiketsiz, varsayılan kalınlıkta çizilir.</summary>
+        public GorunumSecenekleri Secenekler { get; set; }
+
+        /// <summary>
+        /// Izgarayı ve görünür objeleri verilen görünümle çizer. Ana çizim, çok pencereli görünümdeki diğer pencereler de
+        /// bunu kullanır (aynı objeler, ayrı pan/zoom).
+        /// </summary>
+        public void ArkaPlaniVeNesneleriCiz(Graphics grafik, CizimGorunum gorunum, int genislik, int yukseklik)
+        {
+            grafik.SmoothingMode = SmoothingMode.AntiAlias;
+            using (CizimBaglami.Kur(Secenekler, BackColor))
+            {
+                GridCiz(grafik, gorunum, genislik, yukseklik);
+                foreach (var nesne in Nesneler)
+                {
+                    // Tabakası belli olmayan (yeni çizilmiş, kopyalanmış...) obje aktif tabakaya girer.
+                    if (TabakalarAcik && nesne.Tabaka == null)
+                        nesne.Tabaka = AktifTabaka;
+                    if (Gorunur(nesne))
+                        nesne.Ciz(grafik, gorunum, genislik, yukseklik);
+                }
+            }
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-            GridCiz(e.Graphics);
-
-            foreach (var nesne in Nesneler)
-            {
-                // Tabakası belli olmayan (yeni çizilmiş, kopyalanmış...) obje aktif tabakaya girer.
-                if (TabakalarAcik && nesne.Tabaka == null)
-                    nesne.Tabaka = AktifTabaka;
-                if (Gorunur(nesne))
-                    nesne.Ciz(e.Graphics, Gorunum, Width, Height);
-            }
+            ArkaPlaniVeNesneleriCiz(e.Graphics, Gorunum, Width, Height);
 
             if (ReferansNoktasiGoster)
                 ReferansNoktasiCiz(e.Graphics);
@@ -846,8 +1217,19 @@ namespace XmlToKtb.Cizim
             }
             else if (turu == YakalamaModu.Nokta)
             {
-                // Nokta: çarpı (uçtan ayırt edilsin diye).
+                // Nokta: içinde çarpı olan daire (AutoCAD'deki düğüm işareti).
                 using (var kalem = new Pen(Color.DarkViolet, 2f))
+                {
+                    var k = yaricap * 0.65f;
+                    grafik.DrawEllipse(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y - yaricap, yaricap * 2, yaricap * 2);
+                    grafik.DrawLine(kalem, ekranNoktasi.X - k, ekranNoktasi.Y - k, ekranNoktasi.X + k, ekranNoktasi.Y + k);
+                    grafik.DrawLine(kalem, ekranNoktasi.X - k, ekranNoktasi.Y + k, ekranNoktasi.X + k, ekranNoktasi.Y - k);
+                }
+            }
+            else if (turu == YakalamaModu.Kesisim)
+            {
+                // Kesişim: çarpı.
+                using (var kalem = new Pen(Color.DarkOrange, 2.2f))
                 {
                     grafik.DrawLine(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y - yaricap, ekranNoktasi.X + yaricap, ekranNoktasi.Y + yaricap);
                     grafik.DrawLine(kalem, ekranNoktasi.X - yaricap, ekranNoktasi.Y + yaricap, ekranNoktasi.X + yaricap, ekranNoktasi.Y - yaricap);
@@ -885,53 +1267,58 @@ namespace XmlToKtb.Cizim
             return simge;
         }
 
-        private void GridCiz(Graphics grafik)
+        private void GridCiz(Graphics grafik, CizimGorunum gorunum, int genislik, int yukseklik)
         {
-            if (Width <= 0 || Height <= 0)
+            if (genislik <= 0 || yukseklik <= 0)
                 return;
 
-            var solUst = Gorunum.EkrandanDunyaya(new PointF(0, 0), Width, Height);
-            var sagAlt = Gorunum.EkrandanDunyaya(new PointF(Width, Height), Width, Height);
+            var solUst = gorunum.EkrandanDunyaya(new PointF(0, 0), genislik, yukseklik);
+            var sagAlt = gorunum.EkrandanDunyaya(new PointF(genislik, yukseklik), genislik, yukseklik);
             var dunyaMinX = Math.Min(solUst.X, sagAlt.X);
             var dunyaMaxX = Math.Max(solUst.X, sagAlt.X);
             var dunyaMinY = Math.Min(solUst.Y, sagAlt.Y);
             var dunyaMaxY = Math.Max(solUst.Y, sagAlt.Y);
 
-            var adim = UygunAdimHesapla(100.0 / Gorunum.Olcek);
+            var adim = UygunAdimHesapla(100.0 / gorunum.Olcek);
 
-            using (var izgaraKalemi = new Pen(Color.Gainsboro, 1f))
-            using (var eksenKalemi = new Pen(Color.Silver, 1.5f))
-            using (var yaziFirca = new SolidBrush(Color.Gray))
+            // Izgara rengi arka plana göre: zeminden biraz açık/koyu.
+            var koyu = CizimBaglami.KoyuMu(BackColor);
+            Color Kaydir(int miktar) => Color.FromArgb(Sinirla(BackColor.R + miktar), Sinirla(BackColor.G + miktar), Sinirla(BackColor.B + miktar));
+            using (var izgaraKalemi = new Pen(Kaydir(koyu ? 35 : -35), 1f))
+            using (var eksenKalemi = new Pen(Kaydir(koyu ? 70 : -63), 1.5f))
+            using (var yaziFirca = new SolidBrush(Kaydir(koyu ? 110 : -127)))
             using (var yaziFontu = new Font(FontFamily.GenericSansSerif, 7.5f))
             {
                 var baslangicX = Math.Floor(dunyaMinX / adim) * adim;
                 for (var x = baslangicX; x <= dunyaMaxX; x += adim)
                 {
-                    var ekran = Gorunum.DunyadanEkrana(x, 0, Width, Height);
-                    grafik.DrawLine(izgaraKalemi, ekran.X, 0, ekran.X, Height);
+                    var ekran = gorunum.DunyadanEkrana(x, 0, genislik, yukseklik);
+                    grafik.DrawLine(izgaraKalemi, ekran.X, 0, ekran.X, yukseklik);
                     grafik.DrawString(x.ToString("0.##"), yaziFontu, yaziFirca, ekran.X + 2, 2);
                 }
 
                 var baslangicY = Math.Floor(dunyaMinY / adim) * adim;
                 for (var y = baslangicY; y <= dunyaMaxY; y += adim)
                 {
-                    var ekran = Gorunum.DunyadanEkrana(0, y, Width, Height);
-                    grafik.DrawLine(izgaraKalemi, 0, ekran.Y, Width, ekran.Y);
+                    var ekran = gorunum.DunyadanEkrana(0, y, genislik, yukseklik);
+                    grafik.DrawLine(izgaraKalemi, 0, ekran.Y, genislik, ekran.Y);
                     grafik.DrawString(y.ToString("0.##"), yaziFontu, yaziFirca, 2, ekran.Y + 2);
                 }
 
                 if (dunyaMinX <= 0 && dunyaMaxX >= 0)
                 {
-                    var ekran = Gorunum.DunyadanEkrana(0, 0, Width, Height);
-                    grafik.DrawLine(eksenKalemi, ekran.X, 0, ekran.X, Height);
+                    var ekran = gorunum.DunyadanEkrana(0, 0, genislik, yukseklik);
+                    grafik.DrawLine(eksenKalemi, ekran.X, 0, ekran.X, yukseklik);
                 }
                 if (dunyaMinY <= 0 && dunyaMaxY >= 0)
                 {
-                    var ekran = Gorunum.DunyadanEkrana(0, 0, Width, Height);
-                    grafik.DrawLine(eksenKalemi, 0, ekran.Y, Width, ekran.Y);
+                    var ekran = gorunum.DunyadanEkrana(0, 0, genislik, yukseklik);
+                    grafik.DrawLine(eksenKalemi, 0, ekran.Y, genislik, ekran.Y);
                 }
             }
         }
+
+        private static int Sinirla(int deger) => Math.Max(0, Math.Min(255, deger));
 
         private static double UygunAdimHesapla(double hamAdim)
         {
@@ -951,11 +1338,13 @@ namespace XmlToKtb.Cizim
         {
             public PointF Nokta;
             public YakalamaModu Tur;
+            public double[] Tam;
 
             public YakalamaAdayi(PointF nokta, YakalamaModu tur)
             {
                 Nokta = nokta;
                 Tur = tur;
+                Tam = null;
             }
         }
 
@@ -968,6 +1357,7 @@ namespace XmlToKtb.Cizim
 
             PointF? enYakinDunya = null;
             var enYakinMesafeKare = double.MaxValue;
+            _yakalananTam = null;
 
             foreach (var nesne in Nesneler)
             {
@@ -1001,6 +1391,7 @@ namespace XmlToKtb.Cizim
                         enYakinMesafeKare = uzaklikKare;
                         enYakinDunya = new PointF((float)yuzey.X[yakinNokta], (float)yuzey.Y[yakinNokta]);
                         bulunanTur = YakalamaModu.Nokta;
+                        _yakalananTam = new[] { yuzey.X[yakinNokta], yuzey.Y[yakinNokta] };
                     }
                     continue;
                 }
@@ -1010,22 +1401,40 @@ namespace XmlToKtb.Cizim
                 if ((_aktifYakalamaModu & (YakalamaModu.Nokta | YakalamaModu.Uc)) != 0)
                 {
                     var ucTuru = (_aktifYakalamaModu & YakalamaModu.Uc) != 0 ? YakalamaModu.Uc : YakalamaModu.Nokta;
-                    foreach (var uc in nesne.UcNoktalariAl())
-                        adaylar.Add(new YakalamaAdayi(uc, ucTuru));
+                    if (nesne is GuzergahNesnesi guzergahUclari)
+                    {
+                        // Güzergahta parça uçları (kopuk parçalar dahil) tam koordinatla verilir.
+                        foreach (var uc in guzergahUclari.YakalamaUclari())
+                            adaylar.Add(new YakalamaAdayi(new PointF((float)uc[0], (float)uc[1]), ucTuru) { Tam = uc });
+                    }
+                    else
+                    {
+                        foreach (var uc in nesne.UcNoktalariAl())
+                            adaylar.Add(new YakalamaAdayi(uc, ucTuru));
+                    }
                 }
 
                 if ((_aktifYakalamaModu & YakalamaModu.Orta) != 0)
                 {
-                    var orta = nesne.OrtaNoktaAl();
-                    if (orta != null)
-                        adaylar.Add(new YakalamaAdayi(orta.Value, YakalamaModu.Orta));
+                    // Çok parçalı objelerde her parçanın ortası adaydır; koordinat çift hassasiyetle saklanır.
+                    foreach (var orta in nesne.OrtaNoktalari())
+                        adaylar.Add(new YakalamaAdayi(new PointF((float)orta[0], (float)orta[1]), YakalamaModu.Orta) { Tam = orta });
                 }
 
                 if ((_aktifYakalamaModu & YakalamaModu.Dik) != 0 && _beklemedekiBaslangic != null)
                 {
-                    var dik = nesne.DikNoktaAl(_beklemedekiBaslangic.Value);
-                    if (dik != null)
-                        adaylar.Add(new YakalamaAdayi(dik.Value, YakalamaModu.Dik));
+                    if (nesne is GuzergahNesnesi guzergahDik)
+                    {
+                        var tam = guzergahDik.DikNoktaTam(_beklemedekiBaslangic.Value.X, _beklemedekiBaslangic.Value.Y);
+                        if (tam != null)
+                            adaylar.Add(new YakalamaAdayi(new PointF((float)tam[0], (float)tam[1]), YakalamaModu.Dik) { Tam = tam });
+                    }
+                    else
+                    {
+                        var dik = nesne.DikNoktaAl(_beklemedekiBaslangic.Value);
+                        if (dik != null)
+                            adaylar.Add(new YakalamaAdayi(dik.Value, YakalamaModu.Dik));
+                    }
                 }
 
                 if ((_aktifYakalamaModu & YakalamaModu.Merkez) != 0)
@@ -1033,6 +1442,12 @@ namespace XmlToKtb.Cizim
                     var merkez = nesne.MerkezNoktaAl();
                     if (merkez != null)
                         adaylar.Add(new YakalamaAdayi(merkez.Value, YakalamaModu.Merkez));
+                    // Güzergahta (kopuk parçalar dahil) her kurbun merkezi.
+                    if (nesne is GuzergahNesnesi guzergahMerkez)
+                    {
+                        foreach (var m in guzergahMerkez.KurpMerkezleri())
+                            adaylar.Add(new YakalamaAdayi(new PointF((float)m[0], (float)m[1]), YakalamaModu.Merkez) { Tam = m });
+                    }
                 }
 
                 foreach (var aday in adaylar)
@@ -1047,6 +1462,53 @@ namespace XmlToKtb.Cizim
                     enYakinMesafeKare = mesafeKare;
                     enYakinDunya = aday.Nokta;
                     bulunanTur = aday.Tur;
+                    _yakalananTam = aday.Tam;
+                }
+            }
+
+            if ((_aktifYakalamaModu & YakalamaModu.Kesisim) != 0)
+            {
+                // Farenin yakınındaki objelerin, yine farenin yakınındaki parçaları birbiriyle kesiştirilir.
+                Gorunum.EkrandanDunyayaHassas(ekranNoktasi, Width, Height, out var fareX, out var fareY);
+                var tolerans = YakalamaToleransPiksel / Gorunum.Olcek;
+                var fare = new PointF((float)fareX, (float)fareY);
+                var yakinParcalar = new List<KeyValuePair<CizimNesnesi, Primitif>>();
+                foreach (var nesne in Nesneler)
+                {
+                    if (!Gorunur(nesne) || nesne is YuzeyNesnesi || nesne is NoktaNesnesi || nesne is YaziNesnesi || ReferenceEquals(nesne, _suruklenenNesne)
+                        || (_tutamacSurukleniyor && _suruklenenUclar.Any(u => ReferenceEquals(u.Key, nesne))) || !nesne.IsabetEttiMi(fare, tolerans))
+                        continue;
+                    foreach (var parca in GeometriIslemleri.Primitifler(nesne))
+                    {
+                        var yakin = parca.YayMi
+                            ? Math.Abs(Math.Sqrt((fareX - parca.Mx) * (fareX - parca.Mx) + (fareY - parca.My) * (fareY - parca.My)) - parca.R) <= tolerans
+                            : GeometriIslemleri.NoktaParcaUzakligi(fareX, fareY, parca.X1, parca.Y1, parca.X2, parca.Y2) <= tolerans;
+                        if (yakin)
+                            yakinParcalar.Add(new KeyValuePair<CizimNesnesi, Primitif>(nesne, parca));
+                    }
+                    if (yakinParcalar.Count > 200)
+                        break;
+                }
+
+                for (var i = 0; i < yakinParcalar.Count; i++)
+                {
+                    for (var j = i + 1; j < yakinParcalar.Count; j++)
+                    {
+                        // Aynı objenin ardışık parçalarının ortak ucu kesişim sayılmaz (o, uç yakalamanın işidir).
+                        if (ReferenceEquals(yakinParcalar[i].Key, yakinParcalar[j].Key))
+                            continue;
+                        foreach (var nokta in GeometriIslemleri.PrimitifKesisimleri(yakinParcalar[i].Value, yakinParcalar[j].Value))
+                        {
+                            var ekran = Gorunum.DunyadanEkrana(nokta[0], nokta[1], Width, Height);
+                            double dx = ekran.X - ekranNoktasi.X, dy = ekran.Y - ekranNoktasi.Y, mesafeKare = dx * dx + dy * dy;
+                            if (mesafeKare > YakalamaToleransPiksel * YakalamaToleransPiksel || mesafeKare >= enYakinMesafeKare)
+                                continue;
+                            enYakinMesafeKare = mesafeKare;
+                            enYakinDunya = new PointF((float)nokta[0], (float)nokta[1]);
+                            bulunanTur = YakalamaModu.Kesisim;
+                            _yakalananTam = nokta;
+                        }
+                    }
                 }
             }
 
@@ -1060,6 +1522,7 @@ namespace XmlToKtb.Cizim
                 {
                     enYakinDunya = new PointF(0, 0);
                     bulunanTur = YakalamaModu.Nokta;
+                    _yakalananTam = new double[] { 0, 0 };
                 }
             }
 
@@ -1226,6 +1689,13 @@ namespace XmlToKtb.Cizim
         /// </summary>
         private void TamKoordinatAl(PointF dunyaNoktasi, out double x, out double y)
         {
+            if (_yakalananDunyaNoktasi != null && _yakalananTam != null)
+            {
+                x = _yakalananTam[0];
+                y = _yakalananTam[1];
+                return;
+            }
+
             if (_yakalananDunyaNoktasi != null)
             {
                 foreach (var nesne in Nesneler)

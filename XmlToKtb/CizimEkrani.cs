@@ -65,6 +65,11 @@ namespace XmlToKtb
             durumStrip.Items.Add(_olcekDurumLabel);
             OsecMenusunuOlustur();
             DuzenlemeMenuleriniOlustur();
+            OlcuMenusunuOlustur();
+            GorunumMenusunuOlustur();
+            OzellikleriKur();
+            BelgeleriKur();
+            RibbonKur();
             OlcekEtiketiniGuncelle();
 
             // Koordinat yazısı aradaki boşluğu doldurur; böylece koordinat sistemi ve ölçek çubuğun sağ ucunda durur.
@@ -86,14 +91,11 @@ namespace XmlToKtb
                 cizimPaneli1.Nesneler.Add(new GuzergahEtiketNesnesi(guzergah));
                 cizimPaneli1.Invalidate();
             });
-            cizimPaneli1.MouseUp += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Right && cizimPaneli1.AktifArac == CizimAraci.Sec && !_noktaSecimiBekleniyor && _secimBekleyenKomut == DuzenKomutu.Yok && SeciliGuzergah() != null)
-                    _guzergahMenusu.Show(cizimPaneli1, e.Location);
-            };
+            // Seçili güzergahın komutları sağ tık menüsünün başında yer alır (bkz. CizimEkrani.SagTik.cs).
         }
 
         private ToolStripStatusLabel _olcekDurumLabel;
+        private ToolStripButton _kesisimYakalaButton;
 
         /// <summary>
         /// Nokta yakalama modları alttaki "OSEC" menüsündedir: tıklanınca yukarı doğru açılır; her satırda solda tik,
@@ -102,7 +104,11 @@ namespace XmlToKtb
         /// </summary>
         private void OsecMenusunuOlustur()
         {
-            var dugmeler = new[] { ucYakalaButton, ortaYakalaButton, merkezYakalaButton, dikYakalaButton, noktaYakalaButton };
+            // Kesişim yakalamanın tasarımcıda düğmesi yok; diğerleriyle aynı biçimde gizli bir düğme eklenir.
+            _kesisimYakalaButton = new ToolStripButton("Kesişim") { CheckOnClick = true, Visible = false, Alignment = ToolStripItemAlignment.Right };
+            _kesisimYakalaButton.CheckedChanged += yakalamaButonu_CheckedChanged;
+            toolStrip1.Items.Add(_kesisimYakalaButton);
+            var dugmeler = new[] { ucYakalaButton, ortaYakalaButton, merkezYakalaButton, dikYakalaButton, noktaYakalaButton, _kesisimYakalaButton };
             yakalamaAyraci.Visible = false;
             foreach (var dugme in dugmeler)
                 dugme.Visible = false;
@@ -135,6 +141,7 @@ namespace XmlToKtb
             Ekle(merkezYakalaButton, YakalamaModu.Merkez, "Merkez  —  daire ve yayların merkezi");
             Ekle(dikYakalaButton, YakalamaModu.Dik, "Dik  —  objeye dik inilen nokta");
             Ekle(noktaYakalaButton, YakalamaModu.Nokta, "Nokta  —  nokta objeleri ve yüzey noktaları");
+            Ekle(_kesisimYakalaButton, YakalamaModu.Kesisim, "Kesişim  —  iki objenin kesiştiği nokta");
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("Tümünü Aç", null, (s, e) => { foreach (var d in dugmeler) d.Checked = true; });
             menu.Items.Add("Tümünü Kapat", null, (s, e) => { foreach (var d in dugmeler) d.Checked = false; });
@@ -391,6 +398,7 @@ namespace XmlToKtb
 
         private void TabakaKapatmayiBaslat()
         {
+            SonKomutuKaydet("Tıklanan Objenin Tabakasını Kapat", TabakaKapatmayiBaslat);
             _tabakaKapatiliyor = true;
             cizimPaneli1.NoktaAlmayaBasla(true);
             cizimPaneli1.Focus();
@@ -857,7 +865,7 @@ namespace XmlToKtb
                 return false;
 
             // Ölçek ve sabit noktalar, parçaların dönüşümden önceki konumlarından hesaplanır.
-            foreach (var parca in guzergah.Parcalar)
+            foreach (var parca in guzergah.TumParcalar)
             {
                 if (!yerel(parca.BaslangicX, parca.BaslangicY, out _, out _, out _, out var olcek))
                     return false;
@@ -974,6 +982,7 @@ namespace XmlToKtb
         private void ozellikGrid_PropertyValueChanged(object sender, PropertyValueChangedEventArgs e)
         {
             cizimPaneli1.SeciliNesneGuncellendi();
+            cizimPaneli1.DegisiklikKaydet();
         }
 
         private void yakalamaButonu_CheckedChanged(object sender, EventArgs e)
@@ -984,6 +993,7 @@ namespace XmlToKtb
             if (ortaYakalaButton.Checked) mod |= YakalamaModu.Orta;
             if (dikYakalaButton.Checked) mod |= YakalamaModu.Dik;
             if (merkezYakalaButton.Checked) mod |= YakalamaModu.Merkez;
+            if (_kesisimYakalaButton != null && _kesisimYakalaButton.Checked) mod |= YakalamaModu.Kesisim;
             cizimPaneli1.AktifYakalamaModu = mod;
         }
 
@@ -1345,57 +1355,78 @@ namespace XmlToKtb
             }
         }
 
+        // Dosya > Aç: dosya yeni bir sekmede açılır (Ekle aktif çizime ekler, bkz. CizimEkrani.Belgeler.cs).
         private void dosyaAcMenuItem_Click(object sender, EventArgs e)
         {
-            using (var dlg = new OpenFileDialog { Title = "DXF Dosyası Seçin", Filter = "DXF (*.dxf)|*.dxf" })
+            DosyaAc(true);
+        }
+
+        /// <summary>DXF ya da DWG dosyasını okur; okunamazsa hatayı gösterip null döner.</summary>
+        private DxfDocument CizimDosyasiOku(string dosya)
+        {
+            // DWG, ACadSharp ile okunup DXF olarak yüklenir; sonrası DXF ile aynıdır.
+            var dwg = string.Equals(Path.GetExtension(dosya), ".dwg", StringComparison.OrdinalIgnoreCase);
+            var tur = dwg ? "DWG" : "DXF";
+            DxfDocument dxfBelge;
+            var oncekiImlec = Cursor.Current;
+            Cursor.Current = Cursors.WaitCursor;
+            try
             {
-                if (dlg.ShowDialog() != DialogResult.OK)
-                    return;
-
-                DxfDocument dxfBelge;
-                try
-                {
-                    dxfBelge = DxfDocument.Load(dlg.FileName);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("DXF dosyası okunamadı: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                if (dxfBelge == null)
-                {
-                    MessageBox.Show("DXF dosyası okunamadı.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // Objeler DXF'teki tabakalarına yerleştirilir; çizimde aynı adda tabaka varsa o kullanılır. Çoklu doğrular
-                // ve bloklar tek obje olarak kalır (Düzenle > Patlat ile ayrılır).
-                var nesneler = DxfIceAktarici.Ayikla(dxfBelge, katman => cizimPaneli1.TabakaBulVeyaEkle(
-                    katman.Name, DxfIceAktarici.RenkCevir(katman.Color), katman.IsVisible && !katman.IsFrozen, katman.IsLocked), true);
-                cizimPaneli1.Nesneler.AddRange(nesneler);
-
-                cizimPaneli1.TumObjeleriGoster();
-                cizimPaneli1.Invalidate();
+                dxfBelge = dwg ? DwgOkuBekleyerek(dosya) : DxfIceAktarici.Yukle(dosya);
             }
+            catch (Exception ex)
+            {
+                Cursor.Current = oncekiImlec;
+                MessageBox.Show(tur + " dosyası okunamadı: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+            finally
+            {
+                Cursor.Current = oncekiImlec;
+            }
+
+            if (dxfBelge == null)
+                MessageBox.Show(tur + " dosyası okunamadı.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return dxfBelge;
+        }
+
+        /// <summary>
+        /// DWG'yi arka planda okur; bu sırada kapatılamayan küçük bir bekleme penceresi gösterilir (büyük dosyalar
+        /// onlarca saniye sürebilir, arayüz donmaz). Okuma hatası çağırana aynen fırlatılır.
+        /// </summary>
+        private DxfDocument DwgOkuBekleyerek(string dosya)
+        {
+            DxfDocument sonuc = null;
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo hata = null;
+            using (var bekleme = new Form
+            {
+                Text = "DWG Açılıyor", FormBorderStyle = FormBorderStyle.FixedDialog, ControlBox = false, ShowInTaskbar = false,
+                StartPosition = FormStartPosition.CenterParent, ClientSize = new Size(380, 76)
+            })
+            {
+                bekleme.Controls.Add(new Label { Text = Path.GetFileName(dosya) + " okunuyor, lütfen bekleyin...", Location = new System.Drawing.Point(12, 12), AutoSize = true });
+                bekleme.Controls.Add(new ProgressBar { Style = ProgressBarStyle.Marquee, Location = new System.Drawing.Point(12, 40), Size = new Size(356, 20) });
+                bekleme.Shown += async (s, e) =>
+                {
+                    try
+                    {
+                        sonuc = await System.Threading.Tasks.Task.Run(() => DwgOkuyucu.Oku(dosya));
+                    }
+                    catch (Exception ex)
+                    {
+                        hata = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex);
+                    }
+                    bekleme.Close();
+                };
+                bekleme.ShowDialog(this);
+            }
+            hata?.Throw();
+            return sonuc;
         }
 
         private void dosyaKaydetMenuItem_Click(object sender, EventArgs e)
         {
-            using (var dlg = new SaveFileDialog { Title = "DXF Olarak Kaydet", Filter = "DXF (*.dxf)|*.dxf", FileName = "cizim.dxf" })
-            {
-                if (dlg.ShowDialog() != DialogResult.OK)
-                    return;
-
-                try
-                {
-                    DxfDisaAktarici.Kaydet(cizimPaneli1.Nesneler, dlg.FileName);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("DXF dosyası kaydedilemedi: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
+            AktifBelgeyiKaydet();
         }
 
         private void googleEarthAktarMenuItem_Click(object sender, EventArgs e)

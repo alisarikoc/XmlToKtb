@@ -58,6 +58,9 @@
     <StartupObject>XmlToKtb.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ACadSharp, Version=3.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ACadSharp.3.8.0\lib\net48\ACadSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=11.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.11.0.0-preview.5.26302.115\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -136,6 +139,14 @@
     <Compile Include="Cizim\GuzergahNesnesi.cs" />
     <Compile Include="Cizim\GuzergahSomeleri.cs" />
     <Compile Include="Cizim\CizimAyarlari.cs" />
+    <Compile Include="Cizim\CizimBaglami.cs" />
+    <Compile Include="Cizim\DwgOkuyucu.cs" />
+    <Compile Include="Cizim\NczOkuyucu.cs" />
+    <Compile Include="Cizim\KilavuzNesnesi.cs" />
+    <Compile Include="Cizim\OlcuNesnesi.cs" />
+    <Compile Include="Cizim\OlcuStili.cs" />
+    <Compile Include="Cizim\PanelKomutMenusu.cs" />
+    <Compile Include="Cizim\GorunumPenceresi.cs" />
     <Compile Include="Cizim\GuzergahEtiketNesnesi.cs" />
     <Compile Include="Cizim\DuseyGeometri.cs" />
     <Compile Include="DuseyEditoruForm.cs" />
@@ -143,6 +154,37 @@
     <Compile Include="EnkesitOlusturForm.cs" />
     <Compile Include="BulDegistirForm.cs" />
     <Compile Include="HizliSecimForm.cs" />
+    <Compile Include="PoligonHesabiForm.cs" />
+    <Compile Include="PoligonHesabiForm.Silsile.cs">
+      <DependentUpon>PoligonHesabiForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Arayuz\RibbonCubugu.cs" />
+    <Compile Include="Arayuz\GuzergahSimgeleri.cs" />
+    <Compile Include="Arayuz\RibbonSimgeleri.cs" />
+    <Compile Include="CizimEkrani.Ribbon.cs">
+      <DependentUpon>CizimEkrani.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CizimEkrani.Olcu.cs">
+      <DependentUpon>CizimEkrani.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CizimEkrani.Ozellikler.cs">
+      <DependentUpon>CizimEkrani.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CizimEkrani.SagTik.cs">
+      <DependentUpon>CizimEkrani.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CizimEkrani.Belgeler.cs">
+      <DependentUpon>CizimEkrani.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CizimEkrani.Gorunum.cs">
+      <DependentUpon>CizimEkrani.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="CizimEkrani.Duzenleme.cs">
       <DependentUpon>CizimEkrani.cs</DependentUpon>
       <SubType>Form</SubType>

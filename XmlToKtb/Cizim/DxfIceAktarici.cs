@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using netDxf;
 using netDxf.Entities;
@@ -85,8 +86,131 @@ namespace XmlToKtb.Cizim
         public static List<CizimNesnesi> Ayikla(DxfDocument belge, Func<netDxf.Tables.Layer, Tabaka> tabakaBul)
         {
             var sonuc = new List<CizimNesnesi>();
-            foreach (var varlik in belge.Entities.All)
-                VarlikEkle(varlik, Donusum.Kimlik, sonuc, 0, tabakaBul);
+            _dogrusalOlcular = DogrusalOlcuTablosu.TryGetValue(belge, out var harita) ? harita : null;
+            try
+            {
+                foreach (var varlik in belge.Entities.All)
+                    VarlikEkle(varlik, Donusum.Kimlik, sonuc, 0, tabakaBul);
+                // netDxf'in okumadığı MLEADER'lar (ACadSharp ile okunmuş) eklenir.
+                if (MleaderTablosu.TryGetValue(belge, out var mleaderlar))
+                {
+                    foreach (var m in mleaderlar)
+                    {
+                        var kilavuz = m.Nesne.Kopyala();
+                        if (kilavuz.Stil != null && _olcuStiliBul != null)
+                            kilavuz.Stil = _olcuStiliBul(kilavuz.Stil) ?? kilavuz.Stil;
+                        var katman = m.Katman != null && belge.Layers.Contains(m.Katman) ? belge.Layers[m.Katman] : null;
+                        var tabaka = katman != null ? tabakaBul?.Invoke(katman) : null;
+                        var parcalar = _yapiyiKoru ? new List<CizimNesnesi> { kilavuz } : kilavuz.Parcala();
+                        foreach (var parca in parcalar)
+                        {
+                            if (parca.Tabaka == null)
+                                parca.Tabaka = tabaka;
+                            sonuc.Add(parca);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _dogrusalOlcular = null;
+            }
+            return sonuc;
+        }
+
+        // netDxf, doğrusal (döndürülmüş) ölçüleri okurken hizalı ölçü sanar ve doğrultuyu kaybeder (yatay ölçü eğik iki
+        // nokta arasında gerçek uzunluğu gösterir). Bu yüzden yüklenen DXF metnindeki doğrusal ölçülerin tutamacı ve
+        // doğrultusu ayrıca okunup belgeye bağlanır.
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<DxfDocument, Dictionary<string, double>> DogrusalOlcuTablosu =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<DxfDocument, Dictionary<string, double>>();
+        [ThreadStatic]
+        private static Dictionary<string, double> _dogrusalOlcular;
+
+        /// <summary>DXF dosyasını yükler (doğrusal ölçülerin türü ve doğrultusu korunur). Okunamazsa netDxf'in hatası fırlar.</summary>
+        public static DxfDocument Yukle(string dosya) => Yukle(System.IO.File.ReadAllBytes(dosya));
+
+        /// <summary>
+        /// Bellekteki DXF'i yükler. DWG'den çevrilen DXF'te okunmuş DWG belgesi (cad) verilir; MLEADER'lar ondan alınır.
+        /// DXF'te MLEADER varsa (netDxf okumaz) ACadSharp ile ayrıca okunur.
+        /// </summary>
+        public static DxfDocument Yukle(byte[] veri, ACadSharp.CadDocument cad = null)
+        {
+            DxfDocument belge;
+            using (var akis = new System.IO.MemoryStream(veri))
+                belge = DxfDocument.Load(akis);
+            if (belge != null)
+            {
+                var harita = DogrusalOlculeriTara(veri);
+                if (harita.Count > 0)
+                    DogrusalOlcuTablosu.Add(belge, harita);
+                try
+                {
+                    if (cad == null && MetinIceriyor(veri, "MULTILEADER"))
+                        using (var akis = new System.IO.MemoryStream(veri))
+                            cad = ACadSharp.IO.DxfReader.Read(akis, null);
+                    if (cad != null)
+                    {
+                        var mleaderlar = MleaderlariAl(cad);
+                        if (mleaderlar.Count > 0)
+                            MleaderTablosu.Add(belge, mleaderlar);
+                    }
+                }
+                catch (Exception)
+                {
+                    // MLEADER okunamazsa çizimin geri kalanı yine açılır.
+                }
+            }
+            return belge;
+        }
+
+        /// <summary>
+        /// ASCII DXF'teki DIMENSION kayıtlarından doğrusal olanları (70 kodunun alt 4 biti 0) bulur: tutamaç (5) →
+        /// doğrultu (50, derece). İkili DXF'te boş döner.
+        /// </summary>
+        private static Dictionary<string, double> DogrusalOlculeriTara(byte[] veri)
+        {
+            var sonuc = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+            if (veri.Length >= 18 && System.Text.Encoding.ASCII.GetString(veri, 0, 18) == "AutoCAD Binary DXF")
+                return sonuc;
+            using (var okuyucu = new System.IO.StreamReader(new System.IO.MemoryStream(veri), System.Text.Encoding.GetEncoding(28591)))
+            {
+                var olcu = false;
+                string tutamac = null;
+                var tur = -1;
+                double donus = 0;
+                void Bitir()
+                {
+                    if (olcu && tutamac != null && tur >= 0 && (tur & 0x0F) == 0)
+                        sonuc[tutamac] = donus;
+                }
+                string kodSatiri;
+                while ((kodSatiri = okuyucu.ReadLine()) != null)
+                {
+                    var deger = okuyucu.ReadLine();
+                    if (deger == null)
+                        break;
+                    if (!int.TryParse(kodSatiri.Trim(), out var kod))
+                        continue;
+                    if (kod == 0)
+                    {
+                        Bitir();
+                        olcu = deger.Trim() == "DIMENSION";
+                        tutamac = null;
+                        tur = -1;
+                        donus = 0;
+                    }
+                    else if (olcu)
+                    {
+                        if (kod == 5)
+                            tutamac = deger.Trim();
+                        else if (kod == 70)
+                            int.TryParse(deger.Trim(), out tur);
+                        else if (kod == 50)
+                            double.TryParse(deger.Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out donus);
+                    }
+                }
+                Bitir();
+            }
             return sonuc;
         }
 
@@ -105,6 +229,19 @@ namespace XmlToKtb.Cizim
 
             var oncekiSayi = sonuc.Count;
             VarligiCevir(varlik, donusum, sonuc, derinlik, tabakaBul);
+
+            // Çizgi kalınlığı (lineweight, 1/100 mm): varlığınki, "tabakaya göre" ise tabakanınki.
+            var kalinlik = (short)varlik.Lineweight;
+            if (varlik.Lineweight == Lineweight.ByLayer && varlik.Layer != null)
+                kalinlik = (short)varlik.Layer.Lineweight;
+            if (kalinlik > 0)
+            {
+                for (var i = oncekiSayi; i < sonuc.Count; i++)
+                {
+                    if (sonuc[i].CizgiKalinligi <= 0)
+                        sonuc[i].CizgiKalinligi = kalinlik / 100.0;
+                }
+            }
 
             if (tabakaBul == null)
                 return;
@@ -276,11 +413,286 @@ namespace XmlToKtb.Cizim
                 }
 
                 case Dimension olcu:
-                    if (olcu.Block != null)
+                {
+                    // Yapı korunurken ölçü, ölçü objesi olarak alınır; tanınmayan ölçü türleri (koordinat, yay boyu)
+                    // ve diğer ekranlarda ölçünün blok içeriği (çizgiler, oklar, yazı) alınır.
+                    var olcuNesnesi = _yapiyiKoru ? OlcuCevir(olcu, donusum) : null;
+                    if (olcuNesnesi != null)
+                        sonuc.Add(olcuNesnesi);
+                    else if (olcu.Block != null)
                         foreach (var altVarlik in olcu.Block.Entities)
                             VarlikEkle(altVarlik, donusum, sonuc, derinlik + 1, tabakaBul);
                     break;
+                }
+
+                case Leader lider:
+                {
+                    // Kılavuz çizgi (LEADER): yapı korunurken kılavuz objesi, diğer ekranlarda çizgi/ok/yazı parçaları.
+                    var kilavuz = KilavuzCevir(lider, donusum);
+                    if (kilavuz != null)
+                    {
+                        if (_yapiyiKoru)
+                            sonuc.Add(kilavuz);
+                        else
+                            sonuc.AddRange(kilavuz.Parcala());
+                    }
+                    break;
+                }
             }
+        }
+
+        private static KilavuzNesnesi KilavuzCevir(Leader lider, Donusum donusum)
+        {
+            if (lider.Vertexes == null || lider.Vertexes.Count < 2)
+                return null;
+            // LEADER'ın yolu iniş dahil köşelerindedir; ayrıca iniş çizgisi eklenmez.
+            var kilavuz = new KilavuzNesnesi { Inis = false, Stil = OlcuStiliGetir(lider.Style) };
+            foreach (var v in lider.Vertexes)
+            {
+                var (x, y) = donusum.Uygula(v.X, v.Y);
+                kilavuz.Koseler.Add(new[] { x, y });
+            }
+            switch (lider.Annotation)
+            {
+                case MText mYazi: kilavuz.Metin = MTextDuzMetin(mYazi.Value) ?? ""; break;
+                case Text yazi: kilavuz.Metin = yazi.Value ?? ""; break;
+            }
+            // Stilin iniş boyunda yatay son parça (bu programın yazdığı ya da AutoCAD hookline'ı) iniş çizgisi sayılır.
+            var k = kilavuz.Koseler;
+            if (k.Count >= 3)
+            {
+                double dx = k[k.Count - 1][0] - k[k.Count - 2][0], dy = k[k.Count - 1][1] - k[k.Count - 2][1];
+                var boy = kilavuz.InisBoyu;
+                if (Math.Abs(dy) <= boy * 1e-6 && Math.Abs(Math.Abs(dx) - boy) <= boy * 1e-3)
+                {
+                    k.RemoveAt(k.Count - 1);
+                    kilavuz.Inis = true;
+                }
+            }
+            return kilavuz;
+        }
+
+        // ------------------------------------------------------------------ MLEADER (netDxf okumaz, ACadSharp ile)
+
+        private sealed class MleaderBilgisi
+        {
+            public string Katman;
+            public KilavuzNesnesi Nesne;
+        }
+
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<DxfDocument, List<MleaderBilgisi>> MleaderTablosu =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<DxfDocument, List<MleaderBilgisi>>();
+
+        /// <summary>
+        /// ACadSharp belgesindeki MLEADER (MULTILEADER) objelerini kılavuz çizgiye çevirir: her kılavuz kökünün her çizgisi
+        /// bir kılavuz olur (köşeleri + bağlantı noktası); yazı ilk çizgiye yazılır.
+        /// </summary>
+        private static List<MleaderBilgisi> MleaderlariAl(ACadSharp.CadDocument cad)
+        {
+            var sonuc = new List<MleaderBilgisi>();
+            var stiller = new Dictionary<string, OlcuStili>();
+            foreach (var ml in cad.Entities.OfType<ACadSharp.Entities.MultiLeader>())
+            {
+                var cd = ml.ContextData;
+                if (cd?.LeaderRoots == null)
+                    continue;
+                var stilAdi = "MLeader " + (ml.Style?.Name ?? "Standard");
+                if (!stiller.TryGetValue(stilAdi, out var stil))
+                {
+                    stil = new OlcuStili
+                    {
+                        Ad = stilAdi,
+                        GenelOlcek = 1,
+                        YaziYuksekligi = cd.TextHeight > 0 ? cd.TextHeight : 2.5,
+                        OkBoyu = cd.ArrowheadSize > 0 ? cd.ArrowheadSize : ml.ArrowheadSize > 0 ? ml.ArrowheadSize : 2.5,
+                        YaziBoslugu = cd.LandingGap > 0 ? cd.LandingGap : 0.625,
+                        OkTipi = OkTipiCevir(ml.Arrowhead?.Name)
+                    };
+                    stiller[stilAdi] = stil;
+                }
+                var metin = cd.HasTextContents ? MTextDuzMetin(cd.TextLabel) ?? "" : "";
+                var ilk = true;
+                foreach (var kok in cd.LeaderRoots)
+                {
+                    foreach (var cizgi in kok.Lines)
+                    {
+                        var kilavuz = new KilavuzNesnesi { Inis = ml.EnableLanding, Stil = stil, Metin = ilk ? metin : "" };
+                        foreach (var p in cizgi.Points)
+                            kilavuz.Koseler.Add(new[] { p.X, p.Y });
+                        kilavuz.Koseler.Add(new[] { kok.ConnectionPoint.X, kok.ConnectionPoint.Y });
+                        if (kilavuz.Koseler.Count < 2)
+                            continue;
+                        sonuc.Add(new MleaderBilgisi { Katman = ml.Layer?.Name, Nesne = kilavuz });
+                        ilk = false;
+                    }
+                }
+            }
+            return sonuc;
+        }
+
+        private static bool MetinIceriyor(byte[] veri, string aranan)
+        {
+            var kalip = System.Text.Encoding.ASCII.GetBytes(aranan);
+            for (var i = 0; i + kalip.Length <= veri.Length; i++)
+            {
+                var j = 0;
+                while (j < kalip.Length && veri[i + j] == kalip[j])
+                    j++;
+                if (j == kalip.Length)
+                    return true;
+            }
+            return false;
+        }
+
+        // Ölçü stillerinin çizimdeki karşılığı (Ayikla'ya verilir); verilmezse her DXF stili için bir stil oluşturulur.
+        [ThreadStatic]
+        private static Func<OlcuStili, OlcuStili> _olcuStiliBul;
+        [ThreadStatic]
+        private static Dictionary<netDxf.Tables.DimensionStyle, OlcuStili> _olcuStilleri;
+
+        /// <summary>
+        /// Varlıkları alır (yapı korunarak: çoklu doğrular, bloklar ve ölçüler tek obje olarak). olcuStiliBul, DXF'ten
+        /// okunan ölçü stilinin çizimdeki karşılığını döner (ör. aynı adlı stil ya da eklenen kopya).
+        /// </summary>
+        public static List<CizimNesnesi> Ayikla(DxfDocument belge, Func<netDxf.Tables.Layer, Tabaka> tabakaBul, bool yapiyiKoru, Func<OlcuStili, OlcuStili> olcuStiliBul)
+        {
+            _olcuStiliBul = olcuStiliBul;
+            _olcuStilleri = new Dictionary<netDxf.Tables.DimensionStyle, OlcuStili>();
+            try
+            {
+                return Ayikla(belge, tabakaBul, yapiyiKoru);
+            }
+            finally
+            {
+                _olcuStiliBul = null;
+                _olcuStilleri = null;
+            }
+        }
+
+        /// <summary>DXF ölçü stilini (DIMSTYLE) ölçü stiline çevirir.</summary>
+        public static OlcuStili StilCevir(netDxf.Tables.DimensionStyle ds)
+        {
+            var stil = new OlcuStili
+            {
+                Ad = string.IsNullOrEmpty(ds.Name) ? "Standart" : ds.Name,
+                GenelOlcek = ds.DimScaleOverall > 0 ? ds.DimScaleOverall : 1,
+                YaziYuksekligi = ds.TextHeight,
+                YaziBoslugu = Math.Abs(ds.TextOffset),
+                YaziKonumu = ds.TextVerticalPlacement == netDxf.Tables.DimensionStyleTextVerticalPlacement.Centered ? OlcuYaziKonumu.Ortada : OlcuYaziKonumu.Ustte,
+                OndalikBasamak = ds.LengthPrecision,
+                AciOndalikBasamak = ds.AngularPrecision,
+                UzunlukCarpani = ds.DimScaleLinear != 0 ? ds.DimScaleLinear : 1,
+                OnEk = ds.DimPrefix ?? "",
+                SonEk = ds.DimSuffix ?? "",
+                OndalikAyraci = ds.DecimalSeparator == '\0' ? '.' : ds.DecimalSeparator,
+                AciBirimi = ds.DimAngularUnits == netDxf.Units.AngleUnitType.Gradians ? OlcuAciBirimi.Grad : OlcuAciBirimi.Derece,
+                OkBoyu = ds.ArrowSize,
+                UzatmaAraligi = ds.ExtLineOffset,
+                UzatmaTasmasi = ds.ExtLineExtend,
+                OlcuCizgisiTasmasi = ds.DimLineExtend,
+                OkTipi = OkTipiCevir(ds.DimArrow1?.Name)
+            };
+            return stil;
+        }
+
+        // DXF ok bloğu adından ok tipi (null/boş: kapalı dolu ok).
+        private static OlcuOkTipi OkTipiCevir(string blokAdi)
+        {
+            var ad = (blokAdi ?? "").ToUpperInvariant();
+            if (ad.Length == 0 || ad == "_CLOSEDFILLED") return OlcuOkTipi.KapaliDolu;
+            if (ad.Contains("OBLIQUE") || ad.Contains("ARCHTICK") || ad.Contains("INTEGRAL")) return OlcuOkTipi.EgikCizgi;
+            if (ad.Contains("DOT") || ad.Contains("ORIGIN")) return OlcuOkTipi.Nokta;
+            if (ad.Contains("NONE")) return OlcuOkTipi.Yok;
+            if (ad.Contains("OPEN")) return OlcuOkTipi.Acik;
+            return OlcuOkTipi.KapaliDolu;
+        }
+
+        private static OlcuStili OlcuStiliGetir(netDxf.Tables.DimensionStyle ds)
+        {
+            if (ds == null)
+                return null;
+            if (_olcuStilleri == null)
+                _olcuStilleri = new Dictionary<netDxf.Tables.DimensionStyle, OlcuStili>();
+            if (!_olcuStilleri.TryGetValue(ds, out var stil))
+            {
+                stil = StilCevir(ds);
+                if (_olcuStiliBul != null)
+                    stil = _olcuStiliBul(stil) ?? stil;
+                _olcuStilleri[ds] = stil;
+            }
+            return stil;
+        }
+
+        /// <summary>DXF ölçüsünü ölçü objesine çevirir; tanınmayan türde null.</summary>
+        private static OlcuNesnesi OlcuCevir(Dimension olcu, Donusum donusum)
+        {
+            OlcuNesnesi sonuc;
+            switch (olcu)
+            {
+                case LinearDimension d:
+                    sonuc = new OlcuNesnesi { Tur = OlcuTuru.Dogrusal, Aci = d.Rotation };
+                    Noktalar(sonuc, donusum, d.FirstReferencePoint, d.SecondReferencePoint, d.DimLinePosition, d.DimLinePosition);
+                    sonuc.Aci += donusum.DonusDerece;
+                    break;
+                case AlignedDimension d when _dogrusalOlcular != null && d.Handle != null && _dogrusalOlcular.TryGetValue(d.Handle, out var dogrultu):
+                    // Dosyada doğrusal (döndürülmüş) ölçü; netDxf hizalı okumuştur.
+                    sonuc = new OlcuNesnesi { Tur = OlcuTuru.Dogrusal, Aci = dogrultu + donusum.DonusDerece };
+                    Noktalar(sonuc, donusum, d.FirstReferencePoint, d.SecondReferencePoint, d.DimLinePosition, d.DimLinePosition);
+                    break;
+                case AlignedDimension d:
+                    sonuc = new OlcuNesnesi { Tur = OlcuTuru.Hizali };
+                    Noktalar(sonuc, donusum, d.FirstReferencePoint, d.SecondReferencePoint, d.DimLinePosition, d.DimLinePosition);
+                    break;
+                case Angular3PointDimension d:
+                    sonuc = new OlcuNesnesi { Tur = OlcuTuru.Acisal };
+                    Noktalar(sonuc, donusum, d.CenterPoint, d.StartPoint, d.EndPoint, d.ArcDefinitionPoint);
+                    break;
+                case Angular2LineDimension d:
+                {
+                    // Köşe iki doğrunun kesişimi; kollar her doğrunun köşeye uzak ucu.
+                    if (!KesisimBul(d.StartFirstLine, d.EndFirstLine, d.StartSecondLine, d.EndSecondLine, out var kose))
+                        return null;
+                    Vector2 Uzak(Vector2 a, Vector2 b) => Vector2.Distance(a, kose) >= Vector2.Distance(b, kose) ? a : b;
+                    sonuc = new OlcuNesnesi { Tur = OlcuTuru.Acisal };
+                    Noktalar(sonuc, donusum, kose, Uzak(d.StartFirstLine, d.EndFirstLine), Uzak(d.StartSecondLine, d.EndSecondLine), d.ArcDefinitionPoint);
+                    break;
+                }
+                case RadialDimension d:
+                    sonuc = new OlcuNesnesi { Tur = OlcuTuru.Yaricap };
+                    Noktalar(sonuc, donusum, d.CenterPoint, d.ReferencePoint, d.ReferencePoint, d.ReferencePoint);
+                    break;
+                case DiametricDimension d:
+                    sonuc = new OlcuNesnesi { Tur = OlcuTuru.Cap };
+                    Noktalar(sonuc, donusum, d.CenterPoint, d.ReferencePoint, d.ReferencePoint, d.ReferencePoint);
+                    break;
+                default:
+                    return null;
+            }
+            // "<>" ölçülen değerdir; yalnızca "<>" ya da boş yazı, ölçülen değerin yazılması demektir.
+            sonuc.Metin = string.IsNullOrEmpty(olcu.UserText) || olcu.UserText == "<>" ? "" : olcu.UserText;
+            sonuc.Stil = OlcuStiliGetir(olcu.Style);
+            return sonuc;
+        }
+
+        private static void Noktalar(OlcuNesnesi o, Donusum donusum, Vector2 a, Vector2 b, Vector2 c, Vector2 d)
+        {
+            double x, y;
+            (x, y) = donusum.Uygula(a.X, a.Y); o.AX = x; o.AY = y;
+            (x, y) = donusum.Uygula(b.X, b.Y); o.BX = x; o.BY = y;
+            (x, y) = donusum.Uygula(c.X, c.Y); o.CX = x; o.CY = y;
+            (x, y) = donusum.Uygula(d.X, d.Y); o.DX = x; o.DY = y;
+        }
+
+        private static bool KesisimBul(Vector2 a1, Vector2 a2, Vector2 b1, Vector2 b2, out Vector2 kesisim)
+        {
+            kesisim = Vector2.Zero;
+            double dax = a2.X - a1.X, day = a2.Y - a1.Y, dbx = b2.X - b1.X, dby = b2.Y - b1.Y;
+            var payda = dax * dby - day * dbx;
+            if (Math.Abs(payda) < 1e-12)
+                return false;
+            var t = ((b1.X - a1.X) * dby - (b1.Y - a1.Y) * dbx) / payda;
+            kesisim = new Vector2(a1.X + t * dax, a1.Y + t * day);
+            return true;
         }
 
         private static void HatchKenariEkle(HatchBoundaryPath.Edge kenar, double elevation, Donusum donusum, List<CizimNesnesi> sonuc)

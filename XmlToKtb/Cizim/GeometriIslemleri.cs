@@ -103,7 +103,8 @@ namespace XmlToKtb.Cizim
                     break;
                 }
                 case GuzergahNesnesi g:
-                    foreach (var parca in g.Parcalar)
+                    // Kopuk parçalar da yakalanabilir (arayı bağlarken uçlarına yakalanmak için).
+                    foreach (var parca in g.TumParcalar)
                     {
                         if (parca.Tip == GuzergahParcaTipi.Dogru)
                         {
@@ -128,6 +129,17 @@ namespace XmlToKtb.Cizim
                 case BlokNesnesi blok:
                     foreach (var oge in blok.Ogeler)
                         sonuc.AddRange(Primitifler(oge));
+                    break;
+
+                case OlcuNesnesi olcu:
+                    // Kesişim yakalama ve çit seçimi için ölçünün çizgileri.
+                    foreach (var c in olcu.GeometriOlustur().Cizgiler)
+                        sonuc.Add(Primitif.Dogru(c[0], c[1], 0, c[2], c[3], 0));
+                    break;
+
+                case KilavuzNesnesi kilavuz:
+                    foreach (var c in kilavuz.GeometriOlustur().Cizgiler)
+                        sonuc.Add(Primitif.Dogru(c[0], c[1], 0, c[2], c[3], 0));
                     break;
             }
             return sonuc;
@@ -174,6 +186,39 @@ namespace XmlToKtb.Cizim
                 double x = ax + t * dx, y = ay + t * dy;
                 if (p.AciIcindeMi(Math.Atan2(y - p.My, x - p.Mx)))
                     sonuc.Add(t);
+            }
+            return sonuc;
+        }
+
+        /// <summary>İki temel parçanın (doğru parçası / yay) kesişim noktaları ({x, y}).</summary>
+        public static List<double[]> PrimitifKesisimleri(Primitif a, Primitif b)
+        {
+            var sonuc = new List<double[]>();
+            if (!a.YayMi)
+            {
+                // Doğru parçası: diğer parçayla kesişimlerin doğru üzerindeki oranları 0-1 arasında olmalı.
+                foreach (var t in DogruKesisimleri(a.X1, a.Y1, a.X2, a.Y2, b))
+                {
+                    if (t >= -1e-9 && t <= 1 + 1e-9)
+                        sonuc.Add(new[] { a.X1 + t * (a.X2 - a.X1), a.Y1 + t * (a.Y2 - a.Y1) });
+                }
+                return sonuc;
+            }
+            if (!b.YayMi)
+                return PrimitifKesisimleri(b, a);
+
+            // İki çember: kesişim noktaları iki yayın da açı aralığında olmalı.
+            double dx = b.Mx - a.Mx, dy = b.My - a.My, d = Math.Sqrt(dx * dx + dy * dy);
+            if (d < 1e-12 || d > a.R + b.R + 1e-9 || d < Math.Abs(a.R - b.R) - 1e-9)
+                return sonuc;
+            var l = (a.R * a.R - b.R * b.R + d * d) / (2 * d);
+            var h = Math.Sqrt(Math.Max(0, a.R * a.R - l * l));
+            double px = a.Mx + l * dx / d, py = a.My + l * dy / d;
+            foreach (var isaret in h < 1e-12 ? new[] { 0.0 } : new[] { 1.0, -1.0 })
+            {
+                double x = px - isaret * h * dy / d, y = py + isaret * h * dx / d;
+                if (a.AciIcindeMi(Math.Atan2(y - a.My, x - a.Mx)) && b.AciIcindeMi(Math.Atan2(y - b.My, x - b.Mx)))
+                    sonuc.Add(new[] { x, y });
             }
             return sonuc;
         }
@@ -288,9 +333,17 @@ namespace XmlToKtb.Cizim
                     sonuc = blok.Ogeler.Select(NesneDonusumleri.Klonla).ToList();
                     break;
 
+                case OlcuNesnesi olcu:
+                    sonuc = olcu.Parcala();
+                    break;
+
+                case KilavuzNesnesi kilavuz:
+                    sonuc = kilavuz.Parcala();
+                    break;
+
                 case GuzergahNesnesi g:
                     sonuc = new List<CizimNesnesi>();
-                    foreach (var parca in g.Parcalar)
+                    foreach (var parca in g.TumParcalar)
                     {
                         if (parca.Tip == GuzergahParcaTipi.Dogru)
                         {
@@ -373,6 +426,8 @@ namespace XmlToKtb.Cizim
                     parca.Tabaka = nesne.Tabaka;
                 if (parca.OzelRenk == null)
                     parca.OzelRenk = nesne.OzelRenk;
+                if (parca.CizgiKalinligi <= 0)
+                    parca.CizgiKalinligi = nesne.CizgiKalinligi;
             }
             return sonuc;
         }
@@ -592,6 +647,7 @@ namespace XmlToKtb.Cizim
             {
                 sonuc.Tabaka = nesne.Tabaka;
                 sonuc.OzelRenk = nesne.OzelRenk;
+                sonuc.CizgiKalinligi = nesne.CizgiKalinligi;
             }
             return sonuc;
         }
@@ -832,6 +888,85 @@ namespace XmlToKtb.Cizim
                 sonuc.Add(cd);
             }
             return sonuc;
+        }
+
+        /// <summary>Çoklu doğrunun yönünü ters çevirir (köşeler tersine dizilir, yay parçalarının bulge'ı işaret değiştirir).</summary>
+        public static void CokluDogruyuTersCevir(CokluDogruNesnesi cd)
+        {
+            var koseler = cd.Koseler.ToList();
+            if (cd.Kapali && koseler.Count > 1)
+            {
+                // Kapalıda kapanış parçası da yer değiştirir: ilk köşe başa sabitlenip geri kalanı ters çevrilir.
+                koseler.Add(koseler[0].Kopyala());
+                var ters = TersCevir(koseler);
+                ters.RemoveAt(ters.Count - 1);
+                cd.Koseler.Clear();
+                cd.Koseler.AddRange(ters);
+                return;
+            }
+            cd.Koseler.Clear();
+            cd.Koseler.AddRange(TersCevir(koseler));
+        }
+
+        /// <summary>
+        /// Çoklu doğruyu güzergaha çevirir: düz parçalar doğru, yay parçaları kurp olur. Teğet olmayan birleşimler
+        /// güzergahta kırıklık (kurpsuz some) olarak kalır. Güzergahın önceki parçaları silinir.
+        /// </summary>
+        public static void CokluDogruyuGuzergahaCevir(CokluDogruNesnesi cd, GuzergahNesnesi g)
+        {
+            var koseler = cd.Koseler.ToList();
+            if (cd.Kapali && koseler.Count > 1)
+                koseler.Add(new CokluDogruKosesi { X = koseler[0].X, Y = koseler[0].Y, Z = koseler[0].Z });
+
+            var parcalar = new List<GuzergahParcasi>();
+            double? oncekiBitisYonu = null;
+            for (var i = 0; i + 1 < koseler.Count; i++)
+            {
+                CokluDogruKosesi a = koseler[i], b = koseler[i + 1];
+                double dx = b.X - a.X, dy = b.Y - a.Y, kiris = Math.Sqrt(dx * dx + dy * dy);
+                if (kiris < 1e-9)
+                    continue;
+                var kirisYonu = Math.Atan2(dy, dx);
+                GuzergahParcasi parca;
+                double baslangicYonu, bitisYonu;
+                if (Math.Abs(a.Bulge) < 1e-9)
+                {
+                    parca = new GuzergahParcasi { Tip = GuzergahParcaTipi.Dogru, Uzunluk = kiris };
+                    baslangicYonu = bitisYonu = kirisYonu;
+                }
+                else
+                {
+                    var aci = 4 * Math.Atan(a.Bulge);
+                    var r = kiris * (1 + a.Bulge * a.Bulge) / (4 * Math.Abs(a.Bulge));
+                    parca = new GuzergahParcasi
+                    {
+                        Tip = GuzergahParcaTipi.Kurp, Uzunluk = r * Math.Abs(aci), YaricapBaslangic = r, YaricapBitis = r,
+                        Yon = aci > 0 ? DonusYonu.Sol : DonusYonu.Sag
+                    };
+                    baslangicYonu = kirisYonu - aci / 2;
+                    bitisYonu = kirisYonu + aci / 2;
+                }
+
+                if (oncekiBitisYonu == null)
+                {
+                    g.BaslangicX = a.X;
+                    g.BaslangicY = a.Y;
+                    g.BaslangicAcisi = baslangicYonu;
+                }
+                else
+                {
+                    var kirik = baslangicYonu - oncekiBitisYonu.Value;
+                    while (kirik > Math.PI) kirik -= 2 * Math.PI;
+                    while (kirik <= -Math.PI) kirik += 2 * Math.PI;
+                    parca.KirikAcisi = Math.Abs(kirik) < 1e-9 ? 0 : kirik;
+                }
+                oncekiBitisYonu = bitisYonu;
+                parcalar.Add(parca);
+            }
+
+            g.Parcalar.Clear();
+            g.Parcalar.AddRange(parcalar);
+            g.Hesapla();
         }
 
         // Objenin çoklu doğru köşeleri (yön: çizgide baştan sona, yayda saat yönünün tersine).
